@@ -35,10 +35,15 @@ export class Renderer {
       for (let k = 0, kl = uniforms.length; k < kl; k++) {
         const [uniformName, value] = uniforms[k];
 
-        gl[Array.isArray(value) ? `uniform${value.length}fv` : 'uniform1f'](
-          gl.getUniformLocation(program._compiledProgram, uniformName),
-          value
-        );
+        const isMatrix = uniformName.indexOf('$') === 0;
+
+        if (isMatrix) {
+          gl[`uniformMatrix${value.length === 4 ? 2 : (value.length === 9 ? 3 : 4)}fv`]
+            (gl.getUniformLocation(program._compiledProgram, uniformName.slice(1)), false, value);
+        } else {
+          gl[Array.isArray(value) ? `uniform${value.length}fv` : 'uniform1f']
+            (gl.getUniformLocation(program._compiledProgram, uniformName), value);
+        }
       }
 
       gl.drawArrays(gl.TRIANGLES, 0, 3);

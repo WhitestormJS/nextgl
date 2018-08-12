@@ -7,11 +7,13 @@ in vec3 color;
 
 out vec3 v_color;
 
+uniform mat4 projectionMatrix;
+
 // all shaders have a main function
 void main() {
   v_color = color;
 
   // gl_Position is a special variable a vertex shader
   // is responsible for setting
-  gl_Position = position;
+  gl_Position = projectionMatrix * position;
 }

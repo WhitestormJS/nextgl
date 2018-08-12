@@ -4,7 +4,7 @@
   (factory((global.NEXT = {})));
 }(this, (function (exports) { 'use strict';
 
-  var test = "#version 300 es\n#define GLSLIFY 1\n\n// an attribute is an input (in) to a vertex shader.\n// It will receive data from a buffer\nin vec4 position;\nin vec3 color;\n\nout vec3 v_color;\n\n// all shaders have a main function\nvoid main() {\n  v_color = color;\n\n  // gl_Position is a special variable a vertex shader\n  // is responsible for setting\n  gl_Position = position;\n}\n"; // eslint-disable-line
+  var test = "#version 300 es\n#define GLSLIFY 1\n\n// an attribute is an input (in) to a vertex shader.\n// It will receive data from a buffer\nin vec4 position;\nin vec3 color;\n\nout vec3 v_color;\n\nuniform mat4 projectionMatrix;\n\n// all shaders have a main function\nvoid main() {\n  v_color = color;\n\n  // gl_Position is a special variable a vertex shader\n  // is responsible for setting\n  gl_Position = projectionMatrix * position;\n}\n"; // eslint-disable-line
 
   var test$1 = /*#__PURE__*/Object.freeze({
     default: test
@@ -899,7 +899,13 @@
                 uniformName = _uniforms$k[0],
                 value = _uniforms$k[1];
 
-            gl[Array.isArray(value) ? "uniform".concat(value.length, "fv") : 'uniform1f'](gl.getUniformLocation(program._compiledProgram, uniformName), value);
+            var isMatrix = uniformName.indexOf('$') === 0;
+
+            if (isMatrix) {
+              gl["uniformMatrix".concat(value.length === 4 ? 2 : value.length === 9 ? 3 : 4, "fv")](gl.getUniformLocation(program._compiledProgram, uniformName.slice(1)), false, value);
+            } else {
+              gl[Array.isArray(value) ? "uniform".concat(value.length, "fv") : 'uniform1f'](gl.getUniformLocation(program._compiledProgram, uniformName), value);
+            }
           }
 
           gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -948,7 +954,8 @@
 
         if (success) {
           return program;
-        }
+        } // TODO: Cleanup error logging + add troubleshooting
+
 
         console.log(gl.getProgramInfoLog(program));
         gl.deleteProgram(program);
@@ -975,7 +982,8 @@
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
     var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-    if (success) return shader;
+    if (success) return shader; // TODO: Cleanup error logging + add troubleshooting
+
     console.log(gl.getShaderInfoLog(shader));
     gl.deleteShader(shader);
   });
@@ -993,7 +1001,8 @@
     });
 
     _defineProperty(this, "_bind", function (gl, location) {
-      gl.enableVertexAttribArray(location);
+      gl.enableVertexAttribArray(location); // TODO: Check for additional capabilities of vertexAttribPointer
+
       gl.vertexAttribPointer(location, _this.size, // 2 components per iteration
       gl.FLOAT, // the data is 32bit floats
       false, // don't normalize the data

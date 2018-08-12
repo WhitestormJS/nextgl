@@ -17,6 +17,7 @@ export class Attribute {
   _bind = (gl, location) => {
     gl.enableVertexAttribArray(location);
 
+    // TODO: Check for additional capabilities of vertexAttribPointer
     gl.vertexAttribPointer(
       location,
       this.size,  // 2 components per iteration

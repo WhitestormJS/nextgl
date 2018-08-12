@@ -10,6 +10,7 @@ export class Program {
     if (success)
       return shader;
 
+    // TODO: Cleanup error logging + add troubleshooting
     console.log(gl.getShaderInfoLog(shader));
     gl.deleteShader(shader);
   }
@@ -52,6 +53,7 @@ export class Program {
       return program;
     }
 
+    // TODO: Cleanup error logging + add troubleshooting
     console.log(gl.getProgramInfoLog(program));
     gl.deleteProgram(program);
   }
