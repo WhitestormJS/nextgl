@@ -46,7 +46,10 @@ export class Renderer {
         }
       }
 
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      if (program.index)
+        gl.drawElements(gl.TRIANGLES, program.count, gl.UNSIGNED_SHORT, 0);
+      else
+        gl.drawArrays(gl.TRIANGLES, 0, program.count);
     }
   }
 }

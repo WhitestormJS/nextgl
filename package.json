@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "cross-env FXGL_SERVE=true rollup -w -c ./rollup.config.babel.js --experimentalDynamicImport",
-    "build": "rollup -c ./rollup.config.babel.js --experimentalDynamicImport"
+    "start": "npm run examples & cross-env FXGL_SERVE=true rollup -w -c --experimentalDynamicImport",
+    "build": "rollup -c --experimentalDynamicImport",
+    "examples": "webpack --config ./examples/webpack.config.babel.js -w --display minimal"
   },
   "author": "",
   "license": "MIT",
@@ -18,12 +19,18 @@
     "@babel/preset-env": "^7.0.0-rc.1",
     "@babel/register": "^7.0.0-rc.1",
     "cross-env": "^5.2.0",
+    "glob": "^7.1.2",
     "rollup": "^0.64.1",
     "rollup-plugin-babel": "^4.0.0-beta.8",
     "rollup-plugin-commonjs": "^9.1.5",
     "rollup-plugin-glslify": "^1.0.5",
     "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-serve": "^0.4.2",
-    "rollup-watch": "^4.3.1"
+    "rollup-watch": "^4.3.1",
+    "webpack": "^4.16.5",
+    "webpack-cli": "^3.1.0"
+  },
+  "dependencies": {
+    "bunny": "^1.0.1"
   }
 }

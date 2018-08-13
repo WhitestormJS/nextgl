@@ -1,20 +1,34 @@
 export class Attribute {
+  static inlineArray(inArray) {
+    return inArray.reduce((o, a) => {
+      o.push(...a);
+      return o
+    }, [])
+  }
+
   constructor(array, size) {
     this.array = array;
     this.size = size;
     this._compiledBuffer = null;
   }
 
-  _compile = (gl) => {
+  _compile = (gl, isIndex = false) => {
+    const BUFFER_TYPE = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
     const buffer = gl.createBuffer();
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, this.array, gl.STATIC_DRAW);
+    gl.bindBuffer(BUFFER_TYPE, buffer);
+    gl.bufferData(BUFFER_TYPE, this.array, gl.STATIC_DRAW);
 
     this._compiledBuffer = buffer;
   }
 
-  _bind = (gl, location) => {
+  _bind = (gl, location, isIndex) => {
+    const BUFFER_TYPE = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER
+    gl.bindBuffer(BUFFER_TYPE, this._compiledBuffer);
+
+    if (isIndex === 'index')
+      return;
+
     gl.enableVertexAttribArray(location);
 
     // TODO: Check for additional capabilities of vertexAttribPointer

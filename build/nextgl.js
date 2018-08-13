@@ -4,13 +4,13 @@
   (factory((global.NEXT = {})));
 }(this, (function (exports) { 'use strict';
 
-  var test = "#version 300 es\n#define GLSLIFY 1\n\n// an attribute is an input (in) to a vertex shader.\n// It will receive data from a buffer\nin vec4 position;\nin vec3 color;\n\nout vec3 v_color;\n\nuniform mat4 projectionMatrix;\n\n// all shaders have a main function\nvoid main() {\n  v_color = color;\n\n  // gl_Position is a special variable a vertex shader\n  // is responsible for setting\n  gl_Position = projectionMatrix * position;\n}\n"; // eslint-disable-line
+  var test = "#version 300 es\n#define GLSLIFY 1\n\n// an attribute is an input (in) to a vertex shader.\n// It will receive data from a buffer\nin vec4 position;\n// in vec3 color;\n\n// out vec3 v_color;\n\nuniform mat4 projectionMatrix;\nuniform mat4 modelMatrix;\n\n// all shaders have a main function\nvoid main() {\n  // v_color = color;\n\n  // gl_Position is a special variable a vertex shader\n  // is responsible for setting\n  gl_Position = projectionMatrix * modelMatrix * position;\n}\n"; // eslint-disable-line
 
   var test$1 = /*#__PURE__*/Object.freeze({
     default: test
   });
 
-  var test$2 = "#version 300 es\n\n// fragment shaders don't have a default precision so we need\n// to pick one. mediump is a good default. It means \"medium precision\"\nprecision mediump float;\n#define GLSLIFY 1\n\nin vec3 v_color;\nuniform vec2 bright;\n\n// we need to declare an output for the fragment shader\nout vec4 outColor;\n\nvoid main() {\n  // Just set the output to a constant redish-purple\n  outColor = vec4(v_color + bright.y, 1);\n}\n"; // eslint-disable-line
+  var test$2 = "#version 300 es\n\n// fragment shaders don't have a default precision so we need\n// to pick one. mediump is a good default. It means \"medium precision\"\nprecision mediump float;\n#define GLSLIFY 1\n\n// in vec3 v_color;\nuniform vec2 bright;\n\n// we need to declare an output for the fragment shader\nout vec4 outColor;\n\nvoid main() {\n  // Just set the output to a constant redish-purple\n  outColor = vec4(vec3(bright.y), 1);\n}\n"; // eslint-disable-line
 
   var test$3 = /*#__PURE__*/Object.freeze({
     default: test$2
@@ -68,8 +68,24 @@
     return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
   }
 
+  function _toConsumableArray(arr) {
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+  }
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+      return arr2;
+    }
+  }
+
   function _arrayWithHoles(arr) {
     if (Array.isArray(arr)) return arr;
+  }
+
+  function _iterableToArray(iter) {
+    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
   }
 
   function _iterableToArrayLimit(arr, i) {
@@ -96,6 +112,10 @@
     }
 
     return _arr;
+  }
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance");
   }
 
   function _nonIterableRest() {
@@ -691,7 +711,7 @@
         // Set @@toStringTag to native iterators
         _setToStringTag(IteratorPrototype, TAG, true); // fix for some old engines
 
-        if (!_library && typeof IteratorPrototype[ITERATOR] != 'function') _hide(IteratorPrototype, ITERATOR, returnThis);
+        if (typeof IteratorPrototype[ITERATOR] != 'function') _hide(IteratorPrototype, ITERATOR, returnThis);
       }
     } // fix Array#{values, @@iterator}.name in V8 / FF
 
@@ -705,7 +725,7 @@
     } // Define iterator
 
 
-    if ((!_library || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])) {
+    if (BUGGY || VALUES_BUG || !proto[ITERATOR]) {
       _hide(proto, ITERATOR, $default);
     } // Plug for library
 
@@ -908,7 +928,7 @@
             }
           }
 
-          gl.drawArrays(gl.TRIANGLES, 0, 3);
+          if (program.index) gl.drawElements(gl.TRIANGLES, program.count, gl.UNSIGNED_SHORT, 0);else gl.drawArrays(gl.TRIANGLES, 0, program.count);
         }
       }
     }]);
@@ -919,11 +939,13 @@
   var Program =
   /*#__PURE__*/
   function () {
-    function Program(_ref) {
+    function Program() {
       var _this = this;
 
-      var vert = _ref.vert,
-          frag = _ref.frag;
+      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          vert = _ref.vert,
+          frag = _ref.frag,
+          count = _ref.count;
 
       _classCallCheck(this, Program);
 
@@ -938,7 +960,14 @@
         var vao = gl.createVertexArray();
         gl.useProgram(program._compiledProgram);
         _this._compiledVAO = vao;
-        gl.bindVertexArray(program._compiledVAO);
+        gl.bindVertexArray(program._compiledVAO); // index attribute
+
+        if (_this.index) {
+          if (!_this.index._compiledBuffer) _this.index._compile(gl, true);
+
+          _this.index._bind(gl, null, true);
+        } // non-index attributes
+
 
         var _arr = Object.entries(_this.attributes);
 
@@ -947,9 +976,9 @@
               attrName = _arr$_i[0],
               attr = _arr$_i[1];
 
-          if (!attr._compiledBuffer) attr._compile(gl);
+          if (!attr._compiledBuffer) attr._compile(gl, false);
 
-          attr._bind(gl, gl.getAttribLocation(program, attrName));
+          attr._bind(gl, gl.getAttribLocation(program, attrName), false);
         }
 
         if (success) {
@@ -965,12 +994,19 @@
       this.frag = frag;
       this.attributes = {};
       this.uniforms = {};
+      this.count = count || 3;
+      this.index = null;
     }
 
     _createClass(Program, [{
       key: "setAttribute",
       value: function setAttribute(name, attribute) {
         this.attributes[name] = attribute;
+      }
+    }, {
+      key: "setIndex",
+      value: function setIndex(attribute) {
+        this.index = attribute;
       }
     }]);
 
@@ -988,33 +1024,54 @@
     gl.deleteShader(shader);
   });
 
-  var Attribute = function Attribute(array, size) {
-    var _this = this;
+  var Attribute =
+  /*#__PURE__*/
+  function () {
+    _createClass(Attribute, null, [{
+      key: "inlineArray",
+      value: function inlineArray(inArray) {
+        return inArray.reduce(function (o, a) {
+          o.push.apply(o, _toConsumableArray(a));
+          return o;
+        }, []);
+      }
+    }]);
 
-    _classCallCheck(this, Attribute);
+    function Attribute(array, size) {
+      var _this = this;
 
-    _defineProperty(this, "_compile", function (gl) {
-      var buffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-      gl.bufferData(gl.ARRAY_BUFFER, _this.array, gl.STATIC_DRAW);
-      _this._compiledBuffer = buffer;
-    });
+      _classCallCheck(this, Attribute);
 
-    _defineProperty(this, "_bind", function (gl, location) {
-      gl.enableVertexAttribArray(location); // TODO: Check for additional capabilities of vertexAttribPointer
+      _defineProperty(this, "_compile", function (gl) {
+        var isIndex = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+        var BUFFER_TYPE = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
+        var buffer = gl.createBuffer();
+        gl.bindBuffer(BUFFER_TYPE, buffer);
+        gl.bufferData(BUFFER_TYPE, _this.array, gl.STATIC_DRAW);
+        _this._compiledBuffer = buffer;
+      });
 
-      gl.vertexAttribPointer(location, _this.size, // 2 components per iteration
-      gl.FLOAT, // the data is 32bit floats
-      false, // don't normalize the data
-      0, // 0 = move forward size * sizeof(type) each iteration to get the next position
-      0 // start at the beginning of the buffer
-      );
-    });
+      _defineProperty(this, "_bind", function (gl, location, isIndex) {
+        var BUFFER_TYPE = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
+        gl.bindBuffer(BUFFER_TYPE, _this._compiledBuffer);
+        if (isIndex === 'index') return;
+        gl.enableVertexAttribArray(location); // TODO: Check for additional capabilities of vertexAttribPointer
 
-    this.array = array;
-    this.size = size;
-    this._compiledBuffer = null;
-  };
+        gl.vertexAttribPointer(location, _this.size, // 2 components per iteration
+        gl.FLOAT, // the data is 32bit floats
+        false, // don't normalize the data
+        0, // 0 = move forward size * sizeof(type) each iteration to get the next position
+        0 // start at the beginning of the buffer
+        );
+      });
+
+      this.array = array;
+      this.size = size;
+      this._compiledBuffer = null;
+    }
+
+    return Attribute;
+  }();
 
   exports.shaders = shaders;
   exports.Renderer = Renderer;
