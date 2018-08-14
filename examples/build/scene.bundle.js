@@ -81,19 +81,19 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./examples/src/index.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./examples/src/scene.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./examples/src/index.js":
+/***/ "./examples/src/scene.js":
 /*!*******************************!*\
-  !*** ./examples/src/index.js ***!
+  !*** ./examples/src/scene.js ***!
   \*******************************/
-/*! no exports provided */
+/*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("throw new Error(\"Module build failed: Error: ENOENT: no such file or directory, open '/Users/alex2401/nextgl.js/examples/src/index.js'\");\n\n//# sourceURL=webpack:///./examples/src/index.js?");
+eval("const renderer = new NEXT.Renderer();\nrenderer.setSize(window.innerWidth, window.innerHeight);\ndocument.body.appendChild(renderer.canvas);\n\nconst scene = new NEXT.Scene();\n\nconst camera = new NEXT.Camera({\n  type: 'perspective',\n  aspect: window.innerWidth / window.innerHeight\n});\n\nconst sphereGeo = NEXT.Sphere.Geometry({radius: 1});\n\nconst sphere1 = new NEXT.Mesh(sphereGeo, {\n  shader: NEXT.shaders.default\n});\n\nvec3.set(sphere1.position, -4, 0, -10);\nsphere1.updateMatrix();\nscene.add(sphere1);\n\nconst sphere2 = new NEXT.Mesh(sphereGeo, {\n  shader: NEXT.shaders.default\n});\n\nvec3.set(sphere2.position, 4, 0, -10);\nsphere2.updateMatrix();\nscene.add(sphere2);\n\n\n// renderer.attach(sphere.program);\nrenderer.setScene(scene);\nrenderer.render(camera);\n\nwindow.renderer = renderer;\n\nconst shader = new NEXT.Shader(`\n  out vec3 color;\n\n  void main() {\n    [f lights]\n  }\n`);\n\nwindow.shader = shader;\n\nconsole.log(shader.assemble());\n\n// const sphereGeo = NEXT.Sphere.Geometry({\n//   radius: 1\n// });\n//\n// const mesh = new NEXT.Mesh(sphereGeo, {\n//   shader: NEXT.shaders.default\n// });\n\n// scene.add(mesh);\n\n\n//# sourceURL=webpack:///./examples/src/scene.js?");
 
 /***/ })
 

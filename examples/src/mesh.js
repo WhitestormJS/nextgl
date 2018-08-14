@@ -1,16 +1,14 @@
 import bunny from 'bunny';
+import makeNormals from 'normals';
 
-console.log(NEXT);
-console.log(bunny);
 const renderer = new NEXT.Renderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.canvas);
 
-console.log(bunny);
-
 const {vert, frag} = NEXT.shaders.test;
 
 const positions = new Float32Array(NEXT.Attribute.inlineArray(bunny.positions));
+const normals = new Float32Array(NEXT.Attribute.inlineArray(makeNormals.vertexNormals(bunny.cells, bunny.positions)));
 const cells = new Uint16Array(NEXT.Attribute.inlineArray(bunny.cells));
 
 const program = new NEXT.Program({
@@ -18,26 +16,10 @@ const program = new NEXT.Program({
   count: cells.length
 });
 
-// const positions = new Float32Array([
-//   0, 0, -1,
-//   0, 1, -1,
-//   1, 0, -1,
-// ]);
-
-const colors = new Float32Array([
-  1, 0, 0,
-  0, 1, 0,
-  0, 0, 1
-]);
-
-console.log(positions);
-console.log(cells);
-
 program.setIndex(new NEXT.Attribute(cells, 1));
 
-program.setAttribute('position', new NEXT.Attribute(
-  positions
-, 3));
+program.setAttribute('normal', new NEXT.Attribute(normals, 3));
+program.setAttribute('position', new NEXT.Attribute(positions, 3));
 
 program.uniforms = {
   bright: [0.2, 0.5],

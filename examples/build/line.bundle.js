@@ -81,19 +81,19 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./examples/src/index.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./examples/src/line.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./examples/src/index.js":
-/*!*******************************!*\
-  !*** ./examples/src/index.js ***!
-  \*******************************/
-/*! no exports provided */
+/***/ "./examples/src/line.js":
+/*!******************************!*\
+  !*** ./examples/src/line.js ***!
+  \******************************/
+/*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("throw new Error(\"Module build failed: Error: ENOENT: no such file or directory, open '/Users/alex2401/nextgl.js/examples/src/index.js'\");\n\n//# sourceURL=webpack:///./examples/src/index.js?");
+eval("// TODO: Make a better example\n\nconst renderer = new NEXT.Renderer();\nrenderer.setSize(window.innerWidth, window.innerHeight);\ndocument.body.appendChild(renderer.canvas);\n\nconst program = new NEXT.Program({\n  draw: 'lines',\n  count: 4\n});\n\nprogram.setAttribute('position', new NEXT.Attribute(new Float32Array([\n  // line 1\n  0, 0, -1, // eslint-disable-line\n  0.5, 0, -1, // eslint-disable-line\n  // line 2\n  0, 0.5, -1, // eslint-disable-line\n  0.5, 0.5, -1 // eslint-disable-line\n]), 3));\n\nprogram.uniforms = {};\n\nrenderer.attach(program);\nrenderer.render();\n\n\n//# sourceURL=webpack:///./examples/src/line.js?");
 
 /***/ })
 

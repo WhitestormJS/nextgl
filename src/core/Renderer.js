@@ -1,13 +1,32 @@
+const _locals = new WeakMap();
+
 export class Renderer {
   constructor(options = {}) {
     this.canvas = options instanceof HTMLCanvasElement ? options : (options.canvas || document.createElement('canvas'));
-    this.context = this.canvas.getContext('webgl2'); // TODO: Add webgl2 support check
+    const gl = this.context = this.canvas.getContext('webgl2'); // eslint-disable-line
+    // TODO: Add webgl2 support check
     this.clearColor = options.clearColor || [0, 0, 0, 0];
     this._programs = [];
+
+    gl.clearColor.apply(gl, this.clearColor); // eslint-disable-line
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
+
+    _locals.set(this, {
+      DRAW_CONSTANTS: {
+        lines: gl.LINES,
+        points: gl.POINTS,
+        triangles: gl.TRIANGLES
+      }
+    });
   }
 
   attach(program) {
-    program._compiledProgram = program._compile(this.context, this);
+    if (!program._compiledProgram)
+      program._compiledProgram = program._compile(this.context, this);
+
     this._programs.push(program);
   }
 
@@ -16,14 +35,22 @@ export class Renderer {
     this.canvas.height = height;
   }
 
-  render() {
-    const gl = this.context;
+  setScene(scene) {
+    scene.traverse(child => {
+      if (!child.isMesh) return;
 
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+      child.updateMatrix();
+      this.attach(child.program);
+      child.program.__scene = scene;
+    });
+  }
+
+  render(camera = null) {
+    const gl = this.context;
+    const {DRAW_CONSTANTS} = _locals.get(this);
 
     // Clear the canvas
-    gl.clearColor.apply(gl, this.clearColor);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     for (let i = 0, l = this._programs.length; i < l; i++) {
       const program = this._programs[i];
@@ -38,18 +65,26 @@ export class Renderer {
         const isMatrix = uniformName.indexOf('$') === 0;
 
         if (isMatrix) {
-          gl[`uniformMatrix${value.length === 4 ? 2 : (value.length === 9 ? 3 : 4)}fv`]
-            (gl.getUniformLocation(program._compiledProgram, uniformName.slice(1)), false, value);
+          gl[`uniformMatrix${value.length === 4 ? 2 : (value.length === 9 ? 3 : 4)}fv`](
+            gl.getUniformLocation(program._compiledProgram, uniformName.slice(1)),
+            false,
+            value
+          );
         } else {
-          gl[Array.isArray(value) ? `uniform${value.length}fv` : 'uniform1f']
-            (gl.getUniformLocation(program._compiledProgram, uniformName), value);
+          gl[Array.isArray(value) ? `uniform${value.length}fv` : 'uniform1f'](
+            gl.getUniformLocation(program._compiledProgram, uniformName),
+            value
+          );
         }
       }
 
+      if (camera)
+        gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, 'projectionMatrix'), false, camera.projectionMatrix);
+
       if (program.index)
-        gl.drawElements(gl.TRIANGLES, program.count, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(DRAW_CONSTANTS[program.draw], program.count, gl.UNSIGNED_SHORT, 0);
       else
-        gl.drawArrays(gl.TRIANGLES, 0, program.count);
+        gl.drawArrays(DRAW_CONSTANTS[program.draw], 0, program.count);
     }
   }
 }

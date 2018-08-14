@@ -23,7 +23,7 @@ export class Attribute {
   }
 
   _bind = (gl, location, isIndex) => {
-    const BUFFER_TYPE = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER
+    const BUFFER_TYPE = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
     gl.bindBuffer(BUFFER_TYPE, this._compiledBuffer);
 
     if (isIndex === 'index')
