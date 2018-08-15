@@ -16,7 +16,8 @@ export class Mesh extends Object3D {
       frag: options.shader.frag
     }, geometry);
 
-    this.program.uniforms = Object.assign({}, options.shader.uniforms, {
+    // console.log(options.shader.uniforms);
+    this.program.uniforms = Object.assign(options.shader.uniforms, {
       $modelMatrix: this.matrixWorld
     });
   }

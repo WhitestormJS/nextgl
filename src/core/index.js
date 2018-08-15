@@ -5,3 +5,4 @@ export * from './Object3D';
 export * from './Mesh';
 export * from './Scene';
 export * from './Camera';
+export * from './Texture';

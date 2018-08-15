@@ -14,9 +14,6 @@ module.exports = {
     frag: require('./lib/flat.frag'),
     uniforms: {
       u_diffuse: [1, 0, 0]
-    },
-    defines: {
-      USE_COLOR: true
     }
   },
   lambert: {
@@ -25,9 +22,6 @@ module.exports = {
     uniforms: {
       u_diffuse: [1, 0, 0],
       u_lightDir: [0, 0, 1]
-    },
-    defines: {
-      USE_COLOR: true
     }
   },
   chunks

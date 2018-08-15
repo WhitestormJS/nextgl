@@ -71,14 +71,24 @@ export class Renderer {
 
     for (let i = 0, l = this._programs.length; i < l; i++) {
       const program = this._programs[i];
-      const uniforms = Object.entries(program.uniforms);
+      const uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms));
 
       // Tell it to use our program (pair of shaders)
       gl.useProgram(program._compiledProgram);
       program._bind(gl);
 
       for (let k = 0, kl = uniforms.length; k < kl; k++) {
-        const [uniformName, value] = uniforms[k];
+        const [uniformName, descriptor] = uniforms[k];
+        const value = descriptor.value || descriptor.get();
+
+        if (!value) continue;
+
+        if (value.isTexture) {
+          if (!value._compiledTexture) value._compile(gl);
+          value._bind(gl);
+          gl.uniform1i(gl.getUniformLocation(program._compiledProgram, uniformName), 0);
+          continue;
+        }
 
         const isMatrix = uniformName.indexOf('$') === 0;
 

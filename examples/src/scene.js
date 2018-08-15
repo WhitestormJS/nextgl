@@ -11,23 +11,46 @@ const camera = new NEXT.Camera({
   aspect: window.innerWidth / window.innerHeight
 });
 
-const material = new NEXT.LambertMaterial();
+const img = new Image();
+img.src = './assets/texture.png';
 
-const sphere1 = new NEXT.Sphere({
-  radius: 1,
-  shader: material
-});
+// img.onload = () => {
+//   const material = new NEXT.LambertMaterial({
+//     map: new NEXT.Texture(img)
+//   });
+//
+//   const sphere1 = new NEXT.Sphere({
+//     radius: 1,
+//     shader: material
+//   });
+//
+//   vec3.set(sphere1.position, -4, 0, -10);
+//   scene.add(sphere1);
+// };
 
-vec3.set(sphere1.position, -4, 0, -10);
-scene.add(sphere1);
+// setTimeout(() => {
+  const material = new NEXT.LambertMaterial({
+    // map: new NEXT.Texture(img)
+  });
 
-const sphere2 = new NEXT.Sphere({
-  radius: 1,
-  shader: material
-});
+  const sphere1 = new NEXT.Sphere({
+    radius: 1,
+    shader: material
+  });
 
-vec3.set(sphere2.position, 0, 10, -10);
-sphere1.add(sphere2);
+  vec3.set(sphere1.position, -4, 0, -10);
+  scene.add(sphere1);
+// }, 0);
+
+
+
+// const sphere2 = new NEXT.Sphere({
+//   radius: 1,
+//   shader: material
+// });
+//
+// vec3.set(sphere2.position, 0, 10, -10);
+// sphere1.add(sphere2);
 
 // const plane = new NEXT.Plane({
 //   width: 10,
