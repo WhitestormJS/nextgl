@@ -19,7 +19,13 @@ export class Program {
       return shader;
 
     // TODO: Cleanup error logging + add troubleshooting
-    console.log(gl.getShaderInfoLog(shader));
+    console.warn(gl.getShaderInfoLog(shader));
+    console.warn(
+      source.split('\n')
+        .map((line, i) => `${i < 9 ? '0' : ''}${i+1}:  ${line}`)
+        .join('\n')
+    );
+
     gl.deleteShader(shader);
   }
 
@@ -93,7 +99,7 @@ export class Program {
     const vao = _geometryRefs.get(this);
 
     if (!vao._compiledVAO) vao._compile(gl);
-    _geometryRefs.get(this)._bind(gl);
+    vao._bind(gl);
 
     // // index attribute
     if (this.index) {
@@ -113,5 +119,9 @@ export class Program {
     // TODO: Cleanup error logging + add troubleshooting
     console.log(gl.getProgramInfoLog(program));
     gl.deleteProgram(program);
+  }
+
+  _bind = gl => {
+    _geometryRefs.get(this)._bind(gl);
   }
 }

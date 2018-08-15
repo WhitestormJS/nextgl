@@ -7,6 +7,7 @@ export class Renderer {
     // TODO: Add webgl2 support check
     this.clearColor = options.clearColor || [0, 0, 0, 0];
     this._programs = [];
+    this._root_objects = new Set();
 
     gl.clearColor.apply(gl, this.clearColor); // eslint-disable-line
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -36,18 +37,34 @@ export class Renderer {
   }
 
   setScene(scene) {
+    this._root_objects.add(scene);
+
     scene.traverse(child => {
       if (!child.isMesh) return;
 
-      child.updateMatrix();
       this.attach(child.program);
       child.program.__scene = scene;
+    });
+
+    scene.on('hierarchy-update', ({object}) => {
+      if (!object.isMesh) return;
+
+      this.attach(object.program);
+      object.program.__scene = scene;
     });
   }
 
   render(camera = null) {
     const gl = this.context;
     const {DRAW_CONSTANTS} = _locals.get(this);
+
+    // TODO: add optimization feature to avoid iterating
+    this._root_objects.forEach(root => {
+      root.traverse(object => {
+        if (object.matrixAutoUpdate) object.updateMatrix();
+        if (object.matrixWorldAutoUpdate) object.updateMatrixWorld();
+      });
+    });
 
     // Clear the canvas
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -58,6 +75,7 @@ export class Renderer {
 
       // Tell it to use our program (pair of shaders)
       gl.useProgram(program._compiledProgram);
+      program._bind(gl);
 
       for (let k = 0, kl = uniforms.length; k < kl; k++) {
         const [uniformName, value] = uniforms[k];

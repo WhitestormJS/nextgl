@@ -16,8 +16,8 @@ export class Mesh extends Object3D {
       frag: options.shader.frag
     }, geometry);
 
-    this.program.uniforms = {
-      $modelMatrix: this.matrix
-    };
+    this.program.uniforms = Object.assign({}, options.shader.uniforms, {
+      $modelMatrix: this.matrixWorld
+    });
   }
 }

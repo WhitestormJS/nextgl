@@ -2,6 +2,8 @@ const renderer = new NEXT.Renderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.canvas);
 
+NEXT.Shader.collection = NEXT.shaders;
+
 const scene = new NEXT.Scene();
 
 const camera = new NEXT.Camera({
@@ -9,42 +11,38 @@ const camera = new NEXT.Camera({
   aspect: window.innerWidth / window.innerHeight
 });
 
-const sphereGeo = NEXT.Sphere.Geometry({radius: 1});
+const material = new NEXT.LambertMaterial();
 
-const sphere1 = new NEXT.Mesh(sphereGeo, {
-  shader: NEXT.shaders.default
+const sphere1 = new NEXT.Sphere({
+  radius: 1,
+  shader: material
 });
 
 vec3.set(sphere1.position, -4, 0, -10);
-sphere1.updateMatrix();
 scene.add(sphere1);
 
-const sphere2 = new NEXT.Mesh(sphereGeo, {
-  shader: NEXT.shaders.default
+const sphere2 = new NEXT.Sphere({
+  radius: 1,
+  shader: material
 });
 
-vec3.set(sphere2.position, 4, 0, -10);
-sphere2.updateMatrix();
-scene.add(sphere2);
+vec3.set(sphere2.position, 0, 10, -10);
+sphere1.add(sphere2);
 
+// const plane = new NEXT.Plane({
+//   width: 10,
+//   height: 10,
+//   shader: material
+// });
+// scene.add(plane);
+//
+// vec3.set(plane.position, -4, -4, -10);
+// quat.rotateX(plane.quaternion, plane.quaternion, -Math.PI / 2);
 
-// renderer.attach(sphere.program);
 renderer.setScene(scene);
 renderer.render(camera);
 
 window.renderer = renderer;
-
-const shader = new NEXT.Shader(`
-  out vec3 color;
-
-  void main() {
-    [f lights]
-  }
-`);
-
-window.shader = shader;
-
-console.log(shader.assemble());
 
 // const sphereGeo = NEXT.Sphere.Geometry({
 //   radius: 1

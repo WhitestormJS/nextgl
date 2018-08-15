@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm run examples & cross-env FXGL_SERVE=true rollup -w -c --experimentalDynamicImport",
+    "start": "gulp watch-shader-chunks --silent & npm run examples & cross-env FXGL_SERVE=true rollup -w -c --experimentalDynamicImport",
     "build": "rollup -c --experimentalDynamicImport",
     "examples": "webpack --config ./examples/webpack.config.babel.js -w --display minimal"
   },
@@ -18,9 +18,15 @@
     "@babel/plugin-syntax-dynamic-import": "^7.0.0-rc.1",
     "@babel/preset-env": "^7.0.0-rc.1",
     "@babel/register": "^7.0.0-rc.1",
+    "angle-normals": "^1.0.0",
     "babel-eslint": "^8.2.6",
+    "bunny": "^1.0.1",
     "cross-env": "^5.2.0",
     "glob": "^7.1.2",
+    "gulp": "^3.9.1",
+    "gulp-cli": "^2.0.1",
+    "gulp-watch": "^5.0.1",
+    "normals": "^1.1.0",
     "rollup": "^0.64.1",
     "rollup-plugin-babel": "^4.0.0-beta.8",
     "rollup-plugin-commonjs": "^9.1.5",
@@ -30,13 +36,12 @@
     "rollup-watch": "^4.3.1",
     "webpack": "^4.16.5",
     "webpack-cli": "^3.1.0",
-    "xo": "^0.22.0",
-    "angle-normals": "^1.0.0",
-    "bunny": "^1.0.1",
-    "normals": "^1.1.0"
+    "xo": "^0.22.0"
   },
   "dependencies": {
     "gl-mat4": "^1.2.0",
+    "minivents": "^2.2.0",
+    "primitive-plane": "^2.0.0",
     "primitive-sphere": "^3.0.0"
   },
   "xo": {
