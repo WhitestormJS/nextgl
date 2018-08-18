@@ -1,6 +1,6 @@
 # nextgl
 
-# TODO
+## Progress / TODO
  - [x] Program API
  - [x] Scene API
    - Transforms / Matricies (hierarchy)
@@ -11,10 +11,18 @@
    - [ ] **Materials**
      - [ ] Lambert
      - [ ] Flat
- - [ ] Maps
+ - [ ] Maps (Textures)
    - [x] Texture
    - [x] FrameBuffer
    - [ ] DataTexture
    - [ ] DepthTexture
+   - [ ] VideoTexture
  - [ ] Lights
- - [ ] Shadowmapping
+   - [ ] PointLight
+   - [ ] DirectionalLight
+   - [ ] ...
+ - [ ] Shading
+   - [ ] Support lights
+   - [ ] Support shadowmaps
+   - [ ] Support reflections / specular
+ - [ ] Extended examples
