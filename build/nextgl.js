@@ -4,10 +4,16 @@
   (factory((global.NEXT = {})));
 }(this, (function (exports) { 'use strict';
 
-  var init_pars = "precision mediump float;\n#define GLSLIFY 1\nin vec4 position;\n\nuniform mat4 projectionMatrix;\nuniform mat4 modelMatrix;\n"; // eslint-disable-line
+  var init_pars = "precision mediump float;\n#define GLSLIFY 1\nin vec4 position;\n\nuniform mat4 projectionMatrix;\nuniform mat4 modelMatrix;\nuniform mat4 viewMatrix;\n"; // eslint-disable-line
 
   var init_pars$1 = /*#__PURE__*/Object.freeze({
     default: init_pars
+  });
+
+  var main = "#define GLSLIFY 1\n// placeholder\n"; // eslint-disable-line
+
+  var main$1 = /*#__PURE__*/Object.freeze({
+    default: main
   });
 
   var normal_pars = "#define GLSLIFY 1\nin vec3 normal;\nout vec3 v_normal;\n"; // eslint-disable-line
@@ -22,13 +28,19 @@
     default: normal
   });
 
-  var uv_pars = "#define GLSLIFY 1\n#ifdef USE_MAP\n  in vec2 uv;\n  out vec2 v_uv;\n#endif\n"; // eslint-disable-line
+  var pars = "#define GLSLIFY 1\n// placeholder\n"; // eslint-disable-line
+
+  var pars$1 = /*#__PURE__*/Object.freeze({
+    default: pars
+  });
+
+  var uv_pars = "#define GLSLIFY 1\n#if defined(USE_MAP) || defined(USE_UV)\n  in vec2 uv;\n  out vec2 v_uv;\n#endif\n"; // eslint-disable-line
 
   var uv_pars$1 = /*#__PURE__*/Object.freeze({
     default: uv_pars
   });
 
-  var uv = "#define GLSLIFY 1\nv_uv = uv;\n"; // eslint-disable-line
+  var uv = "#define GLSLIFY 1\n#if defined(USE_MAP) || defined(USE_UV)\n  v_uv = uv;\n  v_uv.y = 1.0 - v_uv.y;\n#endif\n"; // eslint-disable-line
 
   var uv$1 = /*#__PURE__*/Object.freeze({
     default: uv
@@ -64,19 +76,43 @@
     default: lambert_light
   });
 
+  var lights_pars = "#define GLSLIFY 1\n"; // eslint-disable-line
+
+  var lights_pars$1 = /*#__PURE__*/Object.freeze({
+    default: lights_pars
+  });
+
   var lights = "#define GLSLIFY 1\nfloat lightness = dot(dirLight.xyz, normal);\n\noutColor = vec4(color * lightness, 1);\n"; // eslint-disable-line
 
   var lights$1 = /*#__PURE__*/Object.freeze({
     default: lights
   });
 
-  var map_pars = "#define GLSLIFY 1\n#ifdef USE_MAP\n  uniform sampler2D u_map;\n#endif\n"; // eslint-disable-line
+  var directional_lights_pars = "#define GLSLIFY 1\n// uniform \n\nstruct DirectionalLight\n{\n  float direction;\n};\n"; // eslint-disable-line
+
+  var directional_lights_pars$1 = /*#__PURE__*/Object.freeze({
+    default: directional_lights_pars
+  });
+
+  var directional_lights = "#define GLSLIFY 1\n"; // eslint-disable-line
+
+  var directional_lights$1 = /*#__PURE__*/Object.freeze({
+    default: directional_lights
+  });
+
+  var main$2 = "#define GLSLIFY 1\n// placeholder\n"; // eslint-disable-line
+
+  var main$3 = /*#__PURE__*/Object.freeze({
+    default: main$2
+  });
+
+  var map_pars = "#define GLSLIFY 1\n#ifdef USE_MAP\n  uniform sampler2D map;\n#endif\n"; // eslint-disable-line
 
   var map_pars$1 = /*#__PURE__*/Object.freeze({
     default: map_pars
   });
 
-  var map = "#define GLSLIFY 1\n#ifdef USE_MAP\n  color = texture(u_map, v_uv).xyz;\n#endif\n"; // eslint-disable-line
+  var map = "#define GLSLIFY 1\n#ifdef USE_MAP\n  color = texture(map, v_uv).xyz;\n#endif\n"; // eslint-disable-line
 
   var map$1 = /*#__PURE__*/Object.freeze({
     default: map
@@ -94,7 +130,13 @@
     default: normal$2
   });
 
-  var uv_pars$2 = "#define GLSLIFY 1\n#ifdef USE_MAP\n  in vec2 v_uv;\n#endif\n"; // eslint-disable-line
+  var pars$2 = "#define GLSLIFY 1\n// placeholder\n"; // eslint-disable-line
+
+  var pars$3 = /*#__PURE__*/Object.freeze({
+    default: pars$2
+  });
+
+  var uv_pars$2 = "#define GLSLIFY 1\n#if defined(USE_MAP) || defined(USE_UV)\n  in vec2 v_uv;\n#endif\n"; // eslint-disable-line
 
   var uv_pars$3 = /*#__PURE__*/Object.freeze({
     default: uv_pars$2
@@ -102,54 +144,75 @@
 
   var require$$0 = ( init_pars$1 && init_pars ) || init_pars$1;
 
-  var require$$1 = ( normal_pars$1 && normal_pars ) || normal_pars$1;
+  var require$$1 = ( main$1 && main ) || main$1;
 
-  var require$$2 = ( normal$1 && normal ) || normal$1;
+  var require$$2 = ( normal_pars$1 && normal_pars ) || normal_pars$1;
 
-  var require$$3 = ( uv_pars$1 && uv_pars ) || uv_pars$1;
+  var require$$3 = ( normal$1 && normal ) || normal$1;
 
-  var require$$4 = ( uv$1 && uv ) || uv$1;
+  var require$$4 = ( pars$1 && pars ) || pars$1;
 
-  var require$$5 = ( color$1 && color ) || color$1;
+  var require$$5 = ( uv_pars$1 && uv_pars ) || uv_pars$1;
 
-  var require$$6 = ( init_pars$3 && init_pars$2 ) || init_pars$3;
+  var require$$6 = ( uv$1 && uv ) || uv$1;
 
-  var require$$7 = ( init$1 && init ) || init$1;
+  var require$$7 = ( color$1 && color ) || color$1;
 
-  var require$$8 = ( lambert_light_pars$1 && lambert_light_pars ) || lambert_light_pars$1;
+  var require$$8 = ( init_pars$3 && init_pars$2 ) || init_pars$3;
 
-  var require$$9 = ( lambert_light$1 && lambert_light ) || lambert_light$1;
+  var require$$9 = ( init$1 && init ) || init$1;
 
-  var require$$10 = ( lights$1 && lights ) || lights$1;
+  var require$$10 = ( lambert_light_pars$1 && lambert_light_pars ) || lambert_light_pars$1;
 
-  var require$$11 = ( map_pars$1 && map_pars ) || map_pars$1;
+  var require$$11 = ( lambert_light$1 && lambert_light ) || lambert_light$1;
 
-  var require$$12 = ( map$1 && map ) || map$1;
+  var require$$12 = ( lights_pars$1 && lights_pars ) || lights_pars$1;
 
-  var require$$13 = ( normal_pars$3 && normal_pars$2 ) || normal_pars$3;
+  var require$$13 = ( lights$1 && lights ) || lights$1;
 
-  var require$$14 = ( normal$3 && normal$2 ) || normal$3;
+  var require$$14 = ( directional_lights_pars$1 && directional_lights_pars ) || directional_lights_pars$1;
 
-  var require$$15 = ( uv_pars$3 && uv_pars$2 ) || uv_pars$3;
+  var require$$15 = ( directional_lights$1 && directional_lights ) || directional_lights$1;
+
+  var require$$16 = ( main$3 && main$2 ) || main$3;
+
+  var require$$17 = ( map_pars$1 && map_pars ) || map_pars$1;
+
+  var require$$18 = ( map$1 && map ) || map$1;
+
+  var require$$19 = ( normal_pars$3 && normal_pars$2 ) || normal_pars$3;
+
+  var require$$20 = ( normal$3 && normal$2 ) || normal$3;
+
+  var require$$21 = ( pars$3 && pars$2 ) || pars$3;
+
+  var require$$22 = ( uv_pars$3 && uv_pars$2 ) || uv_pars$3;
 
   // This file is autogenerated.
   var chunks = {
     v_init_pars: require$$0,
-    v_normal_pars: require$$1,
-    v_normal: require$$2,
-    v_uv_pars: require$$3,
-    v_uv: require$$4,
-    f_color: require$$5,
-    f_init_pars: require$$6,
-    f_init: require$$7,
-    f_lambert_light_pars: require$$8,
-    f_lambert_light: require$$9,
-    f_lights: require$$10,
-    f_map_pars: require$$11,
-    f_map: require$$12,
-    f_normal_pars: require$$13,
-    f_normal: require$$14,
-    f_uv_pars: require$$15
+    v_main: require$$1,
+    v_normal_pars: require$$2,
+    v_normal: require$$3,
+    v_pars: require$$4,
+    v_uv_pars: require$$5,
+    v_uv: require$$6,
+    f_color: require$$7,
+    f_init_pars: require$$8,
+    f_init: require$$9,
+    f_lambert_light_pars: require$$10,
+    f_lambert_light: require$$11,
+    f_lights_pars: require$$12,
+    f_lights: require$$13,
+    f_directional_lights_pars: require$$14,
+    f_directional_lights: require$$15,
+    f_main: require$$16,
+    f_map_pars: require$$17,
+    f_map: require$$18,
+    f_normal_pars: require$$19,
+    f_normal: require$$20,
+    f_pars: require$$21,
+    f_uv_pars: require$$22
   };
 
   var vertDefault = "#version 300 es\n\nprecision mediump float;\n#define GLSLIFY 1\nin vec4 position;\n\nuniform mat4 projectionMatrix;\nuniform mat4 modelMatrix;\n\nvoid main() {\n  gl_Position = projectionMatrix * modelMatrix * position; // projectionMatrix *\n  // gl_Position = vec4(position, 1.0);\n}\n"; // eslint-disable-line
@@ -176,19 +239,19 @@
     default: test$2
   });
 
-  var flat = "#define GLSLIFY 1\n[v init_pars]\n\nvoid main() {\n  gl_Position = projectionMatrix * modelMatrix * position;\n}\n"; // eslint-disable-line
+  var flat = "#define GLSLIFY 1\n[v init_pars]\n[v normal_pars]\n[v uv_pars]\n\n[v pars]\n\nvoid main() {\n  [v normal]\n  [v uv]\n\n  [v main]\n\n  gl_Position = projectionMatrix * viewMatrix * modelMatrix * position;\n}\n"; // eslint-disable-line
 
   var flat$1 = /*#__PURE__*/Object.freeze({
     default: flat
   });
 
-  var flat$2 = "precision mediump float;\n#define GLSLIFY 1\nout vec4 outColor;\n\n[f init_pars]\n\nvoid main() {\n  [f init]\n\n  outColor = vec4(color, 1.0);\n}\n"; // eslint-disable-line
+  var flat$2 = "precision mediump float;\n#define GLSLIFY 1\nout vec4 outColor;\n\n[f init_pars]\n[f normal_pars]\n[f uv_pars]\n[f map_pars]\n\n[f pars]\n\nvoid main() {\n  [f init]\n  [f normal]\n  [f map]\n\n  [f main]\n\n  outColor = vec4(color, 1.0);\n}\n"; // eslint-disable-line
 
   var flat$3 = /*#__PURE__*/Object.freeze({
     default: flat$2
   });
 
-  var lambert = "#define GLSLIFY 1\n[v init_pars]\n[v normal_pars]\n[v uv_pars]\n\nvoid main() {\n  [v normal]\n  [v uv]\n\n  gl_Position = projectionMatrix * modelMatrix * position;\n}\n"; // eslint-disable-line
+  var lambert = "#define GLSLIFY 1\n[v init_pars]\n[v normal_pars]\n[v uv_pars]\n\nvoid main() {\n  [v normal]\n  [v uv]\n\n  gl_Position = projectionMatrix * viewMatrix * modelMatrix * position;\n}\n"; // eslint-disable-line
 
   var lambert$1 = /*#__PURE__*/Object.freeze({
     default: lambert
@@ -243,6 +306,216 @@
     chunks: chunks
   };
 
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  function _objectSpread(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i] != null ? arguments[i] : {};
+      var ownKeys = Object.keys(source);
+
+      if (typeof Object.getOwnPropertySymbols === 'function') {
+        ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
+          return Object.getOwnPropertyDescriptor(source, sym).enumerable;
+        }));
+      }
+
+      ownKeys.forEach(function (key) {
+        _defineProperty(target, key, source[key]);
+      });
+    }
+
+    return target;
+  }
+
+  function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf(subClass, superClass);
+  }
+
+  function _getPrototypeOf(o) {
+    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf(o);
+  }
+
+  function _setPrototypeOf(o, p) {
+    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf(o, p);
+  }
+
+  function _assertThisInitialized(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _possibleConstructorReturn(self, call) {
+    if (call && (typeof call === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized(self);
+  }
+
+  function _superPropBase(object, property) {
+    while (!Object.prototype.hasOwnProperty.call(object, property)) {
+      object = _getPrototypeOf(object);
+      if (object === null) break;
+    }
+
+    return object;
+  }
+
+  function _get(target, property, receiver) {
+    if (typeof Reflect !== "undefined" && Reflect.get) {
+      _get = Reflect.get;
+    } else {
+      _get = function _get(target, property, receiver) {
+        var base = _superPropBase(target, property);
+
+        if (!base) return;
+        var desc = Object.getOwnPropertyDescriptor(base, property);
+
+        if (desc.get) {
+          return desc.get.call(receiver);
+        }
+
+        return desc.value;
+      };
+    }
+
+    return _get(target, property, receiver || target);
+  }
+
+  function _slicedToArray(arr, i) {
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+  }
+
+  function _toConsumableArray(arr) {
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+  }
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+      return arr2;
+    }
+  }
+
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+
+  function _iterableToArray(iter) {
+    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+  }
+
+  function _iterableToArrayLimit(arr, i) {
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance");
+  }
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  }
+
+  function createCommonjsModule(fn, module) {
+  	return module = { exports: {} }, fn(module, module.exports), module.exports;
+  }
+
+  var _global = createCommonjsModule(function (module) {
+  // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+  var global = module.exports = typeof window != 'undefined' && window.Math == Math ? window : typeof self != 'undefined' && self.Math == Math ? self // eslint-disable-next-line no-new-func
+  : Function('return this')();
+  if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
+  });
+
+  var _core = createCommonjsModule(function (module) {
+  var core = module.exports = {
+    version: '2.5.7'
+  };
+  if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
+  });
+  var _core_1 = _core.version;
+
   var _isObject = function (it) {
     return typeof it === 'object' ? it !== null : typeof it === 'function';
   };
@@ -267,17 +540,6 @@
         return 7;
       }
     }).a != 7;
-  });
-
-  function createCommonjsModule(fn, module) {
-  	return module = { exports: {} }, fn(module, module.exports), module.exports;
-  }
-
-  var _global = createCommonjsModule(function (module) {
-  // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
-  var global = module.exports = typeof window != 'undefined' && window.Math == Math ? window : typeof self != 'undefined' && self.Math == Math ? self // eslint-disable-next-line no-new-func
-  : Function('return this')();
-  if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
   });
 
   var document$1 = _global.document; // typeof document.createElement is 'object' in old IE
@@ -352,20 +614,12 @@
     return hasOwnProperty.call(it, key);
   };
 
-  var id = 0;
+  var id$1 = 0;
   var px = Math.random();
 
   var _uid = function (key) {
-    return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
+    return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id$1 + px).toString(36));
   };
-
-  var _core = createCommonjsModule(function (module) {
-  var core = module.exports = {
-    version: '2.5.7'
-  };
-  if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
-  });
-  var _core_1 = _core.version;
 
   var _redefine = createCommonjsModule(function (module) {
   var SRC = _uid('src');
@@ -399,312 +653,6 @@
     return typeof this == 'function' && this[SRC] || $toString.call(this);
   });
   });
-
-  // 7.2.1 RequireObjectCoercible(argument)
-  var _defined = function (it) {
-    if (it == undefined) throw TypeError("Can't call method on  " + it);
-    return it;
-  };
-
-  var _library = false;
-
-  var _shared = createCommonjsModule(function (module) {
-  var SHARED = '__core-js_shared__';
-  var store = _global[SHARED] || (_global[SHARED] = {});
-  (module.exports = function (key, value) {
-    return store[key] || (store[key] = value !== undefined ? value : {});
-  })('versions', []).push({
-    version: _core.version,
-    mode: _library ? 'pure' : 'global',
-    copyright: '© 2018 Denis Pushkarev (zloirock.ru)'
-  });
-  });
-
-  var _wks = createCommonjsModule(function (module) {
-  var store = _shared('wks');
-
-
-
-  var Symbol = _global.Symbol;
-
-  var USE_SYMBOL = typeof Symbol == 'function';
-
-  var $exports = module.exports = function (name) {
-    return store[name] || (store[name] = USE_SYMBOL && Symbol[name] || (USE_SYMBOL ? Symbol : _uid)('Symbol.' + name));
-  };
-
-  $exports.store = store;
-  });
-
-  var _fixReWks = function (KEY, length, exec) {
-    var SYMBOL = _wks(KEY);
-    var fns = exec(_defined, SYMBOL, ''[KEY]);
-    var strfn = fns[0];
-    var rxfn = fns[1];
-
-    if (_fails(function () {
-      var O = {};
-
-      O[SYMBOL] = function () {
-        return 7;
-      };
-
-      return ''[KEY](O) != 7;
-    })) {
-      _redefine(String.prototype, KEY, strfn);
-      _hide(RegExp.prototype, SYMBOL, length == 2 // 21.2.5.8 RegExp.prototype[@@replace](string, replaceValue)
-      // 21.2.5.11 RegExp.prototype[@@split](string, limit)
-      ? function (string, arg) {
-        return rxfn.call(string, this, arg);
-      } // 21.2.5.6 RegExp.prototype[@@match](string)
-      // 21.2.5.9 RegExp.prototype[@@search](string)
-      : function (string) {
-        return rxfn.call(string, this);
-      });
-    }
-  };
-
-  var toString = {}.toString;
-
-  var _cof = function (it) {
-    return toString.call(it).slice(8, -1);
-  };
-
-  // 7.2.8 IsRegExp(argument)
-
-
-
-
-  var MATCH = _wks('match');
-
-  var _isRegexp = function (it) {
-    var isRegExp;
-    return _isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : _cof(it) == 'RegExp');
-  };
-
-  // @@split logic
-  _fixReWks('split', 2, function (defined, SPLIT, $split) {
-
-    var isRegExp = _isRegexp;
-
-    var _split = $split;
-    var $push = [].push;
-    var $SPLIT = 'split';
-    var LENGTH = 'length';
-    var LAST_INDEX = 'lastIndex';
-
-    if ('abbc'[$SPLIT](/(b)*/)[1] == 'c' || 'test'[$SPLIT](/(?:)/, -1)[LENGTH] != 4 || 'ab'[$SPLIT](/(?:ab)*/)[LENGTH] != 2 || '.'[$SPLIT](/(.?)(.?)/)[LENGTH] != 4 || '.'[$SPLIT](/()()/)[LENGTH] > 1 || ''[$SPLIT](/.?/)[LENGTH]) {
-      var NPCG = /()??/.exec('')[1] === undefined; // nonparticipating capturing group
-      // based on es5-shim implementation, need to rework it
-
-      $split = function (separator, limit) {
-        var string = String(this);
-        if (separator === undefined && limit === 0) return []; // If `separator` is not a regex, use native split
-
-        if (!isRegExp(separator)) return _split.call(string, separator, limit);
-        var output = [];
-        var flags = (separator.ignoreCase ? 'i' : '') + (separator.multiline ? 'm' : '') + (separator.unicode ? 'u' : '') + (separator.sticky ? 'y' : '');
-        var lastLastIndex = 0;
-        var splitLimit = limit === undefined ? 4294967295 : limit >>> 0; // Make `global` and avoid `lastIndex` issues by working with a copy
-
-        var separatorCopy = new RegExp(separator.source, flags + 'g');
-        var separator2, match, lastIndex, lastLength, i; // Doesn't need flags gy, but they don't hurt
-
-        if (!NPCG) separator2 = new RegExp('^' + separatorCopy.source + '$(?!\\s)', flags);
-
-        while (match = separatorCopy.exec(string)) {
-          // `separatorCopy.lastIndex` is not reliable cross-browser
-          lastIndex = match.index + match[0][LENGTH];
-
-          if (lastIndex > lastLastIndex) {
-            output.push(string.slice(lastLastIndex, match.index)); // Fix browsers whose `exec` methods don't consistently return `undefined` for NPCG
-            // eslint-disable-next-line no-loop-func
-
-            if (!NPCG && match[LENGTH] > 1) match[0].replace(separator2, function () {
-              for (i = 1; i < arguments[LENGTH] - 2; i++) if (arguments[i] === undefined) match[i] = undefined;
-            });
-            if (match[LENGTH] > 1 && match.index < string[LENGTH]) $push.apply(output, match.slice(1));
-            lastLength = match[0][LENGTH];
-            lastLastIndex = lastIndex;
-            if (output[LENGTH] >= splitLimit) break;
-          }
-
-          if (separatorCopy[LAST_INDEX] === match.index) separatorCopy[LAST_INDEX]++; // Avoid an infinite loop
-        }
-
-        if (lastLastIndex === string[LENGTH]) {
-          if (lastLength || !separatorCopy.test('')) output.push('');
-        } else output.push(string.slice(lastLastIndex));
-
-        return output[LENGTH] > splitLimit ? output.slice(0, splitLimit) : output;
-      }; // Chakra, V8
-
-    } else if ('0'[$SPLIT](undefined, 0)[LENGTH]) {
-      $split = function (separator, limit) {
-        return separator === undefined && limit === 0 ? [] : _split.call(this, separator, limit);
-      };
-    } // 21.1.3.17 String.prototype.split(separator, limit)
-
-
-    return [function split(separator, limit) {
-      var O = defined(this);
-      var fn = separator == undefined ? undefined : separator[SPLIT];
-      return fn !== undefined ? fn.call(separator, O, limit) : $split.call(String(O), separator, limit);
-    }, $split];
-  });
-
-  // @@replace logic
-  _fixReWks('replace', 2, function (defined, REPLACE, $replace) {
-    // 21.1.3.14 String.prototype.replace(searchValue, replaceValue)
-    return [function replace(searchValue, replaceValue) {
-
-      var O = defined(this);
-      var fn = searchValue == undefined ? undefined : searchValue[REPLACE];
-      return fn !== undefined ? fn.call(searchValue, O, replaceValue) : $replace.call(String(O), searchValue, replaceValue);
-    }, $replace];
-  });
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  function _defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  function _createClass(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties(Constructor, staticProps);
-    return Constructor;
-  }
-
-  function _defineProperty(obj, key, value) {
-    if (key in obj) {
-      Object.defineProperty(obj, key, {
-        value: value,
-        enumerable: true,
-        configurable: true,
-        writable: true
-      });
-    } else {
-      obj[key] = value;
-    }
-
-    return obj;
-  }
-
-  function _inherits(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function");
-    }
-
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) _setPrototypeOf(subClass, superClass);
-  }
-
-  function _getPrototypeOf(o) {
-    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
-      return o.__proto__ || Object.getPrototypeOf(o);
-    };
-    return _getPrototypeOf(o);
-  }
-
-  function _setPrototypeOf(o, p) {
-    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-      o.__proto__ = p;
-      return o;
-    };
-
-    return _setPrototypeOf(o, p);
-  }
-
-  function _assertThisInitialized(self) {
-    if (self === void 0) {
-      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }
-
-    return self;
-  }
-
-  function _possibleConstructorReturn(self, call) {
-    if (call && (typeof call === "object" || typeof call === "function")) {
-      return call;
-    }
-
-    return _assertThisInitialized(self);
-  }
-
-  function _slicedToArray(arr, i) {
-    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
-  }
-
-  function _toConsumableArray(arr) {
-    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
-  }
-
-  function _arrayWithoutHoles(arr) {
-    if (Array.isArray(arr)) {
-      for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-      return arr2;
-    }
-  }
-
-  function _arrayWithHoles(arr) {
-    if (Array.isArray(arr)) return arr;
-  }
-
-  function _iterableToArray(iter) {
-    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
-  }
-
-  function _iterableToArrayLimit(arr, i) {
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"] != null) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
-  function _nonIterableSpread() {
-    throw new TypeError("Invalid attempt to spread non-iterable instance");
-  }
-
-  function _nonIterableRest() {
-    throw new TypeError("Invalid attempt to destructure non-iterable instance");
-  }
 
   var _aFunction = function (it) {
     if (typeof it != 'function') throw TypeError(it + ' is not a function!');
@@ -791,12 +739,24 @@
 
   var _export = $export;
 
+  var toString = {}.toString;
+
+  var _cof = function (it) {
+    return toString.call(it).slice(8, -1);
+  };
+
   // fallback for non-array-like ES3 and non-enumerable old V8 strings
    // eslint-disable-next-line no-prototype-builtins
 
 
   var _iobject = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
     return _cof(it) == 'String' ? it.split('') : Object(it);
+  };
+
+  // 7.2.1 RequireObjectCoercible(argument)
+  var _defined = function (it) {
+    if (it == undefined) throw TypeError("Can't call method on  " + it);
+    return it;
   };
 
   // to indexed object, toObject with fallback for non-array-like ES3 strings
@@ -859,6 +819,20 @@
       return !IS_INCLUDES && -1;
     };
   };
+
+  var _library = false;
+
+  var _shared = createCommonjsModule(function (module) {
+  var SHARED = '__core-js_shared__';
+  var store = _global[SHARED] || (_global[SHARED] = {});
+  (module.exports = function (key, value) {
+    return store[key] || (store[key] = value !== undefined ? value : {});
+  })('versions', []).push({
+    version: _core.version,
+    mode: _library ? 'pure' : 'global',
+    copyright: '© 2018 Denis Pushkarev (zloirock.ru)'
+  });
+  });
 
   var shared = _shared('keys');
 
@@ -988,6 +962,144 @@
 
   _export(_export.S + _export.F, 'Object', {
     assign: _objectAssign
+  });
+
+  var _wks = createCommonjsModule(function (module) {
+  var store = _shared('wks');
+
+
+
+  var Symbol = _global.Symbol;
+
+  var USE_SYMBOL = typeof Symbol == 'function';
+
+  var $exports = module.exports = function (name) {
+    return store[name] || (store[name] = USE_SYMBOL && Symbol[name] || (USE_SYMBOL ? Symbol : _uid)('Symbol.' + name));
+  };
+
+  $exports.store = store;
+  });
+
+  var _fixReWks = function (KEY, length, exec) {
+    var SYMBOL = _wks(KEY);
+    var fns = exec(_defined, SYMBOL, ''[KEY]);
+    var strfn = fns[0];
+    var rxfn = fns[1];
+
+    if (_fails(function () {
+      var O = {};
+
+      O[SYMBOL] = function () {
+        return 7;
+      };
+
+      return ''[KEY](O) != 7;
+    })) {
+      _redefine(String.prototype, KEY, strfn);
+      _hide(RegExp.prototype, SYMBOL, length == 2 // 21.2.5.8 RegExp.prototype[@@replace](string, replaceValue)
+      // 21.2.5.11 RegExp.prototype[@@split](string, limit)
+      ? function (string, arg) {
+        return rxfn.call(string, this, arg);
+      } // 21.2.5.6 RegExp.prototype[@@match](string)
+      // 21.2.5.9 RegExp.prototype[@@search](string)
+      : function (string) {
+        return rxfn.call(string, this);
+      });
+    }
+  };
+
+  // 7.2.8 IsRegExp(argument)
+
+
+
+
+  var MATCH = _wks('match');
+
+  var _isRegexp = function (it) {
+    var isRegExp;
+    return _isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : _cof(it) == 'RegExp');
+  };
+
+  // @@split logic
+  _fixReWks('split', 2, function (defined, SPLIT, $split) {
+
+    var isRegExp = _isRegexp;
+
+    var _split = $split;
+    var $push = [].push;
+    var $SPLIT = 'split';
+    var LENGTH = 'length';
+    var LAST_INDEX = 'lastIndex';
+
+    if ('abbc'[$SPLIT](/(b)*/)[1] == 'c' || 'test'[$SPLIT](/(?:)/, -1)[LENGTH] != 4 || 'ab'[$SPLIT](/(?:ab)*/)[LENGTH] != 2 || '.'[$SPLIT](/(.?)(.?)/)[LENGTH] != 4 || '.'[$SPLIT](/()()/)[LENGTH] > 1 || ''[$SPLIT](/.?/)[LENGTH]) {
+      var NPCG = /()??/.exec('')[1] === undefined; // nonparticipating capturing group
+      // based on es5-shim implementation, need to rework it
+
+      $split = function (separator, limit) {
+        var string = String(this);
+        if (separator === undefined && limit === 0) return []; // If `separator` is not a regex, use native split
+
+        if (!isRegExp(separator)) return _split.call(string, separator, limit);
+        var output = [];
+        var flags = (separator.ignoreCase ? 'i' : '') + (separator.multiline ? 'm' : '') + (separator.unicode ? 'u' : '') + (separator.sticky ? 'y' : '');
+        var lastLastIndex = 0;
+        var splitLimit = limit === undefined ? 4294967295 : limit >>> 0; // Make `global` and avoid `lastIndex` issues by working with a copy
+
+        var separatorCopy = new RegExp(separator.source, flags + 'g');
+        var separator2, match, lastIndex, lastLength, i; // Doesn't need flags gy, but they don't hurt
+
+        if (!NPCG) separator2 = new RegExp('^' + separatorCopy.source + '$(?!\\s)', flags);
+
+        while (match = separatorCopy.exec(string)) {
+          // `separatorCopy.lastIndex` is not reliable cross-browser
+          lastIndex = match.index + match[0][LENGTH];
+
+          if (lastIndex > lastLastIndex) {
+            output.push(string.slice(lastLastIndex, match.index)); // Fix browsers whose `exec` methods don't consistently return `undefined` for NPCG
+            // eslint-disable-next-line no-loop-func
+
+            if (!NPCG && match[LENGTH] > 1) match[0].replace(separator2, function () {
+              for (i = 1; i < arguments[LENGTH] - 2; i++) if (arguments[i] === undefined) match[i] = undefined;
+            });
+            if (match[LENGTH] > 1 && match.index < string[LENGTH]) $push.apply(output, match.slice(1));
+            lastLength = match[0][LENGTH];
+            lastLastIndex = lastIndex;
+            if (output[LENGTH] >= splitLimit) break;
+          }
+
+          if (separatorCopy[LAST_INDEX] === match.index) separatorCopy[LAST_INDEX]++; // Avoid an infinite loop
+        }
+
+        if (lastLastIndex === string[LENGTH]) {
+          if (lastLength || !separatorCopy.test('')) output.push('');
+        } else output.push(string.slice(lastLastIndex));
+
+        return output[LENGTH] > splitLimit ? output.slice(0, splitLimit) : output;
+      }; // Chakra, V8
+
+    } else if ('0'[$SPLIT](undefined, 0)[LENGTH]) {
+      $split = function (separator, limit) {
+        return separator === undefined && limit === 0 ? [] : _split.call(this, separator, limit);
+      };
+    } // 21.1.3.17 String.prototype.split(separator, limit)
+
+
+    return [function split(separator, limit) {
+      var O = defined(this);
+      var fn = separator == undefined ? undefined : separator[SPLIT];
+      return fn !== undefined ? fn.call(separator, O, limit) : $split.call(String(O), separator, limit);
+    }, $split];
+  });
+
+  // @@replace logic
+  _fixReWks('replace', 2, function (defined, REPLACE, $replace) {
+    // 21.1.3.14 String.prototype.replace(searchValue, replaceValue)
+    return [function replace(searchValue, replaceValue) {
+
+      var O = defined(this);
+      var fn = searchValue == undefined ? undefined : searchValue[REPLACE];
+      return fn !== undefined ? fn.call(searchValue, O, replaceValue) : $replace.call(String(O), searchValue, replaceValue);
+    }, $replace];
   });
 
   // 22.1.3.31 Array.prototype[@@unscopables]
@@ -1942,6 +2054,23 @@
   var Shader =
   /*#__PURE__*/
   function () {
+    _createClass(Shader, null, [{
+      key: "parse",
+      value: function parse(raw, modifiers) {
+        return raw.replace(/\n(\s*)\[([fv])\s([aA-zZ]*)\]/g, function (match, spaces, shaderType, chunkName) {
+          chunkName = shaderType + '_' + chunkName;
+          var chunk = Shader.collection.chunks[chunkName].split('\n').slice(1).join('\n');
+          chunk = chunkName in modifiers ? modifiers[chunkName](chunk, function (start, end) {
+            return chunk.split('\n').slice(start, end).join('\n');
+          }) : chunk;
+          chunk = Shader.parse(chunk, modifiers);
+          return "\n".concat(spaces, "// [").concat(chunkName, "] \n") + chunk.split('\n').map(function (str) {
+            return spaces.slice(1) + str;
+          }).join('\n');
+        });
+      }
+    }]);
+
     function Shader(raw) {
       var modifiers = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
@@ -1962,8 +2091,6 @@
     }, {
       key: "assemble",
       value: function assemble() {
-        var _this = this;
-
         var useCached = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
         var HEAD = '#version 300 es\n\n';
         var defines = Object.entries(this.defines).map(function (_ref) {
@@ -1971,20 +2098,11 @@
               name = _ref2[0],
               value = _ref2[1];
 
-          return "#define ".concat(name, " ").concat(value);
+          return value ? "#define ".concat(name, " ").concat(value) : '';
         }).join('\n');
 
         if (!useCached || !cache.get(this)) {
-          var staticPart = this.raw.replace(/(\s*)\[([fv])\s([aA-zZ]*)\]/g, function (match, spaces, shaderType, chunkName) {
-            chunkName = shaderType + '_' + chunkName;
-            var chunk = Shader.collection.chunks[chunkName].split('\n').slice(1).join('\n');
-            chunk = chunkName in _this.modifiers ? _this.modifiers[chunkName](chunk, function (start, end) {
-              return chunk.split('\n').slice(start, end).join('\n');
-            }) : chunk;
-            return "\n".concat(spaces, "// [").concat(chunkName, "] \n") + chunk.split('\n').map(function (str) {
-              return spaces.slice(1) + str;
-            }).join('\n');
-          });
+          var staticPart = Shader.parse(this.raw, this.modifiers);
 
           _cache.set(this, staticPart);
 
@@ -2006,20 +2124,34 @@
   /*#__PURE__*/
   function () {
     function Material() {
+      var _this = this;
+
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
       _classCallCheck(this, Material);
 
       options = Object.assign({
         type: 'flat',
-        defines: {}
+        defines: {},
+        alias: [],
+        modifiers: {}
       }, options);
       var shader = Shader.collection[options.type];
       this.type = options.type;
-      this._vertexShader = new Shader(shader.vert).define(options.defines);
-      this._fragmentShader = new Shader(shader.frag).define(options.defines); // TODO: Make uniforms clone tool
+      this._vertexShader = new Shader(shader.vert, options.modifiers).define(options.defines);
+      this._fragmentShader = new Shader(shader.frag, options.modifiers).define(options.defines); // TODO: Make uniforms clone tool
 
       this.uniforms = Object.assign({}, shader.uniforms);
+      Object.defineProperties(this.uniforms, _objectSpread({}, options.alias.reduce(function (o, v) {
+        return Object.assign(o, _defineProperty({}, v, {
+          get: function get() {
+            return _this[v];
+          },
+          set: function set(input) {
+            _this[v] = input;
+          }
+        }));
+      }, {})));
     }
 
     _createClass(Material, [{
@@ -2037,17 +2169,615 @@
     return Material;
   }();
 
+  // 7.3.20 SpeciesConstructor(O, defaultConstructor)
+
+
+
+
+  var SPECIES$1 = _wks('species');
+
+  var _speciesConstructor = function (O, D) {
+    var C = _anObject(O).constructor;
+    var S;
+    return C === undefined || (S = _anObject(C)[SPECIES$1]) == undefined ? D : _aFunction(S);
+  };
+
+  // fast apply, http://jsperf.lnkit.com/fast-apply/5
+  var _invoke = function (fn, args, that) {
+    var un = that === undefined;
+
+    switch (args.length) {
+      case 0:
+        return un ? fn() : fn.call(that);
+
+      case 1:
+        return un ? fn(args[0]) : fn.call(that, args[0]);
+
+      case 2:
+        return un ? fn(args[0], args[1]) : fn.call(that, args[0], args[1]);
+
+      case 3:
+        return un ? fn(args[0], args[1], args[2]) : fn.call(that, args[0], args[1], args[2]);
+
+      case 4:
+        return un ? fn(args[0], args[1], args[2], args[3]) : fn.call(that, args[0], args[1], args[2], args[3]);
+    }
+
+    return fn.apply(that, args);
+  };
+
+  var process = _global.process;
+  var setTask = _global.setImmediate;
+  var clearTask = _global.clearImmediate;
+  var MessageChannel = _global.MessageChannel;
+  var Dispatch = _global.Dispatch;
+  var counter = 0;
+  var queue = {};
+  var ONREADYSTATECHANGE = 'onreadystatechange';
+  var defer, channel, port;
+
+  var run = function () {
+    var id = +this; // eslint-disable-next-line no-prototype-builtins
+
+    if (queue.hasOwnProperty(id)) {
+      var fn = queue[id];
+      delete queue[id];
+      fn();
+    }
+  };
+
+  var listener = function (event) {
+    run.call(event.data);
+  }; // Node.js 0.9+ & IE10+ has setImmediate, otherwise:
+
+
+  if (!setTask || !clearTask) {
+    setTask = function setImmediate(fn) {
+      var args = [];
+      var i = 1;
+
+      while (arguments.length > i) args.push(arguments[i++]);
+
+      queue[++counter] = function () {
+        // eslint-disable-next-line no-new-func
+        _invoke(typeof fn == 'function' ? fn : Function(fn), args);
+      };
+
+      defer(counter);
+      return counter;
+    };
+
+    clearTask = function clearImmediate(id) {
+      delete queue[id];
+    }; // Node.js 0.8-
+
+
+    if (_cof(process) == 'process') {
+      defer = function (id) {
+        process.nextTick(_ctx(run, id, 1));
+      }; // Sphere (JS game engine) Dispatch API
+
+    } else if (Dispatch && Dispatch.now) {
+      defer = function (id) {
+        Dispatch.now(_ctx(run, id, 1));
+      }; // Browsers with MessageChannel, includes WebWorkers
+
+    } else if (MessageChannel) {
+      channel = new MessageChannel();
+      port = channel.port2;
+      channel.port1.onmessage = listener;
+      defer = _ctx(port.postMessage, port, 1); // Browsers with postMessage, skip WebWorkers
+      // IE8 has postMessage, but it's sync & typeof its postMessage is 'object'
+    } else if (_global.addEventListener && typeof postMessage == 'function' && !_global.importScripts) {
+      defer = function (id) {
+        _global.postMessage(id + '', '*');
+      };
+
+      _global.addEventListener('message', listener, false); // IE8-
+    } else if (ONREADYSTATECHANGE in _domCreate('script')) {
+      defer = function (id) {
+        _html.appendChild(_domCreate('script'))[ONREADYSTATECHANGE] = function () {
+          _html.removeChild(this);
+          run.call(id);
+        };
+      }; // Rest old browsers
+
+    } else {
+      defer = function (id) {
+        setTimeout(_ctx(run, id, 1), 0);
+      };
+    }
+  }
+
+  var _task = {
+    set: setTask,
+    clear: clearTask
+  };
+
+  var macrotask = _task.set;
+
+  var Observer = _global.MutationObserver || _global.WebKitMutationObserver;
+  var process$1 = _global.process;
+  var Promise$1 = _global.Promise;
+  var isNode = _cof(process$1) == 'process';
+
+  var _microtask = function () {
+    var head, last, notify;
+
+    var flush = function () {
+      var parent, fn;
+      if (isNode && (parent = process$1.domain)) parent.exit();
+
+      while (head) {
+        fn = head.fn;
+        head = head.next;
+
+        try {
+          fn();
+        } catch (e) {
+          if (head) notify();else last = undefined;
+          throw e;
+        }
+      }
+
+      last = undefined;
+      if (parent) parent.enter();
+    }; // Node.js
+
+
+    if (isNode) {
+      notify = function () {
+        process$1.nextTick(flush);
+      }; // browsers with MutationObserver, except iOS Safari - https://github.com/zloirock/core-js/issues/339
+
+    } else if (Observer && !(_global.navigator && _global.navigator.standalone)) {
+      var toggle = true;
+      var node = document.createTextNode('');
+      new Observer(flush).observe(node, {
+        characterData: true
+      }); // eslint-disable-line no-new
+
+      notify = function () {
+        node.data = toggle = !toggle;
+      }; // environments with maybe non-completely correct, but existent Promise
+
+    } else if (Promise$1 && Promise$1.resolve) {
+      // Promise.resolve without an argument throws an error in LG WebOS 2
+      var promise = Promise$1.resolve(undefined);
+
+      notify = function () {
+        promise.then(flush);
+      }; // for other environments - macrotask based on:
+      // - setImmediate
+      // - MessageChannel
+      // - window.postMessag
+      // - onreadystatechange
+      // - setTimeout
+
+    } else {
+      notify = function () {
+        // strange IE + webpack dev server bug - use .call(global)
+        macrotask.call(_global, flush);
+      };
+    }
+
+    return function (fn) {
+      var task = {
+        fn: fn,
+        next: undefined
+      };
+      if (last) last.next = task;
+
+      if (!head) {
+        head = task;
+        notify();
+      }
+
+      last = task;
+    };
+  };
+
+  function PromiseCapability(C) {
+    var resolve, reject;
+    this.promise = new C(function ($$resolve, $$reject) {
+      if (resolve !== undefined || reject !== undefined) throw TypeError('Bad Promise constructor');
+      resolve = $$resolve;
+      reject = $$reject;
+    });
+    this.resolve = _aFunction(resolve);
+    this.reject = _aFunction(reject);
+  }
+
+  var f$4 = function (C) {
+    return new PromiseCapability(C);
+  };
+
+  var _newPromiseCapability = {
+  	f: f$4
+  };
+
+  var _perform = function (exec) {
+    try {
+      return {
+        e: false,
+        v: exec()
+      };
+    } catch (e) {
+      return {
+        e: true,
+        v: e
+      };
+    }
+  };
+
+  var navigator = _global.navigator;
+  var _userAgent = navigator && navigator.userAgent || '';
+
+  var _promiseResolve = function (C, x) {
+    _anObject(C);
+    if (_isObject(x) && x.constructor === C) return x;
+    var promiseCapability = _newPromiseCapability.f(C);
+    var resolve = promiseCapability.resolve;
+    resolve(x);
+    return promiseCapability.promise;
+  };
+
+  var SPECIES$2 = _wks('species');
+
+  var _setSpecies = function (KEY) {
+    var C = _global[KEY];
+    if (_descriptors && C && !C[SPECIES$2]) _objectDp.f(C, SPECIES$2, {
+      configurable: true,
+      get: function () {
+        return this;
+      }
+    });
+  };
+
+  var task = _task.set;
+
+  var microtask = _microtask();
+
+
+
+
+
+
+
+
+
+  var PROMISE = 'Promise';
+  var TypeError$1 = _global.TypeError;
+  var process$2 = _global.process;
+  var versions = process$2 && process$2.versions;
+  var v8 = versions && versions.v8 || '';
+  var $Promise = _global[PROMISE];
+  var isNode$1 = _classof(process$2) == 'process';
+
+  var empty = function () {
+    /* empty */
+  };
+
+  var Internal, newGenericPromiseCapability, OwnPromiseCapability, Wrapper;
+  var newPromiseCapability = newGenericPromiseCapability = _newPromiseCapability.f;
+  var USE_NATIVE = !!function () {
+    try {
+      // correct subclassing with @@species support
+      var promise = $Promise.resolve(1);
+
+      var FakePromise = (promise.constructor = {})[_wks('species')] = function (exec) {
+        exec(empty, empty);
+      }; // unhandled rejections tracking support, NodeJS Promise without it fails @@species test
+
+
+      return (isNode$1 || typeof PromiseRejectionEvent == 'function') && promise.then(empty) instanceof FakePromise // v8 6.6 (Node 10 and Chrome 66) have a bug with resolving custom thenables
+      // https://bugs.chromium.org/p/chromium/issues/detail?id=830565
+      // we can't detect it synchronously, so just check versions
+      && v8.indexOf('6.6') !== 0 && _userAgent.indexOf('Chrome/66') === -1;
+    } catch (e) {
+      /* empty */
+    }
+  }(); // helpers
+
+  var isThenable = function (it) {
+    var then;
+    return _isObject(it) && typeof (then = it.then) == 'function' ? then : false;
+  };
+
+  var notify = function (promise, isReject) {
+    if (promise._n) return;
+    promise._n = true;
+    var chain = promise._c;
+    microtask(function () {
+      var value = promise._v;
+      var ok = promise._s == 1;
+      var i = 0;
+
+      var run = function (reaction) {
+        var handler = ok ? reaction.ok : reaction.fail;
+        var resolve = reaction.resolve;
+        var reject = reaction.reject;
+        var domain = reaction.domain;
+        var result, then, exited;
+
+        try {
+          if (handler) {
+            if (!ok) {
+              if (promise._h == 2) onHandleUnhandled(promise);
+              promise._h = 1;
+            }
+
+            if (handler === true) result = value;else {
+              if (domain) domain.enter();
+              result = handler(value); // may throw
+
+              if (domain) {
+                domain.exit();
+                exited = true;
+              }
+            }
+
+            if (result === reaction.promise) {
+              reject(TypeError$1('Promise-chain cycle'));
+            } else if (then = isThenable(result)) {
+              then.call(result, resolve, reject);
+            } else resolve(result);
+          } else reject(value);
+        } catch (e) {
+          if (domain && !exited) domain.exit();
+          reject(e);
+        }
+      };
+
+      while (chain.length > i) run(chain[i++]); // variable length - can't use forEach
+
+
+      promise._c = [];
+      promise._n = false;
+      if (isReject && !promise._h) onUnhandled(promise);
+    });
+  };
+
+  var onUnhandled = function (promise) {
+    task.call(_global, function () {
+      var value = promise._v;
+      var unhandled = isUnhandled(promise);
+      var result, handler, console;
+
+      if (unhandled) {
+        result = _perform(function () {
+          if (isNode$1) {
+            process$2.emit('unhandledRejection', value, promise);
+          } else if (handler = _global.onunhandledrejection) {
+            handler({
+              promise: promise,
+              reason: value
+            });
+          } else if ((console = _global.console) && console.error) {
+            console.error('Unhandled promise rejection', value);
+          }
+        }); // Browsers should not trigger `rejectionHandled` event if it was handled here, NodeJS - should
+
+        promise._h = isNode$1 || isUnhandled(promise) ? 2 : 1;
+      }
+
+      promise._a = undefined;
+      if (unhandled && result.e) throw result.v;
+    });
+  };
+
+  var isUnhandled = function (promise) {
+    return promise._h !== 1 && (promise._a || promise._c).length === 0;
+  };
+
+  var onHandleUnhandled = function (promise) {
+    task.call(_global, function () {
+      var handler;
+
+      if (isNode$1) {
+        process$2.emit('rejectionHandled', promise);
+      } else if (handler = _global.onrejectionhandled) {
+        handler({
+          promise: promise,
+          reason: promise._v
+        });
+      }
+    });
+  };
+
+  var $reject = function (value) {
+    var promise = this;
+    if (promise._d) return;
+    promise._d = true;
+    promise = promise._w || promise; // unwrap
+
+    promise._v = value;
+    promise._s = 2;
+    if (!promise._a) promise._a = promise._c.slice();
+    notify(promise, true);
+  };
+
+  var $resolve = function (value) {
+    var promise = this;
+    var then;
+    if (promise._d) return;
+    promise._d = true;
+    promise = promise._w || promise; // unwrap
+
+    try {
+      if (promise === value) throw TypeError$1("Promise can't be resolved itself");
+
+      if (then = isThenable(value)) {
+        microtask(function () {
+          var wrapper = {
+            _w: promise,
+            _d: false
+          }; // wrap
+
+          try {
+            then.call(value, _ctx($resolve, wrapper, 1), _ctx($reject, wrapper, 1));
+          } catch (e) {
+            $reject.call(wrapper, e);
+          }
+        });
+      } else {
+        promise._v = value;
+        promise._s = 1;
+        notify(promise, false);
+      }
+    } catch (e) {
+      $reject.call({
+        _w: promise,
+        _d: false
+      }, e); // wrap
+    }
+  }; // constructor polyfill
+
+
+  if (!USE_NATIVE) {
+    // 25.4.3.1 Promise(executor)
+    $Promise = function Promise(executor) {
+      _anInstance(this, $Promise, PROMISE, '_h');
+      _aFunction(executor);
+      Internal.call(this);
+
+      try {
+        executor(_ctx($resolve, this, 1), _ctx($reject, this, 1));
+      } catch (err) {
+        $reject.call(this, err);
+      }
+    }; // eslint-disable-next-line no-unused-vars
+
+
+    Internal = function Promise(executor) {
+      this._c = []; // <- awaiting reactions
+
+      this._a = undefined; // <- checked in isUnhandled reactions
+
+      this._s = 0; // <- state
+
+      this._d = false; // <- done
+
+      this._v = undefined; // <- value
+
+      this._h = 0; // <- rejection state, 0 - default, 1 - handled, 2 - unhandled
+
+      this._n = false; // <- notify
+    };
+
+    Internal.prototype = _redefineAll($Promise.prototype, {
+      // 25.4.5.3 Promise.prototype.then(onFulfilled, onRejected)
+      then: function then(onFulfilled, onRejected) {
+        var reaction = newPromiseCapability(_speciesConstructor(this, $Promise));
+        reaction.ok = typeof onFulfilled == 'function' ? onFulfilled : true;
+        reaction.fail = typeof onRejected == 'function' && onRejected;
+        reaction.domain = isNode$1 ? process$2.domain : undefined;
+
+        this._c.push(reaction);
+
+        if (this._a) this._a.push(reaction);
+        if (this._s) notify(this, false);
+        return reaction.promise;
+      },
+      // 25.4.5.1 Promise.prototype.catch(onRejected)
+      'catch': function (onRejected) {
+        return this.then(undefined, onRejected);
+      }
+    });
+
+    OwnPromiseCapability = function () {
+      var promise = new Internal();
+      this.promise = promise;
+      this.resolve = _ctx($resolve, promise, 1);
+      this.reject = _ctx($reject, promise, 1);
+    };
+
+    _newPromiseCapability.f = newPromiseCapability = function (C) {
+      return C === $Promise || C === Wrapper ? new OwnPromiseCapability(C) : newGenericPromiseCapability(C);
+    };
+  }
+
+  _export(_export.G + _export.W + _export.F * !USE_NATIVE, {
+    Promise: $Promise
+  });
+
+  _setToStringTag($Promise, PROMISE);
+
+  _setSpecies(PROMISE);
+
+  Wrapper = _core[PROMISE]; // statics
+
+  _export(_export.S + _export.F * !USE_NATIVE, PROMISE, {
+    // 25.4.4.5 Promise.reject(r)
+    reject: function reject(r) {
+      var capability = newPromiseCapability(this);
+      var $$reject = capability.reject;
+      $$reject(r);
+      return capability.promise;
+    }
+  });
+  _export(_export.S + _export.F * (_library || !USE_NATIVE), PROMISE, {
+    // 25.4.4.6 Promise.resolve(x)
+    resolve: function resolve(x) {
+      return _promiseResolve(_library && this === Wrapper ? $Promise : this, x);
+    }
+  });
+  _export(_export.S + _export.F * !(USE_NATIVE && _iterDetect(function (iter) {
+    $Promise.all(iter)['catch'](empty);
+  })), PROMISE, {
+    // 25.4.4.1 Promise.all(iterable)
+    all: function all(iterable) {
+      var C = this;
+      var capability = newPromiseCapability(C);
+      var resolve = capability.resolve;
+      var reject = capability.reject;
+      var result = _perform(function () {
+        var values = [];
+        var index = 0;
+        var remaining = 1;
+        _forOf(iterable, false, function (promise) {
+          var $index = index++;
+          var alreadyCalled = false;
+          values.push(undefined);
+          remaining++;
+          C.resolve(promise).then(function (value) {
+            if (alreadyCalled) return;
+            alreadyCalled = true;
+            values[$index] = value;
+            --remaining || resolve(values);
+          }, reject);
+        });
+        --remaining || resolve(values);
+      });
+      if (result.e) reject(result.v);
+      return capability.promise;
+    },
+    // 25.4.4.4 Promise.race(iterable)
+    race: function race(iterable) {
+      var C = this;
+      var capability = newPromiseCapability(C);
+      var reject = capability.reject;
+      var result = _perform(function () {
+        _forOf(iterable, false, function (promise) {
+          C.resolve(promise).then(capability.resolve, reject);
+        });
+      });
+      if (result.e) reject(result.v);
+      return capability.promise;
+    }
+  });
+
   // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
 
 
   var hiddenKeys = _enumBugKeys.concat('length', 'prototype');
 
-  var f$4 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
+  var f$5 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
     return _objectKeysInternal(O, hiddenKeys);
   };
 
   var _objectGopn = {
-  	f: f$4
+  	f: f$5
   };
 
   // all object keys, includes non-enumerable and symbols
@@ -2097,18 +2827,6 @@
       return result;
     }
   });
-
-  var SPECIES$1 = _wks('species');
-
-  var _setSpecies = function (KEY) {
-    var C = _global[KEY];
-    if (_descriptors && C && !C[SPECIES$1]) _objectDp.f(C, SPECIES$1, {
-      configurable: true,
-      get: function () {
-        return this;
-      }
-    });
-  };
 
   var dP$1 = _objectDp.f;
 
@@ -2300,365 +3018,6 @@
       return _collectionStrong.def(_validateCollection(this, SET), value = value === 0 ? 0 : value, value);
     }
   }, _collectionStrong);
-
-  var _locals = new WeakMap();
-
-  var Renderer =
-  /*#__PURE__*/
-  function () {
-    function Renderer() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-      _classCallCheck(this, Renderer);
-
-      this.canvas = options instanceof HTMLCanvasElement ? options : options.canvas || document.createElement('canvas');
-      var gl = this.context = this.canvas.getContext('webgl2'); // eslint-disable-line
-      // TODO: Add webgl2 support check
-
-      this.clearColor = options.clearColor || [0, 0, 0, 0];
-      this._programs = [];
-      this._root_objects = new Set();
-      gl.clearColor.apply(gl, this.clearColor); // eslint-disable-line
-
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.enable(gl.DEPTH_TEST);
-      gl.enable(gl.CULL_FACE);
-
-      _locals.set(this, {
-        DRAW_CONSTANTS: {
-          lines: gl.LINES,
-          points: gl.POINTS,
-          triangles: gl.TRIANGLES
-        }
-      });
-    }
-
-    _createClass(Renderer, [{
-      key: "attach",
-      value: function attach(program) {
-        if (!program._compiledProgram) program._compiledProgram = program._compile(this.context, this);
-
-        this._programs.push(program);
-      }
-    }, {
-      key: "setSize",
-      value: function setSize(width, height) {
-        this.canvas.width = width;
-        this.canvas.height = height;
-      }
-    }, {
-      key: "setScene",
-      value: function setScene(scene) {
-        var _this = this;
-
-        this._root_objects.add(scene);
-
-        scene.traverse(function (child) {
-          if (!child.isMesh) return;
-
-          _this.attach(child.program);
-
-          child.program.__scene = scene;
-        });
-        scene.on('hierarchy-update', function (_ref) {
-          var object = _ref.object;
-          if (!object.isMesh) return;
-
-          _this.attach(object.program);
-
-          object.program.__scene = scene;
-        });
-      }
-    }, {
-      key: "render",
-      value: function render() {
-        var camera = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-        var gl = this.context;
-
-        var _locals$get = _locals.get(this),
-            DRAW_CONSTANTS = _locals$get.DRAW_CONSTANTS; // TODO: add optimization feature to avoid iterating
-
-
-        this._root_objects.forEach(function (root) {
-          root.traverse(function (object) {
-            if (object.matrixAutoUpdate) object.updateMatrix();
-            if (object.matrixWorldAutoUpdate) object.updateMatrixWorld();
-          });
-        }); // Clear the canvas
-
-
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
-        for (var i = 0, l = this._programs.length; i < l; i++) {
-          var program = this._programs[i];
-          var uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms)); // Tell it to use our program (pair of shaders)
-
-          gl.useProgram(program._compiledProgram);
-
-          program._bind(gl);
-
-          for (var k = 0, kl = uniforms.length; k < kl; k++) {
-            var _uniforms$k = _slicedToArray(uniforms[k], 2),
-                uniformName = _uniforms$k[0],
-                descriptor = _uniforms$k[1];
-
-            var value = descriptor.value || descriptor.get();
-            if (!value) continue;
-
-            if (value.isTexture) {
-              if (!value._compiledTexture) value._compile(gl);
-
-              value._bind(gl);
-
-              gl.uniform1i(gl.getUniformLocation(program._compiledProgram, uniformName), 0);
-              continue;
-            }
-
-            var isMatrix = uniformName.indexOf('$') === 0;
-
-            if (isMatrix) {
-              gl["uniformMatrix".concat(value.length === 4 ? 2 : value.length === 9 ? 3 : 4, "fv")](gl.getUniformLocation(program._compiledProgram, uniformName.slice(1)), false, value);
-            } else {
-              gl[Array.isArray(value) ? "uniform".concat(value.length, "fv") : 'uniform1f'](gl.getUniformLocation(program._compiledProgram, uniformName), value);
-            }
-          }
-
-          if (camera) gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, 'projectionMatrix'), false, camera.projectionMatrix);
-          if (program.index) gl.drawElements(DRAW_CONSTANTS[program.draw], program.count, gl.UNSIGNED_SHORT, 0);else gl.drawArrays(DRAW_CONSTANTS[program.draw], 0, program.count);
-        }
-      }
-    }]);
-
-    return Renderer;
-  }();
-
-  var Geometry =
-  /*#__PURE__*/
-  function () {
-    function Geometry() {
-      var _this = this;
-
-      _classCallCheck(this, Geometry);
-
-      _defineProperty(this, "_compile", function (gl) {
-        _this._compiledVAO = gl.createVertexArray();
-      });
-
-      _defineProperty(this, "_bind", function (gl) {
-        gl.bindVertexArray(_this._compiledVAO);
-      });
-
-      this.index = null;
-      this.attributes = {};
-    }
-
-    _createClass(Geometry, [{
-      key: "setAttribute",
-      value: function setAttribute(name, attribute) {
-        this.attributes[name] = attribute;
-      }
-    }, {
-      key: "setIndex",
-      value: function setIndex(attribute) {
-        this.index = attribute;
-      }
-    }, {
-      key: "getCount",
-      value: function getCount() {
-        if (this.index) return this.index.array.length;else if (this.attributes.position) return this.attributes.position.array.length / 3;
-        return null;
-      }
-    }]);
-
-    return Geometry;
-  }();
-
-  var _geometryRefs = new WeakMap();
-
-  var Program =
-  /*#__PURE__*/
-  function () {
-    function Program() {
-      var _this = this;
-
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var geometry = arguments.length > 1 ? arguments[1] : undefined;
-
-      _classCallCheck(this, Program);
-
-      _defineProperty(this, "_compile", function (gl) {
-        var vertexShader = _this.vertexShader || Program.createShader(gl, 'vertex', _this.vert);
-        var fragmentShader = _this.fragmentShader || Program.createShader(gl, 'fragment', _this.frag);
-        var program = gl.createProgram();
-        gl.attachShader(program, vertexShader);
-        gl.attachShader(program, fragmentShader);
-        gl.linkProgram(program);
-        var success = gl.getProgramParameter(program, gl.LINK_STATUS);
-
-        var vao = _geometryRefs.get(_this);
-
-        if (!vao._compiledVAO) vao._compile(gl);
-
-        vao._bind(gl); // // index attribute
-
-
-        if (_this.index) {
-          if (!_this.index._compiledBuffer) _this.index._compile(gl, true);
-
-          _this.index._bind(gl, null, true);
-        } //
-        // // non-index attributes
-
-
-        var _arr = Object.entries(_this.attributes);
-
-        for (var _i = 0; _i < _arr.length; _i++) {
-          var _arr$_i = _slicedToArray(_arr[_i], 2),
-              attrName = _arr$_i[0],
-              attr = _arr$_i[1];
-
-          if (!attr._compiledBuffer) attr._compile(gl, false);
-
-          attr._bind(gl, gl.getAttribLocation(program, attrName), false);
-        }
-
-        if (success) return program; // TODO: Cleanup error logging + add troubleshooting
-
-        console.log(gl.getProgramInfoLog(program));
-        gl.deleteProgram(program);
-      });
-
-      _defineProperty(this, "_bind", function (gl) {
-        _geometryRefs.get(_this)._bind(gl);
-      });
-
-      var _Object$assign = Object.assign({
-        vert: vertDefault,
-        frag: fragDefault,
-        vertexShader: null,
-        fragmentShader: null
-      }, options),
-          vert = _Object$assign.vert,
-          frag = _Object$assign.frag,
-          draw = _Object$assign.draw,
-          count = _Object$assign.count,
-          _vertexShader = _Object$assign.vertexShader,
-          _fragmentShader = _Object$assign.fragmentShader;
-
-      var _geometry = geometry || new Geometry();
-
-      _geometryRefs.set(this, _geometry);
-
-      this.vertexShader = _vertexShader;
-      this.fragmentShader = _fragmentShader;
-      this.vert = _vertexShader ? 'linked shader is used' : vert;
-      this.frag = _fragmentShader ? 'linked shader is used' : frag;
-      this.draw = draw || 'triangles';
-      this.uniforms = {};
-      this.count = count || _geometry.getCount() || 3;
-      Object.defineProperties(this, {
-        attributes: {
-          get: function get() {
-            return _geometry.attributes;
-          },
-          set: function set(attribs) {
-            _geometry.attributes = attribs;
-          }
-        },
-        index: {
-          get: function get() {
-            return _geometry.index;
-          },
-          set: function set(index) {
-            _geometry.index = index;
-          }
-        }
-      });
-    }
-
-    _createClass(Program, [{
-      key: "getGeometryRef",
-      value: function getGeometryRef() {
-        return _geometryRefs.get(this);
-      }
-    }, {
-      key: "setAttribute",
-      value: function setAttribute(name, attribute) {
-        this.attributes[name] = attribute;
-      }
-    }, {
-      key: "setIndex",
-      value: function setIndex(attribute) {
-        this.index = attribute;
-      }
-    }]);
-
-    return Program;
-  }();
-
-  _defineProperty(Program, "createShader", function (gl, type, source) {
-    type = type === 'vertex' ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER;
-    var shader = gl.createShader(type);
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-    var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-    if (success) return shader; // TODO: Cleanup error logging + add troubleshooting
-
-    console.warn(gl.getShaderInfoLog(shader));
-    console.warn(source.split('\n').map(function (line, i) {
-      return "".concat(i < 9 ? '0' : '').concat(i + 1, ":  ").concat(line);
-    }).join('\n'));
-    gl.deleteShader(shader);
-  });
-
-  var Attribute =
-  /*#__PURE__*/
-  function () {
-    _createClass(Attribute, null, [{
-      key: "inlineArray",
-      value: function inlineArray(inArray) {
-        return inArray.reduce(function (o, a) {
-          o.push.apply(o, _toConsumableArray(a));
-          return o;
-        }, []);
-      }
-    }]);
-
-    function Attribute(array, size) {
-      var _this = this;
-
-      _classCallCheck(this, Attribute);
-
-      _defineProperty(this, "_compile", function (gl) {
-        var isIndex = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-        var BUFFER_TYPE = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
-        var buffer = gl.createBuffer();
-        gl.bindBuffer(BUFFER_TYPE, buffer);
-        gl.bufferData(BUFFER_TYPE, _this.array, gl.STATIC_DRAW);
-        _this._compiledBuffer = buffer;
-      });
-
-      _defineProperty(this, "_bind", function (gl, location, isIndex) {
-        var BUFFER_TYPE = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
-        gl.bindBuffer(BUFFER_TYPE, _this._compiledBuffer);
-        if (isIndex === 'index') return;
-        gl.enableVertexAttribArray(location); // TODO: Check for additional capabilities of vertexAttribPointer
-
-        gl.vertexAttribPointer(location, _this.size, // 2 components per iteration
-        gl.FLOAT, // the data is 32bit floats
-        false, // don't normalize the data
-        0, // 0 = move forward size * sizeof(type) each iteration to get the next position
-        0 // start at the beginning of the buffer
-        );
-      });
-
-      this.array = array;
-      this.size = size;
-      this._compiledBuffer = null;
-    }
-
-    return Attribute;
-  }();
 
   var create_1 = create;
   /**
@@ -3985,11 +4344,517 @@
     lookAt: lookAt_1,
     str: str_1
   };
+  var glMat4_3 = glMat4.copy;
   var glMat4_4 = glMat4.identity;
+  var glMat4_6 = glMat4.invert;
   var glMat4_9 = glMat4.multiply;
   var glMat4_17 = glMat4.fromRotationTranslation;
   var glMat4_18 = glMat4.fromScaling;
   var glMat4_25 = glMat4.perspective;
+
+  var LightsExtension = {
+    init: function init(self) {
+      self.LIGHTS = [];
+    },
+    object: function object(_object, self) {
+      console.log(_object);
+      if (!_object.isLight) return;
+      self.LIGHTS.push(_object);
+    },
+    render: function render(gl, self) {
+      self.LIGHTS.forEach(function (light) {// console.log(light);
+        // gl.
+      });
+    }
+  };
+
+  var _locals = new WeakMap();
+
+  var Renderer =
+  /*#__PURE__*/
+  function () {
+    function Renderer() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+      _classCallCheck(this, Renderer);
+
+      options = Object.assign({
+        extensions: Renderer.defaultExtensions
+      }, options);
+      this.canvas = options instanceof HTMLCanvasElement ? options : options.canvas || document.createElement('canvas');
+      var gl = this.context = this.canvas.getContext('webgl2'); // eslint-disable-line
+      // TODO: Add webgl2 support check
+
+      this.clearColor = options.clearColor || [0, 0, 0, 0];
+      this.extensions = options.extensions;
+      this._programs = [];
+      this._root_objects = new Set();
+      gl.clearColor.apply(gl, this.clearColor); // eslint-disable-line
+
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.enable(gl.DEPTH_TEST);
+      gl.enable(gl.CULL_FACE);
+
+      _locals.set(this, {
+        STATE_ASYNC: false,
+        RENDER_REQUESTED_CAMERA: null,
+        PROMISES: [],
+        DRAW_CONSTANTS: {
+          lines: gl.LINES,
+          points: gl.POINTS,
+          triangles: gl.TRIANGLES
+        }
+      });
+
+      var self = _locals.get(this);
+
+      for (var i = 0, l = this.extensions.length; i < l; i++) {
+        this.extensions[i].init.call(this, self);
+      }
+    }
+
+    _createClass(Renderer, [{
+      key: "attach",
+      value: function attach(program) {
+        if (!program._compiledProgram) program._compiledProgram = program._compile(this.context, this);
+        var uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms));
+
+        var self = _locals.get(this);
+
+        var hasPromises = false;
+
+        var _loop = function _loop(k, kl) {
+          var _uniforms$k = _slicedToArray(uniforms[k], 2),
+              uniformName = _uniforms$k[0],
+              descriptor = _uniforms$k[1];
+
+          var value = descriptor.value || descriptor.get();
+
+          if (value instanceof Promise) {
+            hasPromises = true;
+            self.STATE_ASYNC = true;
+            self.PROMISES.push(value);
+            value.then(function (data) {
+              if (uniformName in program.uniforms) program.uniforms[uniformName] = data;else descriptor.set(data);
+            });
+          }
+        };
+
+        for (var k = 0, kl = uniforms.length; k < kl; k++) {
+          _loop(k, kl);
+        }
+
+        if (hasPromises) this._renderWhenSync();
+
+        this._programs.push(program);
+      }
+    }, {
+      key: "_renderWhenSync",
+      value: function _renderWhenSync() {
+        var _this = this;
+
+        var self = _locals.get(this);
+
+        var oldPromises = [].concat(self.PROMISES);
+        Promise.all(self.PROMISES).then(function () {
+          if (self.PROMISES.length !== oldPromises.length || self.PROMISES.reduce(function (v, n, i) {
+            return v || n !== oldPromises[i];
+          }, false) // promises are not the same
+          ) return;
+          self.STATE_ASYNC = false;
+
+          _this.render(self.RENDER_REQUESTED_CAMERA);
+        });
+      }
+    }, {
+      key: "setSize",
+      value: function setSize(width, height) {
+        this.canvas.width = width;
+        this.canvas.height = height;
+      }
+    }, {
+      key: "setScene",
+      value: function setScene(scene) {
+        var _this2 = this;
+
+        var self = _locals.get(this);
+
+        this._root_objects.add(scene);
+
+        scene.traverse(function (child) {
+          if (child.isMesh) {
+            _this2.attach(child.program);
+
+            child.program.__scene = scene;
+          }
+
+          for (var i = 0, l = _this2.extensions.length; i < l; i++) {
+            _this2.extensions[i].object.call(_this2, child, self);
+          }
+        });
+        scene.on('hierarchy-update', function (_ref) {
+          var object = _ref.object;
+
+          if (object.isMesh) {
+            _this2.attach(object.program);
+
+            object.program.__scene = scene;
+          }
+
+          for (var i = 0, l = _this2.extensions.length; i < l; i++) {
+            _this2.extensions[i].object.call(_this2, object, self);
+          }
+        });
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        var _this3 = this;
+
+        var camera = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+        var frameBuffer = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+        // eslint-disable-line
+        var gl = this.context;
+
+        var self = _locals.get(this);
+
+        var DRAW_CONSTANTS = self.DRAW_CONSTANTS,
+            STATE_ASYNC = self.STATE_ASYNC;
+
+        if (STATE_ASYNC) {
+          self.RENDER_REQUESTED_CAMERA = camera;
+          return;
+        }
+
+        if (frameBuffer) {
+          if (!frameBuffer._compiledFrameBuffer) frameBuffer._compile(gl);
+
+          frameBuffer._bindFramebuffer(gl);
+        } else gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        if (camera.matrixAutoUpdate) camera.updateMatrix();
+        if (camera.matrixWorldAutoUpdate) camera.updateMatrixWorld(); // TODO: add optimization feature to avoid iterating
+
+        this._root_objects.forEach(function (root) {
+          root.traverse(function (object) {
+            if (object.matrixAutoUpdate) object.updateMatrix();
+            if (object.matrixWorldAutoUpdate) object.updateMatrixWorld();
+          });
+        }); // Clear the canvas
+
+
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+        var _loop2 = function _loop2(i, l) {
+          var program = _this3._programs[i];
+          if (!program.enabled) return "continue";
+          var uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms)); // Tell it to use our program (pair of shaders)
+
+          gl.useProgram(program._compiledProgram);
+
+          program._bind(gl);
+
+          var hasPromises = false;
+
+          var _loop3 = function _loop3(k, kl) {
+            var _uniforms$k2 = _slicedToArray(uniforms[k], 2),
+                uniformName = _uniforms$k2[0],
+                descriptor = _uniforms$k2[1];
+
+            var value = descriptor.value || descriptor.get();
+            if (!value) return "continue";
+
+            if (value instanceof Promise) {
+              hasPromises = true;
+              self.STATE_ASYNC = true;
+              self.PROMISES.push(value);
+              value.then(function (data) {
+                if (uniformName in program.uniforms) program.uniforms[uniformName] = data;else descriptor.set(data);
+              });
+              return "continue";
+            }
+
+            if (value.isTexture) {
+              if (!value._compiledTexture) value._compile(gl);
+
+              var textureUnit = value._bind(gl);
+
+              gl.uniform1i(gl.getUniformLocation(program._compiledProgram, uniformName), textureUnit);
+              return "continue";
+            }
+
+            var isMatrix = uniformName.indexOf('$') === 0;
+
+            if (isMatrix) {
+              gl["uniformMatrix".concat(value.length === 4 ? 2 : value.length === 9 ? 3 : 4, "fv")](gl.getUniformLocation(program._compiledProgram, uniformName.slice(1)), false, value);
+            } else {
+              gl[Array.isArray(value) ? "uniform".concat(value.length, "fv") : 'uniform1f'](gl.getUniformLocation(program._compiledProgram, uniformName), value);
+            }
+          };
+
+          for (var k = 0, kl = uniforms.length; k < kl; k++) {
+            var _ret2 = _loop3(k, kl);
+
+            if (_ret2 === "continue") continue;
+          }
+
+          if (hasPromises) _this3._renderWhenSync();
+
+          if (camera) {
+            gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, 'viewMatrix'), false, glMat4_6([], camera.matrixWorld));
+            gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, 'projectionMatrix'), false, camera.projectionMatrix);
+          }
+
+          for (var _i = 0, _l = _this3.extensions.length; _i < _l; _i++) {
+            _this3.extensions[_i].render.call(_this3, gl, self);
+          }
+
+          if (program.index) gl.drawElements(DRAW_CONSTANTS[program.draw], program.count, gl.UNSIGNED_SHORT, 0);else gl.drawArrays(DRAW_CONSTANTS[program.draw], 0, program.count);
+        };
+
+        for (var i = 0, l = this._programs.length; i < l; i++) {
+          var _ret = _loop2(i, l);
+
+          if (_ret === "continue") continue;
+        }
+      }
+    }]);
+
+    return Renderer;
+  }();
+
+  _defineProperty(Renderer, "Lights", LightsExtension);
+
+  _defineProperty(Renderer, "defaultExtensions", [LightsExtension]);
+
+  var Geometry =
+  /*#__PURE__*/
+  function () {
+    function Geometry() {
+      var _this = this;
+
+      _classCallCheck(this, Geometry);
+
+      _defineProperty(this, "_compile", function (gl) {
+        _this._compiledVAO = gl.createVertexArray();
+      });
+
+      _defineProperty(this, "_bind", function (gl) {
+        gl.bindVertexArray(_this._compiledVAO);
+      });
+
+      this.index = null;
+      this.attributes = {};
+    }
+
+    _createClass(Geometry, [{
+      key: "setAttribute",
+      value: function setAttribute(name, attribute) {
+        this.attributes[name] = attribute;
+      }
+    }, {
+      key: "setIndex",
+      value: function setIndex(attribute) {
+        this.index = attribute;
+      }
+    }, {
+      key: "getCount",
+      value: function getCount() {
+        if (this.index) return this.index.array.length;else if (this.attributes.position) return this.attributes.position.array.length / 3;
+        return null;
+      }
+    }]);
+
+    return Geometry;
+  }();
+
+  var _geometryRefs = new WeakMap();
+
+  var Program =
+  /*#__PURE__*/
+  function () {
+    function Program() {
+      var _this = this;
+
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var geometry = arguments.length > 1 ? arguments[1] : undefined;
+
+      _classCallCheck(this, Program);
+
+      _defineProperty(this, "_compile", function (gl) {
+        var vertexShader = _this.vertexShader || Program.createShader(gl, 'vertex', _this.vert);
+        var fragmentShader = _this.fragmentShader || Program.createShader(gl, 'fragment', _this.frag);
+        var program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
+        var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+
+        var vao = _geometryRefs.get(_this);
+
+        if (!vao._compiledVAO) vao._compile(gl);
+
+        vao._bind(gl); // // index attribute
+
+
+        if (_this.index) {
+          if (!_this.index._compiledBuffer) _this.index._compile(gl, true);
+
+          _this.index._bind(gl, null, true);
+        } //
+        // // non-index attributes
+
+
+        var _arr = Object.entries(_this.attributes);
+
+        for (var _i = 0; _i < _arr.length; _i++) {
+          var _arr$_i = _slicedToArray(_arr[_i], 2),
+              attrName = _arr$_i[0],
+              attr = _arr$_i[1];
+
+          if (!attr._compiledBuffer) attr._compile(gl, false);
+
+          attr._bind(gl, gl.getAttribLocation(program, attrName), false);
+        }
+
+        if (success) return program; // TODO: Cleanup error logging + add troubleshooting
+
+        console.log(gl.getProgramInfoLog(program));
+        gl.deleteProgram(program);
+      });
+
+      _defineProperty(this, "_bind", function (gl) {
+        _geometryRefs.get(_this)._bind(gl);
+      });
+
+      var _Object$assign = Object.assign({
+        vert: vertDefault,
+        frag: fragDefault,
+        vertexShader: null,
+        fragmentShader: null
+      }, options),
+          vert = _Object$assign.vert,
+          frag = _Object$assign.frag,
+          draw = _Object$assign.draw,
+          count = _Object$assign.count,
+          _vertexShader = _Object$assign.vertexShader,
+          _fragmentShader = _Object$assign.fragmentShader;
+
+      var _geometry = geometry || new Geometry();
+
+      _geometryRefs.set(this, _geometry);
+
+      this.vertexShader = _vertexShader;
+      this.fragmentShader = _fragmentShader;
+      this.vert = _vertexShader ? 'linked shader is used' : vert;
+      this.frag = _fragmentShader ? 'linked shader is used' : frag;
+      this.draw = draw || 'triangles';
+      this.uniforms = {};
+      this.count = count || _geometry.getCount() || 3;
+      this.enabled = true;
+      Object.defineProperties(this, {
+        attributes: {
+          get: function get() {
+            return _geometry.attributes;
+          },
+          set: function set(attribs) {
+            _geometry.attributes = attribs;
+          }
+        },
+        index: {
+          get: function get() {
+            return _geometry.index;
+          },
+          set: function set(index) {
+            _geometry.index = index;
+          }
+        }
+      });
+    }
+
+    _createClass(Program, [{
+      key: "getGeometryRef",
+      value: function getGeometryRef() {
+        return _geometryRefs.get(this);
+      }
+    }, {
+      key: "setAttribute",
+      value: function setAttribute(name, attribute) {
+        this.attributes[name] = attribute;
+      }
+    }, {
+      key: "setIndex",
+      value: function setIndex(attribute) {
+        this.index = attribute;
+      }
+    }]);
+
+    return Program;
+  }();
+
+  _defineProperty(Program, "createShader", function (gl, type, source) {
+    type = type === 'vertex' ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER;
+    var shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+    if (success) return shader; // TODO: Cleanup error logging + add troubleshooting
+
+    console.warn(gl.getShaderInfoLog(shader));
+    console.warn(source.split('\n').map(function (line, i) {
+      return "".concat(i < 9 ? '0' : '').concat(i + 1, ":  ").concat(line);
+    }).join('\n'));
+    gl.deleteShader(shader);
+  });
+
+  var Attribute =
+  /*#__PURE__*/
+  function () {
+    _createClass(Attribute, null, [{
+      key: "inlineArray",
+      value: function inlineArray(inArray) {
+        return inArray.reduce(function (o, a) {
+          o.push.apply(o, _toConsumableArray(a));
+          return o;
+        }, []);
+      }
+    }]);
+
+    function Attribute(array, size) {
+      var _this = this;
+
+      _classCallCheck(this, Attribute);
+
+      _defineProperty(this, "_compile", function (gl) {
+        var isIndex = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+        var BUFFER_TYPE = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
+        var buffer = gl.createBuffer();
+        gl.bindBuffer(BUFFER_TYPE, buffer);
+        gl.bufferData(BUFFER_TYPE, _this.array, gl.STATIC_DRAW);
+        _this._compiledBuffer = buffer;
+      });
+
+      _defineProperty(this, "_bind", function (gl, location, isIndex) {
+        var BUFFER_TYPE = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
+        gl.bindBuffer(BUFFER_TYPE, _this._compiledBuffer);
+        if (isIndex === 'index') return;
+        gl.enableVertexAttribArray(location); // TODO: Check for additional capabilities of vertexAttribPointer
+
+        gl.vertexAttribPointer(location, _this.size, // 2 components per iteration
+        gl.FLOAT, // the data is 32bit floats
+        false, // don't normalize the data
+        0, // 0 = move forward size * sizeof(type) each iteration to get the next position
+        0 // start at the beginning of the buffer
+        );
+      });
+
+      this.array = array;
+      this.size = size;
+      this._compiledBuffer = null;
+    }
+
+    return Attribute;
+  }();
 
   var minivents_commonjs = function Events(target) {
     var events = {},
@@ -4066,7 +4931,11 @@
       key: "updateMatrixWorld",
       value: function updateMatrixWorld() {
         // Consider to be called after updateMatrix()
-        if (!this.parent) return;
+        if (!this.parent) {
+          glMat4_3(this.matrixWorld, this.matrix);
+          return;
+        }
+
         glMat4_9(this.matrixWorld, this.matrix, this.parent.matrix);
       }
     }, {
@@ -4127,11 +4996,21 @@
         frag: options.shader.frag
       }, geometry); // console.log(options.shader.uniforms);
 
-      _this.program.uniforms = Object.assign(options.shader.uniforms, {
+      _this.program.uniforms = Object.assign(options.shader.uniforms || {}, {
         $modelMatrix: _this.matrixWorld
       });
       return _this;
     }
+
+    _createClass(Mesh, [{
+      key: "visible",
+      get: function get() {
+        return this.program.enabled;
+      },
+      set: function set(value) {
+        this.program.enabled = value;
+      }
+    }]);
 
     return Mesh;
   }(Object3D);
@@ -4176,45 +5055,112 @@
     return Camera;
   }(Object3D);
 
-  var Texture = function Texture(image) {
-    var _this = this;
+  var textureUnitInt = 0;
+  var textureUnit = new WeakMap();
+  var Texture =
+  /*#__PURE__*/
+  function () {
+    _createClass(Texture, null, [{
+      key: "fromUrl",
+      value: function fromUrl(url) {
+        return new Promise(function (resolve) {
+          var img = new Image();
+          img.src = url;
 
-    _classCallCheck(this, Texture);
+          img.onload = function () {
+            // eslint-disable-line
+            resolve(new Texture(img));
+          };
+        });
+      }
+    }]);
 
-    _defineProperty(this, "isTexture", true);
+    function Texture(image, width, height) {
+      _classCallCheck(this, Texture);
 
-    _defineProperty(this, "_compile", function (gl) {
-      var texture = gl.createTexture(); // make unit 0 the active texture uint
-      // (ie, the unit all other texture commands will affect
+      _defineProperty(this, "isTexture", true);
 
-      gl.activeTexture(gl.TEXTURE0 + 0); // Bind it to texture unit 0' 2D bind point
+      this.image = image;
+      this.width = width || 256;
+      this.height = height || 256;
+    }
 
-      gl.bindTexture(gl.TEXTURE_2D, texture); // Set the parameters so we don't need mips and so we're not filtering
-      // and we don't repeat
+    _createClass(Texture, [{
+      key: "_compile",
+      value: function _compile(gl) {
+        textureUnit.set(this, textureUnitInt++); // TODO: Cleanup comments, make the use of parameters
 
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST); // Upload the image into the texture.
+        var texture = gl.createTexture(); // make unit 0 the active texture uint
+        // (ie, the unit all other texture commands will affect
 
-      var mipLevel = 0; // the largest mip
+        if (this.image) gl.activeTexture(gl['TEXTURE' + textureUnit.get(this)]); // Bind it to texture unit 0' 2D bind point
 
-      var internalFormat = gl.RGBA; // format we want in the texture
+        gl.bindTexture(gl.TEXTURE_2D, texture); // Set the parameters so we don't need mips and so we're not filtering
+        // and we don't repeat
 
-      var srcFormat = gl.RGBA; // format of data we are supplying
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); // Upload the image into the texture.
 
-      var srcType = gl.UNSIGNED_BYTE; // type of data we are supplying
+        var mipLevel = 0; // the largest mip
 
-      gl.texImage2D(gl.TEXTURE_2D, mipLevel, internalFormat, srcFormat, srcType, _this.image);
-      _this._compiledTexture = texture;
-    });
+        var internalFormat = gl.RGBA; // format we want in the texture
 
-    _defineProperty(this, "_bind", function (gl) {
-      gl.bindTexture(gl.TEXTURE_2D, _this._compiledTexture);
-    });
+        var srcFormat = gl.RGBA; // format of data we are supplying
 
-    this.image = image;
-  };
+        var srcType = gl.UNSIGNED_BYTE; // type of data we are supplying
+
+        gl.texImage2D(gl.TEXTURE_2D, mipLevel, internalFormat, this.width, this.height, 0, // border
+        srcFormat, srcType, this.image);
+        this._compiledTexture = texture;
+      }
+    }, {
+      key: "_bind",
+      value: function _bind(gl) {
+        gl.activeTexture(gl['TEXTURE' + textureUnit.get(this)]);
+        gl.bindTexture(gl.TEXTURE_2D, this._compiledTexture);
+        return textureUnit.get(this);
+      }
+    }]);
+
+    return Texture;
+  }();
+
+  var FrameBuffer =
+  /*#__PURE__*/
+  function (_Texture) {
+    _inherits(FrameBuffer, _Texture);
+
+    function FrameBuffer(width, height) {
+      var _this;
+
+      _classCallCheck(this, FrameBuffer);
+
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(FrameBuffer).call(this, null, width, height));
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_compile", function (gl) {
+        _get(_getPrototypeOf(FrameBuffer.prototype), "_compile", _assertThisInitialized(_this)).call(_assertThisInitialized(_this), gl); // Create and bind the framebuffer
+
+
+        var fb = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb); // attach the texture as the first color attachment
+
+        var attachmentPoint = gl.COLOR_ATTACHMENT0;
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, _this._compiledTexture, 0); // TODO: change level
+
+        _this._compiledFrameBuffer = fb;
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_bindFramebuffer", function (gl) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, _this._compiledFrameBuffer);
+      });
+
+      return _this;
+    }
+
+    return FrameBuffer;
+  }(Texture);
 
   var TYPED = _uid('typed_array');
   var VIEW = _uid('view');
@@ -4617,19 +5563,6 @@
   exports[ARRAY_BUFFER] = $ArrayBuffer;
   exports[DATA_VIEW] = $DataView;
   });
-
-  // 7.3.20 SpeciesConstructor(O, defaultConstructor)
-
-
-
-
-  var SPECIES$2 = _wks('species');
-
-  var _speciesConstructor = function (O, D) {
-    var C = _anObject(O).constructor;
-    var S;
-    return C === undefined || (S = _anObject(C)[SPECIES$2]) == undefined ? D : _aFunction(S);
-  };
 
   var _arrayCopyWithin = [].copyWithin || function copyWithin(target
   /* = 0 */
@@ -5391,7 +6324,7 @@
         geometry.setIndex(new Attribute(new Uint16Array(Attribute.inlineArray(data.cells)), 1));
         geometry.setAttribute('position', new Attribute(new Float32Array(Attribute.inlineArray(data.positions)), 3));
         geometry.setAttribute('normal', new Attribute(new Float32Array(Attribute.inlineArray(data.normals)), 3));
-        geometry.setAttribute('uv', new Attribute(new Float32Array(Attribute.inlineArray(data.uvs)), 3));
+        geometry.setAttribute('uv', new Attribute(new Float32Array(Attribute.inlineArray(data.uvs)), 2));
         return geometry;
       }
     }]);
@@ -5480,7 +6413,7 @@
         geometry.setIndex(new Attribute(new Uint16Array(Attribute.inlineArray(data.cells)), 1));
         geometry.setAttribute('position', new Attribute(new Float32Array(Attribute.inlineArray(data.positions)), 3));
         geometry.setAttribute('normal', new Attribute(new Float32Array(Attribute.inlineArray(data.normals)), 3));
-        geometry.setAttribute('uv', new Attribute(new Float32Array(Attribute.inlineArray(data.uvs)), 3));
+        geometry.setAttribute('uv', new Attribute(new Float32Array(Attribute.inlineArray(data.uvs)), 2));
         return geometry;
       }
     }]);
@@ -5504,15 +6437,23 @@
     _inherits(FlatMaterial, _Material);
 
     function FlatMaterial() {
+      var _this;
+
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
       _classCallCheck(this, FlatMaterial);
 
-      return _possibleConstructorReturn(this, _getPrototypeOf(FlatMaterial).call(this, {
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(FlatMaterial).call(this, {
         type: 'flat',
-        defines: {
-          USE_COLOR: true
-        }
+        defines: Object.assign({
+          USE_COLOR: true,
+          USE_MAP: Boolean(options.map)
+        }, options.defines || {}),
+        alias: ['map'],
+        modifiers: options.modifiers || {}
       }));
+      _this.map = options.map;
+      return _this;
     }
 
     return FlatMaterial;
@@ -5534,22 +6475,57 @@
         type: 'lambert',
         defines: {
           USE_COLOR: true,
-          USE_MAP: true
-        }
+          USE_MAP: Boolean(options.map)
+        },
+        alias: ['map']
       }));
       _this.map = options.map;
-      Object.defineProperties(_this.uniforms, {
-        map: {
-          get: function get() {
-            return _this.map;
-          }
-        }
-      });
       return _this;
     }
 
     return LambertMaterial;
   }(Material);
+
+  var Light =
+  /*#__PURE__*/
+  function (_Object3D) {
+    _inherits(Light, _Object3D);
+
+    function Light() {
+      var _this;
+
+      _classCallCheck(this, Light);
+
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Light).call(this));
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "isLight", true);
+
+      _this.color = [];
+      return _this;
+    }
+
+    return Light;
+  }(Object3D);
+
+  var DirectionalLight =
+  /*#__PURE__*/
+  function (_Light) {
+    _inherits(DirectionalLight, _Light);
+
+    function DirectionalLight() {
+      var _this;
+
+      _classCallCheck(this, DirectionalLight);
+
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(DirectionalLight).call(this));
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "type", 'DirectionalLight');
+
+      return _this;
+    }
+
+    return DirectionalLight;
+  }(Light);
 
   exports.shaders = shaders;
   exports.Shader = Shader;
@@ -5562,10 +6538,12 @@
   exports.Scene = Scene;
   exports.Camera = Camera;
   exports.Texture = Texture;
+  exports.FrameBuffer = FrameBuffer;
   exports.Sphere = Sphere;
   exports.Plane = Plane;
   exports.FlatMaterial = FlatMaterial;
   exports.LambertMaterial = LambertMaterial;
+  exports.DirectionalLight = DirectionalLight;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

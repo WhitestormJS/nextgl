@@ -1,16 +1,36 @@
+let textureUnitInt = 0;
+
+const textureUnit = new WeakMap();
+
 export class Texture {
   isTexture = true;
 
-  constructor(image) {
-    this.image = image;
+  static fromUrl(url) {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.src = url;
+
+      img.onload = () => { // eslint-disable-line
+        resolve(new Texture(img));
+      };
+    });
   }
 
-  _compile = gl => {
+  constructor(image, width, height) {
+    this.image = image;
+    this.width = width || 256;
+    this.height = height || 256;
+  }
+
+  _compile(gl) {
+    textureUnit.set(this, textureUnitInt++);
+    // TODO: Cleanup comments, make the use of parameters
     const texture = gl.createTexture();
 
     // make unit 0 the active texture uint
     // (ie, the unit all other texture commands will affect
-    gl.activeTexture(gl.TEXTURE0 + 0);
+    if (this.image)
+      gl.activeTexture(gl['TEXTURE' + textureUnit.get(this)]);
 
     // Bind it to texture unit 0' 2D bind point
     gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -19,8 +39,8 @@ export class Texture {
     // and we don't repeat
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
     // Upload the image into the texture.
     const mipLevel = 0; // the largest mip
@@ -32,6 +52,9 @@ export class Texture {
       gl.TEXTURE_2D,
       mipLevel,
       internalFormat,
+      this.width,
+      this.height,
+      0, // border
       srcFormat,
       srcType,
       this.image
@@ -40,7 +63,10 @@ export class Texture {
     this._compiledTexture = texture;
   }
 
-  _bind = gl => {
+  _bind(gl) {
+    gl.activeTexture(gl['TEXTURE' + textureUnit.get(this)]);
     gl.bindTexture(gl.TEXTURE_2D, this._compiledTexture);
+
+    return textureUnit.get(this);
   }
 }

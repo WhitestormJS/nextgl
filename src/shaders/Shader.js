@@ -6,6 +6,28 @@ const _cache = new WeakMap();
 export class Shader {
   static collection = null;
 
+  static parse(raw, modifiers) {
+    return raw.replace(/\n(\s*)\[([fv])\s([aA-zZ]*)\]/g, (match, spaces, shaderType, chunkName) => {
+      chunkName = shaderType + '_' + chunkName;
+      let chunk = Shader.collection.chunks[chunkName]
+        .split('\n')
+        .slice(1)
+        .join('\n');
+
+      chunk = chunkName in modifiers ? modifiers[chunkName](
+        chunk,
+        (start, end) => chunk.split('\n').slice(start, end).join('\n')
+      ) : chunk;
+
+      chunk = Shader.parse(chunk, modifiers);
+
+      return `\n${spaces}// [${chunkName}] \n` + chunk
+        .split('\n')
+        .map(str => spaces.slice(1) + str)
+        .join('\n');
+    });
+  }
+
   constructor(raw, modifiers = {}) {
     if (Shader.collection === null)
       throw new Error('Shader.collection should be specified.');
@@ -24,27 +46,11 @@ export class Shader {
     const HEAD = '#version 300 es\n\n';
 
     const defines = Object.entries(this.defines)
-      .map(([name, value]) => `#define ${name} ${value}`)
+      .map(([name, value]) => value ? `#define ${name} ${value}` : '')
       .join('\n');
 
     if (!useCached || !cache.get(this)) {
-      const staticPart = this.raw.replace(/(\s*)\[([fv])\s([aA-zZ]*)\]/g, (match, spaces, shaderType, chunkName) => {
-        chunkName = shaderType + '_' + chunkName;
-        let chunk = Shader.collection.chunks[chunkName]
-          .split('\n')
-          .slice(1)
-          .join('\n');
-
-        chunk = chunkName in this.modifiers ? this.modifiers[chunkName](
-          chunk,
-          (start, end) => chunk.split('\n').slice(start, end).join('\n')
-        ) : chunk;
-
-        return `\n${spaces}// [${chunkName}] \n` + chunk
-          .split('\n')
-          .map(str => spaces.slice(1) + str)
-          .join('\n');
-      });
+      const staticPart = Shader.parse(this.raw, this.modifiers);
 
       _cache.set(this, staticPart);
 

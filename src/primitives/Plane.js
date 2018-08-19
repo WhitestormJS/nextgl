@@ -12,7 +12,7 @@ export class Plane extends Mesh {
     geometry.setIndex(new Attribute(new Uint16Array(Attribute.inlineArray(data.cells)), 1));
     geometry.setAttribute('position', new Attribute(new Float32Array(Attribute.inlineArray(data.positions)), 3));
     geometry.setAttribute('normal', new Attribute(new Float32Array(Attribute.inlineArray(data.normals)), 3));
-    geometry.setAttribute('uv', new Attribute(new Float32Array(Attribute.inlineArray(data.uvs)), 3));
+    geometry.setAttribute('uv', new Attribute(new Float32Array(Attribute.inlineArray(data.uvs)), 2));
 
     return geometry;
   }

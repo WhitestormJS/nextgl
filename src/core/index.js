@@ -6,3 +6,4 @@ export * from './Mesh';
 export * from './Scene';
 export * from './Camera';
 export * from './Texture';
+export * from './FrameBuffer';

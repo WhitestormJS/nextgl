@@ -53,6 +53,7 @@ export class Program {
     this.draw = draw || 'triangles';
     this.uniforms = {};
     this.count = count || _geometry.getCount() || 3;
+    this.enabled = true;
 
     Object.defineProperties(this, {
       attributes: {

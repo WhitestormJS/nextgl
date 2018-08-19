@@ -1,3 +1,3 @@
 #ifdef USE_MAP
-  uniform sampler2D u_map;
+  uniform sampler2D map;
 #endif

@@ -1,3 +1,3 @@
 #ifdef USE_MAP
-  color = texture(u_map, v_uv).xyz;
+  color = texture(map, v_uv).xyz;
 #endif

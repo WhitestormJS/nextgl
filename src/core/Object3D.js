@@ -1,4 +1,4 @@
-import {identity, fromScaling, multiply, fromRotationTranslation} from 'gl-mat4';
+import {identity, fromScaling, multiply, fromRotationTranslation, copy} from 'gl-mat4';
 import Events from 'minivents';
 
 export class Object3D extends Events {
@@ -21,7 +21,11 @@ export class Object3D extends Events {
   }
 
   updateMatrixWorld() { // Consider to be called after updateMatrix()
-    if (!this.parent) return;
+    if (!this.parent) {
+      copy(this.matrixWorld, this.matrix);
+      return;
+    }
+
     multiply(this.matrixWorld, this.matrix, this.parent.matrix);
   }
 

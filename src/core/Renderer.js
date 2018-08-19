@@ -1,11 +1,25 @@
+import {invert} from 'gl-mat4';
+import LightsExtension from './renderer/LightsExtension';
+
 const _locals = new WeakMap();
 
 export class Renderer {
+  static Lights = LightsExtension;
+
+  static defaultExtensions = [
+    LightsExtension
+  ];
+
   constructor(options = {}) {
+    options = Object.assign({
+      extensions: Renderer.defaultExtensions
+    }, options);
+
     this.canvas = options instanceof HTMLCanvasElement ? options : (options.canvas || document.createElement('canvas'));
     const gl = this.context = this.canvas.getContext('webgl2'); // eslint-disable-line
     // TODO: Add webgl2 support check
     this.clearColor = options.clearColor || [0, 0, 0, 0];
+    this.extensions = options.extensions;
     this._programs = [];
     this._root_objects = new Set();
 
@@ -16,19 +30,68 @@ export class Renderer {
     gl.enable(gl.CULL_FACE);
 
     _locals.set(this, {
+      STATE_ASYNC: false,
+      RENDER_REQUESTED_CAMERA: null,
+      PROMISES: [],
       DRAW_CONSTANTS: {
         lines: gl.LINES,
         points: gl.POINTS,
         triangles: gl.TRIANGLES
       }
     });
+
+    const self = _locals.get(this);
+
+    for (let i = 0, l = this.extensions.length; i < l; i++)
+      this.extensions[i].init.call(this, self);
   }
 
   attach(program) {
     if (!program._compiledProgram)
       program._compiledProgram = program._compile(this.context, this);
 
+    const uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms));
+    const self = _locals.get(this);
+
+    let hasPromises = false;
+
+    for (let k = 0, kl = uniforms.length; k < kl; k++) {
+      const [uniformName, descriptor] = uniforms[k];
+      const value = descriptor.value || descriptor.get();
+
+      if (value instanceof Promise) {
+        hasPromises = true;
+        self.STATE_ASYNC = true;
+        self.PROMISES.push(value);
+
+        value.then(data => {
+          if (uniformName in program.uniforms)
+            program.uniforms[uniformName] = data;
+          else
+            descriptor.set(data);
+        });
+      }
+    }
+
+    if (hasPromises)
+      this._renderWhenSync();
+
     this._programs.push(program);
+  }
+
+  _renderWhenSync() {
+    const self = _locals.get(this);
+    const oldPromises = [].concat(self.PROMISES);
+
+    Promise.all(self.PROMISES).then(() => {
+      if (
+        self.PROMISES.length !== oldPromises.length
+        || self.PROMISES.reduce((v, n, i) => v || n !== oldPromises[i], false) // promises are not the same
+      ) return;
+
+      self.STATE_ASYNC = false;
+      this.render(self.RENDER_REQUESTED_CAMERA);
+    });
   }
 
   setSize(width, height) {
@@ -37,26 +100,48 @@ export class Renderer {
   }
 
   setScene(scene) {
+    const self = _locals.get(this);
     this._root_objects.add(scene);
 
     scene.traverse(child => {
-      if (!child.isMesh) return;
+      if (child.isMesh) {
+        this.attach(child.program);
+        child.program.__scene = scene;
+      }
 
-      this.attach(child.program);
-      child.program.__scene = scene;
+      for (let i = 0, l = this.extensions.length; i < l; i++)
+        this.extensions[i].object.call(this, child, self);
     });
 
     scene.on('hierarchy-update', ({object}) => {
-      if (!object.isMesh) return;
+      if (object.isMesh) {
+        this.attach(object.program);
+        object.program.__scene = scene;
+      }
 
-      this.attach(object.program);
-      object.program.__scene = scene;
+      for (let i = 0, l = this.extensions.length; i < l; i++)
+        this.extensions[i].object.call(this, object, self);
     });
   }
 
-  render(camera = null) {
+  render(camera = null, frameBuffer = null) { // eslint-disable-line
     const gl = this.context;
-    const {DRAW_CONSTANTS} = _locals.get(this);
+    const self = _locals.get(this);
+    const {DRAW_CONSTANTS, STATE_ASYNC} = self;
+
+    if (STATE_ASYNC) {
+      self.RENDER_REQUESTED_CAMERA = camera;
+      return;
+    }
+
+    if (frameBuffer) {
+      if (!frameBuffer._compiledFrameBuffer) frameBuffer._compile(gl);
+      frameBuffer._bindFramebuffer(gl);
+    } else
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    if (camera.matrixAutoUpdate) camera.updateMatrix();
+    if (camera.matrixWorldAutoUpdate) camera.updateMatrixWorld();
 
     // TODO: add optimization feature to avoid iterating
     this._root_objects.forEach(root => {
@@ -71,11 +156,14 @@ export class Renderer {
 
     for (let i = 0, l = this._programs.length; i < l; i++) {
       const program = this._programs[i];
+      if (!program.enabled) continue;
       const uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms));
 
       // Tell it to use our program (pair of shaders)
       gl.useProgram(program._compiledProgram);
       program._bind(gl);
+
+      let hasPromises = false;
 
       for (let k = 0, kl = uniforms.length; k < kl; k++) {
         const [uniformName, descriptor] = uniforms[k];
@@ -83,10 +171,25 @@ export class Renderer {
 
         if (!value) continue;
 
+        if (value instanceof Promise) {
+          hasPromises = true;
+          self.STATE_ASYNC = true;
+          self.PROMISES.push(value);
+
+          value.then(data => {
+            if (uniformName in program.uniforms)
+              program.uniforms[uniformName] = data;
+            else
+              descriptor.set(data);
+          });
+
+          continue;
+        }
+
         if (value.isTexture) {
           if (!value._compiledTexture) value._compile(gl);
-          value._bind(gl);
-          gl.uniform1i(gl.getUniformLocation(program._compiledProgram, uniformName), 0);
+          const textureUnit = value._bind(gl);
+          gl.uniform1i(gl.getUniformLocation(program._compiledProgram, uniformName), textureUnit);
           continue;
         }
 
@@ -106,8 +209,16 @@ export class Renderer {
         }
       }
 
-      if (camera)
+      if (hasPromises)
+        this._renderWhenSync();
+
+      if (camera) {
+        gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, 'viewMatrix'), false, invert([], camera.matrixWorld));
         gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, 'projectionMatrix'), false, camera.projectionMatrix);
+      }
+
+      for (let i = 0, l = this.extensions.length; i < l; i++)
+        this.extensions[i].render.call(this, gl, self);
 
       if (program.index)
         gl.drawElements(DRAW_CONSTANTS[program.draw], program.count, gl.UNSIGNED_SHORT, 0);

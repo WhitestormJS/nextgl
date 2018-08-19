@@ -10,6 +10,7 @@ module.exports = {
   ],
   plugins: [
     '@babel/plugin-proposal-class-properties',
+    ['@babel/plugin-proposal-decorators', {legacy: true}],
     '@babel/plugin-syntax-dynamic-import'
   ]
 }

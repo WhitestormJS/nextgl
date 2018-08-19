@@ -17,8 +17,16 @@ export class Mesh extends Object3D {
     }, geometry);
 
     // console.log(options.shader.uniforms);
-    this.program.uniforms = Object.assign(options.shader.uniforms, {
+    this.program.uniforms = Object.assign(options.shader.uniforms || {}, {
       $modelMatrix: this.matrixWorld
     });
+  }
+
+  get visible() {
+    return this.program.enabled;
+  }
+
+  set visible(value) {
+    this.program.enabled = value;
   }
 }
