@@ -1,4 +1,5 @@
 import {Shader} from './Shader';
+import {UniformStack} from '../core/UniformStack';
 
 export class Material {
   constructor(options = {}) {
@@ -15,17 +16,21 @@ export class Material {
     this._vertexShader = new Shader(shader.vert, options.modifiers).define(options.defines);
     this._fragmentShader = new Shader(shader.frag, options.modifiers).define(options.defines);
 
-    // TODO: Make uniforms clone tool
     this.uniforms = Object.assign({}, shader.uniforms);
 
     Object.defineProperties(this.uniforms, {
-      ...options.alias.reduce((o, v) => Object.assign(o, {[v]: {
+      ...Object.entries(options.alias).reduce((o, [n, v]) => Object.assign(o, {[n]: {
         get: () => this[v],
         set: input => {
           this[v] = input;
         }
       }}), {})
     });
+  }
+
+  initializeUniforms() {
+    // TODO: Make uniforms clone tool
+    this.uniforms = new UniformStack(this.uniforms);
   }
 
   get frag() {

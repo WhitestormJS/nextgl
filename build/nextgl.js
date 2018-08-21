@@ -4,7 +4,7 @@
   (factory((global.NEXT = {})));
 }(this, (function (exports) { 'use strict';
 
-  var init_pars = "precision mediump float;\n#define GLSLIFY 1\nin vec4 position;\n\nuniform mat4 projectionMatrix;\nuniform mat4 modelMatrix;\nuniform mat4 viewMatrix;\n"; // eslint-disable-line
+  var init_pars = "precision mediump float;\n#define GLSLIFY 1\nin vec3 position;\n\nuniform mat4 projectionMatrix;\nuniform mat4 modelMatrix;\nuniform mat4 viewMatrix;\n"; // eslint-disable-line
 
   var init_pars$1 = /*#__PURE__*/Object.freeze({
     default: init_pars
@@ -22,7 +22,7 @@
     default: normal_pars
   });
 
-  var normal = "#define GLSLIFY 1\nv_normal = normal;\n"; // eslint-disable-line
+  var normal = "#define GLSLIFY 1\nv_normal = normalize((modelMatrix * vec4(normal, 0.0)).xyz); // FIXME: normalize needed?\n"; // eslint-disable-line
 
   var normal$1 = /*#__PURE__*/Object.freeze({
     default: normal
@@ -52,13 +52,13 @@
     default: color
   });
 
-  var init_pars$2 = "precision mediump float;\n#define GLSLIFY 1\n\n#ifdef USE_COLOR\n  uniform vec3 u_diffuse;\n#endif\n"; // eslint-disable-line
+  var init_pars$2 = "precision mediump float;\n#define GLSLIFY 1\n\n#ifdef USE_COLOR\n  uniform vec3 diffuse;\n#endif\n"; // eslint-disable-line
 
   var init_pars$3 = /*#__PURE__*/Object.freeze({
     default: init_pars$2
   });
 
-  var init = "#define GLSLIFY 1\nvec3 color;\n\n#ifdef USE_COLOR\n  color = u_diffuse;\n#endif\n"; // eslint-disable-line
+  var init = "#define GLSLIFY 1\nvec3 color;\n\n#ifdef USE_COLOR\n  color = diffuse;\n#endif\n"; // eslint-disable-line
 
   var init$1 = /*#__PURE__*/Object.freeze({
     default: init
@@ -76,25 +76,25 @@
     default: lambert_light
   });
 
-  var lights_pars = "#define GLSLIFY 1\n"; // eslint-disable-line
+  var lights_pars = "#define GLSLIFY 1\n#define NUM_DIRECTIONAL_LIGHTS 0\n\n[f directional_lights_pars]\n\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  // uniform DirectionalLight directionalLights[NUM_DIRECTIONAL_LIGHTS];\n\n  uniform Lights {\n    DirectionalLight directionalLights[NUM_DIRECTIONAL_LIGHTS];\n    // #if (NUM_DIRECTIONAL_LIGHTS > 0)\n    // #endif\n  };\n#endif\n"; // eslint-disable-line
 
   var lights_pars$1 = /*#__PURE__*/Object.freeze({
     default: lights_pars
   });
 
-  var lights = "#define GLSLIFY 1\nfloat lightness = dot(dirLight.xyz, normal);\n\noutColor = vec4(color * lightness, 1);\n"; // eslint-disable-line
+  var lights = "#define GLSLIFY 1\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  vec3 matColor = color;\n  color = vec3(0, 0, 0);\n#endif\n\n[f directional_lights]\n\n// test\n"; // eslint-disable-line
 
   var lights$1 = /*#__PURE__*/Object.freeze({
     default: lights
   });
 
-  var directional_lights_pars = "#define GLSLIFY 1\n// uniform \n\nstruct DirectionalLight\n{\n  float direction;\n};\n"; // eslint-disable-line
+  var directional_lights_pars = "#define GLSLIFY 1\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  uniform sampler2D directionalLightShadowMaps[NUM_DIRECTIONAL_LIGHTS];\n#endif\n\nstruct DirectionalLight\n{\n  float intensity;\n  vec3 color;\n  vec3 direction;\n};\n"; // eslint-disable-line
 
   var directional_lights_pars$1 = /*#__PURE__*/Object.freeze({
     default: directional_lights_pars
   });
 
-  var directional_lights = "#define GLSLIFY 1\n"; // eslint-disable-line
+  var directional_lights = "#define GLSLIFY 1\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  DirectionalLight directionalLight = directionalLights[0];\n\n  for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; i++) {\n    directionalLight = directionalLights[i];\n    color += matColor * dot(directionalLight.direction, normal) * directionalLight.intensity;\n\n    if (MESH_RECEIVE_SHADOW) {\n      color = texture(directionalLightShadowMaps[i], v_uv).xyz;\n      // color = vec3(0.0, 1.0, 0.0);\n    }\n  }\n#endif\n"; // eslint-disable-line
 
   var directional_lights$1 = /*#__PURE__*/Object.freeze({
     default: directional_lights
@@ -239,7 +239,7 @@
     default: test$2
   });
 
-  var flat = "#define GLSLIFY 1\n[v init_pars]\n[v normal_pars]\n[v uv_pars]\n\n[v pars]\n\nvoid main() {\n  [v normal]\n  [v uv]\n\n  [v main]\n\n  gl_Position = projectionMatrix * viewMatrix * modelMatrix * position;\n}\n"; // eslint-disable-line
+  var flat = "#define GLSLIFY 1\n[v init_pars]\n[v normal_pars]\n[v uv_pars]\n\n[v pars]\n\nvoid main() {\n  [v normal]\n  [v uv]\n\n  [v main]\n\n  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);\n}\n"; // eslint-disable-line
 
   var flat$1 = /*#__PURE__*/Object.freeze({
     default: flat
@@ -251,13 +251,13 @@
     default: flat$2
   });
 
-  var lambert = "#define GLSLIFY 1\n[v init_pars]\n[v normal_pars]\n[v uv_pars]\n\nvoid main() {\n  [v normal]\n  [v uv]\n\n  gl_Position = projectionMatrix * viewMatrix * modelMatrix * position;\n}\n"; // eslint-disable-line
+  var lambert = "#define GLSLIFY 1\n[v init_pars]\n[v normal_pars]\n[v uv_pars]\n\nvoid main() {\n  [v normal]\n  [v uv]\n\n  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);\n}\n"; // eslint-disable-line
 
   var lambert$1 = /*#__PURE__*/Object.freeze({
     default: lambert
   });
 
-  var lambert$2 = "precision mediump float;\n#define GLSLIFY 1\nout vec4 outColor;\n\n[f init_pars]\n[f normal_pars]\n[f uv_pars]\n[f map_pars]\n[f lambert_light_pars]\n\nvoid main() {\n  [f init]\n  [f normal]\n  [f map]\n  [f lambert_light]\n\n  outColor = vec4(color, 1.0);\n}\n"; // eslint-disable-line
+  var lambert$2 = "precision mediump float;\n#define GLSLIFY 1\nout vec4 outColor;\n\n[f init_pars]\n[f normal_pars]\n[f uv_pars]\n[f map_pars]\n[f lights_pars]\n\nvoid main() {\n  [f init]\n  [f normal]\n  [f map]\n  [f lights]\n\n  outColor = vec4(color, 1.0);\n}\n"; // eslint-disable-line
 
   var lambert$3 = /*#__PURE__*/Object.freeze({
     default: lambert$2
@@ -407,36 +407,6 @@
     }
 
     return _assertThisInitialized(self);
-  }
-
-  function _superPropBase(object, property) {
-    while (!Object.prototype.hasOwnProperty.call(object, property)) {
-      object = _getPrototypeOf(object);
-      if (object === null) break;
-    }
-
-    return object;
-  }
-
-  function _get(target, property, receiver) {
-    if (typeof Reflect !== "undefined" && Reflect.get) {
-      _get = Reflect.get;
-    } else {
-      _get = function _get(target, property, receiver) {
-        var base = _superPropBase(target, property);
-
-        if (!base) return;
-        var desc = Object.getOwnPropertyDescriptor(base, property);
-
-        if (desc.get) {
-          return desc.get.call(receiver);
-        }
-
-        return desc.value;
-      };
-    }
-
-    return _get(target, property, receiver || target);
   }
 
   function _slicedToArray(arr, i) {
@@ -2059,6 +2029,7 @@
       value: function parse(raw, modifiers) {
         return raw.replace(/\n(\s*)\[([fv])\s([aA-zZ]*)\]/g, function (match, spaces, shaderType, chunkName) {
           chunkName = shaderType + '_' + chunkName;
+          if (!(chunkName in Shader.collection.chunks)) throw new Error("No such chunk \"".concat(chunkName, "\""));
           var chunk = Shader.collection.chunks[chunkName].split('\n').slice(1).join('\n');
           chunk = chunkName in modifiers ? modifiers[chunkName](chunk, function (start, end) {
             return chunk.split('\n').slice(start, end).join('\n');
@@ -2120,54 +2091,1090 @@
 
   Shader.collection = shaders; // For browser
 
-  var Material =
-  /*#__PURE__*/
-  function () {
-    function Material() {
-      var _this = this;
+  // https://github.com/tc39/proposal-object-values-entries
 
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-      _classCallCheck(this, Material);
+  var $values = _objectToArray(false);
 
-      options = Object.assign({
-        type: 'flat',
-        defines: {},
-        alias: [],
-        modifiers: {}
-      }, options);
-      var shader = Shader.collection[options.type];
-      this.type = options.type;
-      this._vertexShader = new Shader(shader.vert, options.modifiers).define(options.defines);
-      this._fragmentShader = new Shader(shader.frag, options.modifiers).define(options.defines); // TODO: Make uniforms clone tool
+  _export(_export.S, 'Object', {
+    values: function values(it) {
+      return $values(it);
+    }
+  });
 
-      this.uniforms = Object.assign({}, shader.uniforms);
-      Object.defineProperties(this.uniforms, _objectSpread({}, options.alias.reduce(function (o, v) {
-        return Object.assign(o, _defineProperty({}, v, {
-          get: function get() {
-            return _this[v];
-          },
-          set: function set(input) {
-            _this[v] = input;
-          }
-        }));
-      }, {})));
+  var runtime = createCommonjsModule(function (module) {
+  /**
+   * Copyright (c) 2014-present, Facebook, Inc.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   */
+  !function (global) {
+
+    var Op = Object.prototype;
+    var hasOwn = Op.hasOwnProperty;
+    var undefined; // More compressible than void 0.
+
+    var $Symbol = typeof Symbol === "function" ? Symbol : {};
+    var iteratorSymbol = $Symbol.iterator || "@@iterator";
+    var asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator";
+    var toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
+    var runtime = global.regeneratorRuntime;
+
+    if (runtime) {
+      {
+        // If regeneratorRuntime is defined globally and we're in a module,
+        // make the exports object identical to regeneratorRuntime.
+        module.exports = runtime;
+      } // Don't bother evaluating the rest of this file if the runtime was
+      // already defined globally.
+
+
+      return;
+    } // Define the runtime globally (as expected by generated code) as either
+    // module.exports (if we're in a module) or a new, empty object.
+
+
+    runtime = global.regeneratorRuntime = module.exports;
+
+    function wrap(innerFn, outerFn, self, tryLocsList) {
+      // If outerFn provided and outerFn.prototype is a Generator, then outerFn.prototype instanceof Generator.
+      var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator;
+      var generator = Object.create(protoGenerator.prototype);
+      var context = new Context(tryLocsList || []); // The ._invoke method unifies the implementations of the .next,
+      // .throw, and .return methods.
+
+      generator._invoke = makeInvokeMethod(innerFn, self, context);
+      return generator;
     }
 
-    _createClass(Material, [{
-      key: "frag",
-      get: function get() {
-        return this._fragmentShader.assemble();
-      }
-    }, {
-      key: "vert",
-      get: function get() {
-        return this._vertexShader.assemble();
-      }
-    }]);
+    runtime.wrap = wrap; // Try/catch helper to minimize deoptimizations. Returns a completion
+    // record like context.tryEntries[i].completion. This interface could
+    // have been (and was previously) designed to take a closure to be
+    // invoked without arguments, but in all the cases we care about we
+    // already have an existing method we want to call, so there's no need
+    // to create a new function object. We can even get away with assuming
+    // the method takes exactly one argument, since that happens to be true
+    // in every case, so we don't have to touch the arguments object. The
+    // only additional allocation required is the completion record, which
+    // has a stable shape and so hopefully should be cheap to allocate.
 
-    return Material;
-  }();
+    function tryCatch(fn, obj, arg) {
+      try {
+        return {
+          type: "normal",
+          arg: fn.call(obj, arg)
+        };
+      } catch (err) {
+        return {
+          type: "throw",
+          arg: err
+        };
+      }
+    }
+
+    var GenStateSuspendedStart = "suspendedStart";
+    var GenStateSuspendedYield = "suspendedYield";
+    var GenStateExecuting = "executing";
+    var GenStateCompleted = "completed"; // Returning this object from the innerFn has the same effect as
+    // breaking out of the dispatch switch statement.
+
+    var ContinueSentinel = {}; // Dummy constructor functions that we use as the .constructor and
+    // .constructor.prototype properties for functions that return Generator
+    // objects. For full spec compliance, you may wish to configure your
+    // minifier not to mangle the names of these two functions.
+
+    function Generator() {}
+
+    function GeneratorFunction() {}
+
+    function GeneratorFunctionPrototype() {} // This is a polyfill for %IteratorPrototype% for environments that
+    // don't natively support it.
+
+
+    var IteratorPrototype = {};
+
+    IteratorPrototype[iteratorSymbol] = function () {
+      return this;
+    };
+
+    var getProto = Object.getPrototypeOf;
+    var NativeIteratorPrototype = getProto && getProto(getProto(values([])));
+
+    if (NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol)) {
+      // This environment has a native %IteratorPrototype%; use it instead
+      // of the polyfill.
+      IteratorPrototype = NativeIteratorPrototype;
+    }
+
+    var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype);
+    GeneratorFunction.prototype = Gp.constructor = GeneratorFunctionPrototype;
+    GeneratorFunctionPrototype.constructor = GeneratorFunction;
+    GeneratorFunctionPrototype[toStringTagSymbol] = GeneratorFunction.displayName = "GeneratorFunction"; // Helper for defining the .next, .throw, and .return methods of the
+    // Iterator interface in terms of a single ._invoke method.
+
+    function defineIteratorMethods(prototype) {
+      ["next", "throw", "return"].forEach(function (method) {
+        prototype[method] = function (arg) {
+          return this._invoke(method, arg);
+        };
+      });
+    }
+
+    runtime.isGeneratorFunction = function (genFun) {
+      var ctor = typeof genFun === "function" && genFun.constructor;
+      return ctor ? ctor === GeneratorFunction || // For the native GeneratorFunction constructor, the best we can
+      // do is to check its .name property.
+      (ctor.displayName || ctor.name) === "GeneratorFunction" : false;
+    };
+
+    runtime.mark = function (genFun) {
+      if (Object.setPrototypeOf) {
+        Object.setPrototypeOf(genFun, GeneratorFunctionPrototype);
+      } else {
+        genFun.__proto__ = GeneratorFunctionPrototype;
+
+        if (!(toStringTagSymbol in genFun)) {
+          genFun[toStringTagSymbol] = "GeneratorFunction";
+        }
+      }
+
+      genFun.prototype = Object.create(Gp);
+      return genFun;
+    }; // Within the body of any async function, `await x` is transformed to
+    // `yield regeneratorRuntime.awrap(x)`, so that the runtime can test
+    // `hasOwn.call(value, "__await")` to determine if the yielded value is
+    // meant to be awaited.
+
+
+    runtime.awrap = function (arg) {
+      return {
+        __await: arg
+      };
+    };
+
+    function AsyncIterator(generator) {
+      function invoke(method, arg, resolve, reject) {
+        var record = tryCatch(generator[method], generator, arg);
+
+        if (record.type === "throw") {
+          reject(record.arg);
+        } else {
+          var result = record.arg;
+          var value = result.value;
+
+          if (value && typeof value === "object" && hasOwn.call(value, "__await")) {
+            return Promise.resolve(value.__await).then(function (value) {
+              invoke("next", value, resolve, reject);
+            }, function (err) {
+              invoke("throw", err, resolve, reject);
+            });
+          }
+
+          return Promise.resolve(value).then(function (unwrapped) {
+            // When a yielded Promise is resolved, its final value becomes
+            // the .value of the Promise<{value,done}> result for the
+            // current iteration. If the Promise is rejected, however, the
+            // result for this iteration will be rejected with the same
+            // reason. Note that rejections of yielded Promises are not
+            // thrown back into the generator function, as is the case
+            // when an awaited Promise is rejected. This difference in
+            // behavior between yield and await is important, because it
+            // allows the consumer to decide what to do with the yielded
+            // rejection (swallow it and continue, manually .throw it back
+            // into the generator, abandon iteration, whatever). With
+            // await, by contrast, there is no opportunity to examine the
+            // rejection reason outside the generator function, so the
+            // only option is to throw it from the await expression, and
+            // let the generator function handle the exception.
+            result.value = unwrapped;
+            resolve(result);
+          }, reject);
+        }
+      }
+
+      var previousPromise;
+
+      function enqueue(method, arg) {
+        function callInvokeWithMethodAndArg() {
+          return new Promise(function (resolve, reject) {
+            invoke(method, arg, resolve, reject);
+          });
+        }
+
+        return previousPromise = // If enqueue has been called before, then we want to wait until
+        // all previous Promises have been resolved before calling invoke,
+        // so that results are always delivered in the correct order. If
+        // enqueue has not been called before, then it is important to
+        // call invoke immediately, without waiting on a callback to fire,
+        // so that the async generator function has the opportunity to do
+        // any necessary setup in a predictable way. This predictability
+        // is why the Promise constructor synchronously invokes its
+        // executor callback, and why async functions synchronously
+        // execute code before the first await. Since we implement simple
+        // async functions in terms of async generators, it is especially
+        // important to get this right, even though it requires care.
+        previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, // Avoid propagating failures to Promises returned by later
+        // invocations of the iterator.
+        callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg();
+      } // Define the unified helper method that is used to implement .next,
+      // .throw, and .return (see defineIteratorMethods).
+
+
+      this._invoke = enqueue;
+    }
+
+    defineIteratorMethods(AsyncIterator.prototype);
+
+    AsyncIterator.prototype[asyncIteratorSymbol] = function () {
+      return this;
+    };
+
+    runtime.AsyncIterator = AsyncIterator; // Note that simple async functions are implemented on top of
+    // AsyncIterator objects; they just return a Promise for the value of
+    // the final result produced by the iterator.
+
+    runtime.async = function (innerFn, outerFn, self, tryLocsList) {
+      var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList));
+      return runtime.isGeneratorFunction(outerFn) ? iter // If outerFn is a generator, return the full iterator.
+      : iter.next().then(function (result) {
+        return result.done ? result.value : iter.next();
+      });
+    };
+
+    function makeInvokeMethod(innerFn, self, context) {
+      var state = GenStateSuspendedStart;
+      return function invoke(method, arg) {
+        if (state === GenStateExecuting) {
+          throw new Error("Generator is already running");
+        }
+
+        if (state === GenStateCompleted) {
+          if (method === "throw") {
+            throw arg;
+          } // Be forgiving, per 25.3.3.3.3 of the spec:
+          // https://people.mozilla.org/~jorendorff/es6-draft.html#sec-generatorresume
+
+
+          return doneResult();
+        }
+
+        context.method = method;
+        context.arg = arg;
+
+        while (true) {
+          var delegate = context.delegate;
+
+          if (delegate) {
+            var delegateResult = maybeInvokeDelegate(delegate, context);
+
+            if (delegateResult) {
+              if (delegateResult === ContinueSentinel) continue;
+              return delegateResult;
+            }
+          }
+
+          if (context.method === "next") {
+            // Setting context._sent for legacy support of Babel's
+            // function.sent implementation.
+            context.sent = context._sent = context.arg;
+          } else if (context.method === "throw") {
+            if (state === GenStateSuspendedStart) {
+              state = GenStateCompleted;
+              throw context.arg;
+            }
+
+            context.dispatchException(context.arg);
+          } else if (context.method === "return") {
+            context.abrupt("return", context.arg);
+          }
+
+          state = GenStateExecuting;
+          var record = tryCatch(innerFn, self, context);
+
+          if (record.type === "normal") {
+            // If an exception is thrown from innerFn, we leave state ===
+            // GenStateExecuting and loop back for another invocation.
+            state = context.done ? GenStateCompleted : GenStateSuspendedYield;
+
+            if (record.arg === ContinueSentinel) {
+              continue;
+            }
+
+            return {
+              value: record.arg,
+              done: context.done
+            };
+          } else if (record.type === "throw") {
+            state = GenStateCompleted; // Dispatch the exception by looping back around to the
+            // context.dispatchException(context.arg) call above.
+
+            context.method = "throw";
+            context.arg = record.arg;
+          }
+        }
+      };
+    } // Call delegate.iterator[context.method](context.arg) and handle the
+    // result, either by returning a { value, done } result from the
+    // delegate iterator, or by modifying context.method and context.arg,
+    // setting context.delegate to null, and returning the ContinueSentinel.
+
+
+    function maybeInvokeDelegate(delegate, context) {
+      var method = delegate.iterator[context.method];
+
+      if (method === undefined) {
+        // A .throw or .return when the delegate iterator has no .throw
+        // method always terminates the yield* loop.
+        context.delegate = null;
+
+        if (context.method === "throw") {
+          if (delegate.iterator.return) {
+            // If the delegate iterator has a return method, give it a
+            // chance to clean up.
+            context.method = "return";
+            context.arg = undefined;
+            maybeInvokeDelegate(delegate, context);
+
+            if (context.method === "throw") {
+              // If maybeInvokeDelegate(context) changed context.method from
+              // "return" to "throw", let that override the TypeError below.
+              return ContinueSentinel;
+            }
+          }
+
+          context.method = "throw";
+          context.arg = new TypeError("The iterator does not provide a 'throw' method");
+        }
+
+        return ContinueSentinel;
+      }
+
+      var record = tryCatch(method, delegate.iterator, context.arg);
+
+      if (record.type === "throw") {
+        context.method = "throw";
+        context.arg = record.arg;
+        context.delegate = null;
+        return ContinueSentinel;
+      }
+
+      var info = record.arg;
+
+      if (!info) {
+        context.method = "throw";
+        context.arg = new TypeError("iterator result is not an object");
+        context.delegate = null;
+        return ContinueSentinel;
+      }
+
+      if (info.done) {
+        // Assign the result of the finished delegate to the temporary
+        // variable specified by delegate.resultName (see delegateYield).
+        context[delegate.resultName] = info.value; // Resume execution at the desired location (see delegateYield).
+
+        context.next = delegate.nextLoc; // If context.method was "throw" but the delegate handled the
+        // exception, let the outer generator proceed normally. If
+        // context.method was "next", forget context.arg since it has been
+        // "consumed" by the delegate iterator. If context.method was
+        // "return", allow the original .return call to continue in the
+        // outer generator.
+
+        if (context.method !== "return") {
+          context.method = "next";
+          context.arg = undefined;
+        }
+      } else {
+        // Re-yield the result returned by the delegate method.
+        return info;
+      } // The delegate iterator is finished, so forget it and continue with
+      // the outer generator.
+
+
+      context.delegate = null;
+      return ContinueSentinel;
+    } // Define Generator.prototype.{next,throw,return} in terms of the
+    // unified ._invoke helper method.
+
+
+    defineIteratorMethods(Gp);
+    Gp[toStringTagSymbol] = "Generator"; // A Generator should always return itself as the iterator object when the
+    // @@iterator function is called on it. Some browsers' implementations of the
+    // iterator prototype chain incorrectly implement this, causing the Generator
+    // object to not be returned from this call. This ensures that doesn't happen.
+    // See https://github.com/facebook/regenerator/issues/274 for more details.
+
+    Gp[iteratorSymbol] = function () {
+      return this;
+    };
+
+    Gp.toString = function () {
+      return "[object Generator]";
+    };
+
+    function pushTryEntry(locs) {
+      var entry = {
+        tryLoc: locs[0]
+      };
+
+      if (1 in locs) {
+        entry.catchLoc = locs[1];
+      }
+
+      if (2 in locs) {
+        entry.finallyLoc = locs[2];
+        entry.afterLoc = locs[3];
+      }
+
+      this.tryEntries.push(entry);
+    }
+
+    function resetTryEntry(entry) {
+      var record = entry.completion || {};
+      record.type = "normal";
+      delete record.arg;
+      entry.completion = record;
+    }
+
+    function Context(tryLocsList) {
+      // The root entry object (effectively a try statement without a catch
+      // or a finally block) gives us a place to store values thrown from
+      // locations where there is no enclosing try statement.
+      this.tryEntries = [{
+        tryLoc: "root"
+      }];
+      tryLocsList.forEach(pushTryEntry, this);
+      this.reset(true);
+    }
+
+    runtime.keys = function (object) {
+      var keys = [];
+
+      for (var key in object) {
+        keys.push(key);
+      }
+
+      keys.reverse(); // Rather than returning an object with a next method, we keep
+      // things simple and return the next function itself.
+
+      return function next() {
+        while (keys.length) {
+          var key = keys.pop();
+
+          if (key in object) {
+            next.value = key;
+            next.done = false;
+            return next;
+          }
+        } // To avoid creating an additional object, we just hang the .value
+        // and .done properties off the next function object itself. This
+        // also ensures that the minifier will not anonymize the function.
+
+
+        next.done = true;
+        return next;
+      };
+    };
+
+    function values(iterable) {
+      if (iterable) {
+        var iteratorMethod = iterable[iteratorSymbol];
+
+        if (iteratorMethod) {
+          return iteratorMethod.call(iterable);
+        }
+
+        if (typeof iterable.next === "function") {
+          return iterable;
+        }
+
+        if (!isNaN(iterable.length)) {
+          var i = -1,
+              next = function next() {
+            while (++i < iterable.length) {
+              if (hasOwn.call(iterable, i)) {
+                next.value = iterable[i];
+                next.done = false;
+                return next;
+              }
+            }
+
+            next.value = undefined;
+            next.done = true;
+            return next;
+          };
+
+          return next.next = next;
+        }
+      } // Return an iterator with no values.
+
+
+      return {
+        next: doneResult
+      };
+    }
+
+    runtime.values = values;
+
+    function doneResult() {
+      return {
+        value: undefined,
+        done: true
+      };
+    }
+
+    Context.prototype = {
+      constructor: Context,
+      reset: function (skipTempReset) {
+        this.prev = 0;
+        this.next = 0; // Resetting context._sent for legacy support of Babel's
+        // function.sent implementation.
+
+        this.sent = this._sent = undefined;
+        this.done = false;
+        this.delegate = null;
+        this.method = "next";
+        this.arg = undefined;
+        this.tryEntries.forEach(resetTryEntry);
+
+        if (!skipTempReset) {
+          for (var name in this) {
+            // Not sure about the optimal order of these conditions:
+            if (name.charAt(0) === "t" && hasOwn.call(this, name) && !isNaN(+name.slice(1))) {
+              this[name] = undefined;
+            }
+          }
+        }
+      },
+      stop: function () {
+        this.done = true;
+        var rootEntry = this.tryEntries[0];
+        var rootRecord = rootEntry.completion;
+
+        if (rootRecord.type === "throw") {
+          throw rootRecord.arg;
+        }
+
+        return this.rval;
+      },
+      dispatchException: function (exception) {
+        if (this.done) {
+          throw exception;
+        }
+
+        var context = this;
+
+        function handle(loc, caught) {
+          record.type = "throw";
+          record.arg = exception;
+          context.next = loc;
+
+          if (caught) {
+            // If the dispatched exception was caught by a catch block,
+            // then let that catch block handle the exception normally.
+            context.method = "next";
+            context.arg = undefined;
+          }
+
+          return !!caught;
+        }
+
+        for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+          var entry = this.tryEntries[i];
+          var record = entry.completion;
+
+          if (entry.tryLoc === "root") {
+            // Exception thrown outside of any try block that could handle
+            // it, so set the completion value of the entire function to
+            // throw the exception.
+            return handle("end");
+          }
+
+          if (entry.tryLoc <= this.prev) {
+            var hasCatch = hasOwn.call(entry, "catchLoc");
+            var hasFinally = hasOwn.call(entry, "finallyLoc");
+
+            if (hasCatch && hasFinally) {
+              if (this.prev < entry.catchLoc) {
+                return handle(entry.catchLoc, true);
+              } else if (this.prev < entry.finallyLoc) {
+                return handle(entry.finallyLoc);
+              }
+            } else if (hasCatch) {
+              if (this.prev < entry.catchLoc) {
+                return handle(entry.catchLoc, true);
+              }
+            } else if (hasFinally) {
+              if (this.prev < entry.finallyLoc) {
+                return handle(entry.finallyLoc);
+              }
+            } else {
+              throw new Error("try statement without catch or finally");
+            }
+          }
+        }
+      },
+      abrupt: function (type, arg) {
+        for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+          var entry = this.tryEntries[i];
+
+          if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) {
+            var finallyEntry = entry;
+            break;
+          }
+        }
+
+        if (finallyEntry && (type === "break" || type === "continue") && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc) {
+          // Ignore the finally entry if control is not jumping to a
+          // location outside the try/catch block.
+          finallyEntry = null;
+        }
+
+        var record = finallyEntry ? finallyEntry.completion : {};
+        record.type = type;
+        record.arg = arg;
+
+        if (finallyEntry) {
+          this.method = "next";
+          this.next = finallyEntry.finallyLoc;
+          return ContinueSentinel;
+        }
+
+        return this.complete(record);
+      },
+      complete: function (record, afterLoc) {
+        if (record.type === "throw") {
+          throw record.arg;
+        }
+
+        if (record.type === "break" || record.type === "continue") {
+          this.next = record.arg;
+        } else if (record.type === "return") {
+          this.rval = this.arg = record.arg;
+          this.method = "return";
+          this.next = "end";
+        } else if (record.type === "normal" && afterLoc) {
+          this.next = afterLoc;
+        }
+
+        return ContinueSentinel;
+      },
+      finish: function (finallyLoc) {
+        for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+          var entry = this.tryEntries[i];
+
+          if (entry.finallyLoc === finallyLoc) {
+            this.complete(entry.completion, entry.afterLoc);
+            resetTryEntry(entry);
+            return ContinueSentinel;
+          }
+        }
+      },
+      "catch": function (tryLoc) {
+        for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+          var entry = this.tryEntries[i];
+
+          if (entry.tryLoc === tryLoc) {
+            var record = entry.completion;
+
+            if (record.type === "throw") {
+              var thrown = record.arg;
+              resetTryEntry(entry);
+            }
+
+            return thrown;
+          }
+        } // The context.catch method must only be called with a location
+        // argument that corresponds to a known catch block.
+
+
+        throw new Error("illegal catch attempt");
+      },
+      delegateYield: function (iterable, resultName, nextLoc) {
+        this.delegate = {
+          iterator: values(iterable),
+          resultName: resultName,
+          nextLoc: nextLoc
+        };
+
+        if (this.method === "next") {
+          // Deliberately forget the last sent value so that we don't
+          // accidentally pass it on to the delegate.
+          this.arg = undefined;
+        }
+
+        return ContinueSentinel;
+      }
+    };
+  }( // In sloppy mode, unbound `this` refers to the global object, fallback to
+  // Function constructor if we're in global strict mode. That is sadly a form
+  // of indirect eval which violates Content Security Policy.
+  function () {
+    return this;
+  }() || Function("return this")());
+  });
+
+  var f$4 = _wks;
+
+  var _wksExt = {
+  	f: f$4
+  };
+
+  var defineProperty = _objectDp.f;
+
+  var _wksDefine = function (name) {
+    var $Symbol = _core.Symbol || (_core.Symbol = _library ? {} : _global.Symbol || {});
+    if (name.charAt(0) != '_' && !(name in $Symbol)) defineProperty($Symbol, name, {
+      value: _wksExt.f(name)
+    });
+  };
+
+  _wksDefine('asyncIterator');
+
+  // all enumerable object keys, includes symbols
+
+
+
+
+
+
+  var _enumKeys = function (it) {
+    var result = _objectKeys(it);
+    var getSymbols = _objectGops.f;
+
+    if (getSymbols) {
+      var symbols = getSymbols(it);
+      var isEnum = _objectPie.f;
+      var i = 0;
+      var key;
+
+      while (symbols.length > i) if (isEnum.call(it, key = symbols[i++])) result.push(key);
+    }
+
+    return result;
+  };
+
+  // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
+
+
+  var hiddenKeys = _enumBugKeys.concat('length', 'prototype');
+
+  var f$5 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
+    return _objectKeysInternal(O, hiddenKeys);
+  };
+
+  var _objectGopn = {
+  	f: f$5
+  };
+
+  // fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
+
+
+  var gOPN = _objectGopn.f;
+
+  var toString$1 = {}.toString;
+  var windowNames = typeof window == 'object' && window && Object.getOwnPropertyNames ? Object.getOwnPropertyNames(window) : [];
+
+  var getWindowNames = function (it) {
+    try {
+      return gOPN(it);
+    } catch (e) {
+      return windowNames.slice();
+    }
+  };
+
+  var f$6 = function getOwnPropertyNames(it) {
+    return windowNames && toString$1.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(_toIobject(it));
+  };
+
+  var _objectGopnExt = {
+  	f: f$6
+  };
+
+  var META = _meta.KEY;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  var gOPD$1 = _objectGopd.f;
+  var dP$1 = _objectDp.f;
+  var gOPN$1 = _objectGopnExt.f;
+  var $Symbol = _global.Symbol;
+  var $JSON = _global.JSON;
+
+  var _stringify = $JSON && $JSON.stringify;
+
+  var PROTOTYPE$2 = 'prototype';
+  var HIDDEN = _wks('_hidden');
+  var TO_PRIMITIVE = _wks('toPrimitive');
+  var isEnum$1 = {}.propertyIsEnumerable;
+  var SymbolRegistry = _shared('symbol-registry');
+  var AllSymbols = _shared('symbols');
+  var OPSymbols = _shared('op-symbols');
+  var ObjectProto$1 = Object[PROTOTYPE$2];
+  var USE_NATIVE = typeof $Symbol == 'function';
+  var QObject = _global.QObject; // Don't use setters in Qt Script, https://github.com/zloirock/core-js/issues/173
+
+  var setter = !QObject || !QObject[PROTOTYPE$2] || !QObject[PROTOTYPE$2].findChild; // fallback for old Android, https://code.google.com/p/v8/issues/detail?id=687
+
+  var setSymbolDesc = _descriptors && _fails(function () {
+    return _objectCreate(dP$1({}, 'a', {
+      get: function () {
+        return dP$1(this, 'a', {
+          value: 7
+        }).a;
+      }
+    })).a != 7;
+  }) ? function (it, key, D) {
+    var protoDesc = gOPD$1(ObjectProto$1, key);
+    if (protoDesc) delete ObjectProto$1[key];
+    dP$1(it, key, D);
+    if (protoDesc && it !== ObjectProto$1) dP$1(ObjectProto$1, key, protoDesc);
+  } : dP$1;
+
+  var wrap = function (tag) {
+    var sym = AllSymbols[tag] = _objectCreate($Symbol[PROTOTYPE$2]);
+
+    sym._k = tag;
+    return sym;
+  };
+
+  var isSymbol = USE_NATIVE && typeof $Symbol.iterator == 'symbol' ? function (it) {
+    return typeof it == 'symbol';
+  } : function (it) {
+    return it instanceof $Symbol;
+  };
+
+  var $defineProperty = function defineProperty(it, key, D) {
+    if (it === ObjectProto$1) $defineProperty(OPSymbols, key, D);
+    _anObject(it);
+    key = _toPrimitive(key, true);
+    _anObject(D);
+
+    if (_has(AllSymbols, key)) {
+      if (!D.enumerable) {
+        if (!_has(it, HIDDEN)) dP$1(it, HIDDEN, _propertyDesc(1, {}));
+        it[HIDDEN][key] = true;
+      } else {
+        if (_has(it, HIDDEN) && it[HIDDEN][key]) it[HIDDEN][key] = false;
+        D = _objectCreate(D, {
+          enumerable: _propertyDesc(0, false)
+        });
+      }
+
+      return setSymbolDesc(it, key, D);
+    }
+
+    return dP$1(it, key, D);
+  };
+
+  var $defineProperties = function defineProperties(it, P) {
+    _anObject(it);
+    var keys = _enumKeys(P = _toIobject(P));
+    var i = 0;
+    var l = keys.length;
+    var key;
+
+    while (l > i) $defineProperty(it, key = keys[i++], P[key]);
+
+    return it;
+  };
+
+  var $create = function create(it, P) {
+    return P === undefined ? _objectCreate(it) : $defineProperties(_objectCreate(it), P);
+  };
+
+  var $propertyIsEnumerable = function propertyIsEnumerable(key) {
+    var E = isEnum$1.call(this, key = _toPrimitive(key, true));
+    if (this === ObjectProto$1 && _has(AllSymbols, key) && !_has(OPSymbols, key)) return false;
+    return E || !_has(this, key) || !_has(AllSymbols, key) || _has(this, HIDDEN) && this[HIDDEN][key] ? E : true;
+  };
+
+  var $getOwnPropertyDescriptor = function getOwnPropertyDescriptor(it, key) {
+    it = _toIobject(it);
+    key = _toPrimitive(key, true);
+    if (it === ObjectProto$1 && _has(AllSymbols, key) && !_has(OPSymbols, key)) return;
+    var D = gOPD$1(it, key);
+    if (D && _has(AllSymbols, key) && !(_has(it, HIDDEN) && it[HIDDEN][key])) D.enumerable = true;
+    return D;
+  };
+
+  var $getOwnPropertyNames = function getOwnPropertyNames(it) {
+    var names = gOPN$1(_toIobject(it));
+    var result = [];
+    var i = 0;
+    var key;
+
+    while (names.length > i) {
+      if (!_has(AllSymbols, key = names[i++]) && key != HIDDEN && key != META) result.push(key);
+    }
+
+    return result;
+  };
+
+  var $getOwnPropertySymbols = function getOwnPropertySymbols(it) {
+    var IS_OP = it === ObjectProto$1;
+    var names = gOPN$1(IS_OP ? OPSymbols : _toIobject(it));
+    var result = [];
+    var i = 0;
+    var key;
+
+    while (names.length > i) {
+      if (_has(AllSymbols, key = names[i++]) && (IS_OP ? _has(ObjectProto$1, key) : true)) result.push(AllSymbols[key]);
+    }
+
+    return result;
+  }; // 19.4.1.1 Symbol([description])
+
+
+  if (!USE_NATIVE) {
+    $Symbol = function Symbol() {
+      if (this instanceof $Symbol) throw TypeError('Symbol is not a constructor!');
+      var tag = _uid(arguments.length > 0 ? arguments[0] : undefined);
+
+      var $set = function (value) {
+        if (this === ObjectProto$1) $set.call(OPSymbols, value);
+        if (_has(this, HIDDEN) && _has(this[HIDDEN], tag)) this[HIDDEN][tag] = false;
+        setSymbolDesc(this, tag, _propertyDesc(1, value));
+      };
+
+      if (_descriptors && setter) setSymbolDesc(ObjectProto$1, tag, {
+        configurable: true,
+        set: $set
+      });
+      return wrap(tag);
+    };
+
+    _redefine($Symbol[PROTOTYPE$2], 'toString', function toString() {
+      return this._k;
+    });
+    _objectGopd.f = $getOwnPropertyDescriptor;
+    _objectDp.f = $defineProperty;
+    _objectGopn.f = _objectGopnExt.f = $getOwnPropertyNames;
+    _objectPie.f = $propertyIsEnumerable;
+    _objectGops.f = $getOwnPropertySymbols;
+
+    if (_descriptors && !_library) {
+      _redefine(ObjectProto$1, 'propertyIsEnumerable', $propertyIsEnumerable, true);
+    }
+
+    _wksExt.f = function (name) {
+      return wrap(_wks(name));
+    };
+  }
+
+  _export(_export.G + _export.W + _export.F * !USE_NATIVE, {
+    Symbol: $Symbol
+  });
+
+  for (var es6Symbols = // 19.4.2.2, 19.4.2.3, 19.4.2.4, 19.4.2.6, 19.4.2.8, 19.4.2.9, 19.4.2.10, 19.4.2.11, 19.4.2.12, 19.4.2.13, 19.4.2.14
+  'hasInstance,isConcatSpreadable,iterator,match,replace,search,species,split,toPrimitive,toStringTag,unscopables'.split(','), j = 0; es6Symbols.length > j;) _wks(es6Symbols[j++]);
+
+  for (var wellKnownSymbols = _objectKeys(_wks.store), k = 0; wellKnownSymbols.length > k;) _wksDefine(wellKnownSymbols[k++]);
+
+  _export(_export.S + _export.F * !USE_NATIVE, 'Symbol', {
+    // 19.4.2.1 Symbol.for(key)
+    'for': function (key) {
+      return _has(SymbolRegistry, key += '') ? SymbolRegistry[key] : SymbolRegistry[key] = $Symbol(key);
+    },
+    // 19.4.2.5 Symbol.keyFor(sym)
+    keyFor: function keyFor(sym) {
+      if (!isSymbol(sym)) throw TypeError(sym + ' is not a symbol!');
+
+      for (var key in SymbolRegistry) if (SymbolRegistry[key] === sym) return key;
+    },
+    useSetter: function () {
+      setter = true;
+    },
+    useSimple: function () {
+      setter = false;
+    }
+  });
+  _export(_export.S + _export.F * !USE_NATIVE, 'Object', {
+    // 19.1.2.2 Object.create(O [, Properties])
+    create: $create,
+    // 19.1.2.4 Object.defineProperty(O, P, Attributes)
+    defineProperty: $defineProperty,
+    // 19.1.2.3 Object.defineProperties(O, Properties)
+    defineProperties: $defineProperties,
+    // 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
+    getOwnPropertyDescriptor: $getOwnPropertyDescriptor,
+    // 19.1.2.7 Object.getOwnPropertyNames(O)
+    getOwnPropertyNames: $getOwnPropertyNames,
+    // 19.1.2.8 Object.getOwnPropertySymbols(O)
+    getOwnPropertySymbols: $getOwnPropertySymbols
+  }); // 24.3.2 JSON.stringify(value [, replacer [, space]])
+
+  $JSON && _export(_export.S + _export.F * (!USE_NATIVE || _fails(function () {
+    var S = $Symbol(); // MS Edge converts symbol values to JSON as {}
+    // WebKit converts symbol values to JSON as null
+    // V8 throws on boxed symbols
+
+    return _stringify([S]) != '[null]' || _stringify({
+      a: S
+    }) != '{}' || _stringify(Object(S)) != '{}';
+  })), 'JSON', {
+    stringify: function stringify(it) {
+      var args = [it];
+      var i = 1;
+      var replacer, $replacer;
+
+      while (arguments.length > i) args.push(arguments[i++]);
+
+      $replacer = replacer = args[1];
+      if (!_isObject(replacer) && it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
+
+      if (!_isArray(replacer)) replacer = function (key, value) {
+        if (typeof $replacer == 'function') value = $replacer.call(this, key, value);
+        if (!isSymbol(value)) return value;
+      };
+      args[1] = replacer;
+      return _stringify.apply($JSON, args);
+    }
+  }); // 19.4.3.4 Symbol.prototype[@@toPrimitive](hint)
+
+  $Symbol[PROTOTYPE$2][TO_PRIMITIVE] || _hide($Symbol[PROTOTYPE$2], TO_PRIMITIVE, $Symbol[PROTOTYPE$2].valueOf); // 19.4.3.5 Symbol.prototype[@@toStringTag]
+
+  _setToStringTag($Symbol, 'Symbol'); // 20.2.1.9 Math[@@toStringTag]
+
+  _setToStringTag(Math, 'Math', true); // 24.3.3 JSON[@@toStringTag]
+
+  _setToStringTag(_global.JSON, 'JSON', true);
 
   // 7.3.20 SpeciesConstructor(O, defaultConstructor)
 
@@ -2388,12 +3395,12 @@
     this.reject = _aFunction(reject);
   }
 
-  var f$4 = function (C) {
+  var f$7 = function (C) {
     return new PromiseCapability(C);
   };
 
   var _newPromiseCapability = {
-  	f: f$4
+  	f: f$7
   };
 
   var _perform = function (exec) {
@@ -2460,7 +3467,7 @@
 
   var Internal, newGenericPromiseCapability, OwnPromiseCapability, Wrapper;
   var newPromiseCapability = newGenericPromiseCapability = _newPromiseCapability.f;
-  var USE_NATIVE = !!function () {
+  var USE_NATIVE$1 = !!function () {
     try {
       // correct subclassing with @@species support
       var promise = $Promise.resolve(1);
@@ -2634,7 +3641,7 @@
   }; // constructor polyfill
 
 
-  if (!USE_NATIVE) {
+  if (!USE_NATIVE$1) {
     // 25.4.3.1 Promise(executor)
     $Promise = function Promise(executor) {
       _anInstance(this, $Promise, PROMISE, '_h');
@@ -2697,7 +3704,7 @@
     };
   }
 
-  _export(_export.G + _export.W + _export.F * !USE_NATIVE, {
+  _export(_export.G + _export.W + _export.F * !USE_NATIVE$1, {
     Promise: $Promise
   });
 
@@ -2707,7 +3714,7 @@
 
   Wrapper = _core[PROMISE]; // statics
 
-  _export(_export.S + _export.F * !USE_NATIVE, PROMISE, {
+  _export(_export.S + _export.F * !USE_NATIVE$1, PROMISE, {
     // 25.4.4.5 Promise.reject(r)
     reject: function reject(r) {
       var capability = newPromiseCapability(this);
@@ -2716,13 +3723,13 @@
       return capability.promise;
     }
   });
-  _export(_export.S + _export.F * (_library || !USE_NATIVE), PROMISE, {
+  _export(_export.S + _export.F * (_library || !USE_NATIVE$1), PROMISE, {
     // 25.4.4.6 Promise.resolve(x)
     resolve: function resolve(x) {
       return _promiseResolve(_library && this === Wrapper ? $Promise : this, x);
     }
   });
-  _export(_export.S + _export.F * !(USE_NATIVE && _iterDetect(function (iter) {
+  _export(_export.S + _export.F * !(USE_NATIVE$1 && _iterDetect(function (iter) {
     $Promise.all(iter)['catch'](empty);
   })), PROMISE, {
     // 25.4.4.1 Promise.all(iterable)
@@ -2767,18 +3774,22 @@
     }
   });
 
-  // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
+  var dP$2 = _objectDp.f;
 
+  var FProto = Function.prototype;
+  var nameRE = /^\s*function ([^ (]*)/;
+  var NAME$1 = 'name'; // 19.2.4.2 name
 
-  var hiddenKeys = _enumBugKeys.concat('length', 'prototype');
-
-  var f$5 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
-    return _objectKeysInternal(O, hiddenKeys);
-  };
-
-  var _objectGopn = {
-  	f: f$5
-  };
+  NAME$1 in FProto || _descriptors && dP$2(FProto, NAME$1, {
+    configurable: true,
+    get: function () {
+      try {
+        return ('' + this).match(nameRE)[1];
+      } catch (e) {
+        return '';
+      }
+    }
+  });
 
   // all object keys, includes non-enumerable and symbols
 
@@ -2828,7 +3839,235 @@
     }
   });
 
-  var dP$1 = _objectDp.f;
+  var uniformsDataMap = new WeakMap();
+
+  function getType(value) {
+    if (value.isMat4) return 'mat4';
+    if (value.isVec3) return 'vec3';
+    var type = 'float';
+    if (value.isTexture) type = 'texture';else if (Array.isArray(value)) {
+      if (value.length <= 4) type = "vec".concat(value.length);else type = 'mat' + (value.length === 9 ? 3 : 4);
+    }
+    return type;
+  }
+
+  var UniformStack =
+  /*#__PURE__*/
+  function () {
+    function UniformStack(uniforms) {
+      var _this = this;
+
+      _classCallCheck(this, UniformStack);
+
+      var uniformsData = {};
+      uniformsDataMap.set(this, uniformsData);
+
+      var _arr = Object.entries(Object.getOwnPropertyDescriptors(uniforms));
+
+      for (var _i = 0; _i < _arr.length; _i++) {
+        var _arr$_i = _slicedToArray(_arr[_i], 2),
+            name = _arr$_i[0],
+            uniformDescriptor = _arr$_i[1];
+
+        if (this[name]) throw new Error("Uniform can't be a UniformStack#".concat(name, " as it is a part of UniformStack API"));
+        this.addUniform(name, uniformDescriptor, uniformsData);
+      }
+
+      console.log(uniformsData);
+      return new Proxy(this, {
+        set: function set(object, key, value) {
+          if (object[key]) throw new Error("Uniform can't be a UniformStack#".concat(key, " as it is a part of UniformStack API"));
+
+          if (key in uniformsData) {
+            // TODO: handle promises
+            uniformsData[key].descriptor = {
+              value: value
+            };
+            uniformsData[key].needsUpdate = true;
+          } else _this.addUniform(key, {
+            value: value
+          }, uniformsData);
+
+          return true;
+        },
+        get: function get(object, key) {
+          return (object[key].bind ? object[key].bind(object) : object[key]) || uniformsData[key].descriptor;
+        }
+      });
+    }
+
+    _createClass(UniformStack, [{
+      key: "addUniform",
+      value: function addUniform(name, uniformDescriptor) {
+        var data = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : uniformsDataMap.get(this);
+        var currentValue = uniformDescriptor.value || uniformDescriptor.get();
+        if (!currentValue) return;
+        var type = null;
+
+        if (currentValue instanceof Promise) {
+          currentValue.then(function (v) {
+            data[name].type = getType(v);
+            data[name].descriptor.set(v);
+            data[name].isValueUniform = Boolean(v.isValueUniform);
+          });
+          type = 'promise';
+        } else type = getType(currentValue);
+
+        data[name] = {
+          name: name,
+          type: type,
+          descriptor: uniformDescriptor,
+          needsUpdate: true,
+          isValueUniform: Boolean(currentValue.isValueUniform)
+        };
+      }
+    }, {
+      key: "getType",
+      value: function getType(name) {
+        var uniforms = uniformsDataMap.get(this);
+        return uniforms[name] && uniforms[name].type;
+      }
+    }, {
+      key: Symbol.iterator,
+      value:
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function value() {
+        var _arr2, _i2, uniform;
+
+        return regeneratorRuntime.wrap(function value$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                _arr2 = Object.values(uniformsDataMap.get(this));
+                _i2 = 0;
+
+              case 2:
+                if (!(_i2 < _arr2.length)) {
+                  _context.next = 9;
+                  break;
+                }
+
+                uniform = _arr2[_i2];
+                _context.next = 6;
+                return uniform;
+
+              case 6:
+                _i2++;
+                _context.next = 2;
+                break;
+
+              case 9:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, value, this);
+      })
+    }]);
+
+    return UniformStack;
+  }();
+
+  var Material =
+  /*#__PURE__*/
+  function () {
+    function Material() {
+      var _this = this;
+
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+      _classCallCheck(this, Material);
+
+      options = Object.assign({
+        type: 'flat',
+        defines: {},
+        alias: [],
+        modifiers: {}
+      }, options);
+      var shader = Shader.collection[options.type];
+      this.type = options.type;
+      this._vertexShader = new Shader(shader.vert, options.modifiers).define(options.defines);
+      this._fragmentShader = new Shader(shader.frag, options.modifiers).define(options.defines);
+      this.uniforms = Object.assign({}, shader.uniforms);
+      Object.defineProperties(this.uniforms, _objectSpread({}, Object.entries(options.alias).reduce(function (o, _ref) {
+        var _ref2 = _slicedToArray(_ref, 2),
+            n = _ref2[0],
+            v = _ref2[1];
+
+        return Object.assign(o, _defineProperty({}, n, {
+          get: function get() {
+            return _this[v];
+          },
+          set: function set(input) {
+            _this[v] = input;
+          }
+        }));
+      }, {})));
+    }
+
+    _createClass(Material, [{
+      key: "initializeUniforms",
+      value: function initializeUniforms() {
+        // TODO: Make uniforms clone tool
+        this.uniforms = new UniformStack(this.uniforms);
+      }
+    }, {
+      key: "frag",
+      get: function get() {
+        return this._fragmentShader.assemble();
+      }
+    }, {
+      key: "vert",
+      get: function get() {
+        return this._vertexShader.assemble();
+      }
+    }]);
+
+    return Material;
+  }();
+
+  var _flags = function () {
+    var that = _anObject(this);
+    var result = '';
+    if (that.global) result += 'g';
+    if (that.ignoreCase) result += 'i';
+    if (that.multiline) result += 'm';
+    if (that.unicode) result += 'u';
+    if (that.sticky) result += 'y';
+    return result;
+  };
+
+  // 21.2.5.3 get RegExp.prototype.flags()
+  if (_descriptors && /./g.flags != 'g') _objectDp.f(RegExp.prototype, 'flags', {
+    configurable: true,
+    get: _flags
+  });
+
+  var TO_STRING = 'toString';
+  var $toString = /./[TO_STRING];
+
+  var define = function (fn) {
+    _redefine(RegExp.prototype, TO_STRING, fn, true);
+  }; // 21.2.5.14 RegExp.prototype.toString()
+
+
+  if (_fails(function () {
+    return $toString.call({
+      source: 'a',
+      flags: 'b'
+    }) != '/a/b';
+  })) {
+    define(function toString() {
+      var R = _anObject(this);
+      return '/'.concat(R.source, '/', 'flags' in R ? R.flags : !_descriptors && R instanceof RegExp ? _flags.call(R) : undefined);
+    }); // FF44- RegExp#toString has a wrong name
+  } else if ($toString.name != TO_STRING) {
+    define(function toString() {
+      return $toString.call(this);
+    });
+  }
+
+  var dP$3 = _objectDp.f;
 
 
 
@@ -2935,7 +4174,7 @@
           return !!getEntry(_validateCollection(this, NAME), key);
         }
       });
-      if (_descriptors) dP$1(C.prototype, 'size', {
+      if (_descriptors) dP$3(C.prototype, 'size', {
         get: function () {
           return _validateCollection(this, NAME)[SIZE];
         }
@@ -4351,281 +5590,57 @@
   var glMat4_17 = glMat4.fromRotationTranslation;
   var glMat4_18 = glMat4.fromScaling;
   var glMat4_25 = glMat4.perspective;
+  var glMat4_27 = glMat4.ortho;
 
-  var LightsExtension = {
-    init: function init(self) {
-      self.LIGHTS = [];
-    },
-    object: function object(_object, self) {
-      console.log(_object);
-      if (!_object.isLight) return;
-      self.LIGHTS.push(_object);
-    },
-    render: function render(gl, self) {
-      self.LIGHTS.forEach(function (light) {// console.log(light);
-        // gl.
-      });
-    }
-  };
+  var dP$4 = _objectDp.f;
 
-  var _locals = new WeakMap();
+  var gOPN$2 = _objectGopn.f;
 
-  var Renderer =
-  /*#__PURE__*/
-  function () {
-    function Renderer() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-      _classCallCheck(this, Renderer);
 
-      options = Object.assign({
-        extensions: Renderer.defaultExtensions
-      }, options);
-      this.canvas = options instanceof HTMLCanvasElement ? options : options.canvas || document.createElement('canvas');
-      var gl = this.context = this.canvas.getContext('webgl2'); // eslint-disable-line
-      // TODO: Add webgl2 support check
 
-      this.clearColor = options.clearColor || [0, 0, 0, 0];
-      this.extensions = options.extensions;
-      this._programs = [];
-      this._root_objects = new Set();
-      gl.clearColor.apply(gl, this.clearColor); // eslint-disable-line
 
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.enable(gl.DEPTH_TEST);
-      gl.enable(gl.CULL_FACE);
+  var $RegExp = _global.RegExp;
+  var Base = $RegExp;
+  var proto$1 = $RegExp.prototype;
+  var re1 = /a/g;
+  var re2 = /a/g; // "new" creates a new object, old webkit buggy here
 
-      _locals.set(this, {
-        STATE_ASYNC: false,
-        RENDER_REQUESTED_CAMERA: null,
-        PROMISES: [],
-        DRAW_CONSTANTS: {
-          lines: gl.LINES,
-          points: gl.POINTS,
-          triangles: gl.TRIANGLES
+  var CORRECT_NEW = new $RegExp(re1) !== re1;
+
+  if (_descriptors && (!CORRECT_NEW || _fails(function () {
+    re2[_wks('match')] = false; // RegExp constructor can alter flags and IsRegExp works correct with @@match
+
+    return $RegExp(re1) != re1 || $RegExp(re2) == re2 || $RegExp(re1, 'i') != '/a/i';
+  }))) {
+    $RegExp = function RegExp(p, f) {
+      var tiRE = this instanceof $RegExp;
+      var piRE = _isRegexp(p);
+      var fiU = f === undefined;
+      return !tiRE && piRE && p.constructor === $RegExp && fiU ? p : _inheritIfRequired(CORRECT_NEW ? new Base(piRE && !fiU ? p.source : p, f) : Base((piRE = p instanceof $RegExp) ? p.source : p, piRE && fiU ? _flags.call(p) : f), tiRE ? this : proto$1, $RegExp);
+    };
+
+    var proxy = function (key) {
+      key in $RegExp || dP$4($RegExp, key, {
+        configurable: true,
+        get: function () {
+          return Base[key];
+        },
+        set: function (it) {
+          Base[key] = it;
         }
       });
+    };
 
-      var self = _locals.get(this);
+    for (var keys = gOPN$2(Base), i$1 = 0; keys.length > i$1;) proxy(keys[i$1++]);
 
-      for (var i = 0, l = this.extensions.length; i < l; i++) {
-        this.extensions[i].init.call(this, self);
-      }
-    }
+    proto$1.constructor = $RegExp;
+    $RegExp.prototype = proto$1;
 
-    _createClass(Renderer, [{
-      key: "attach",
-      value: function attach(program) {
-        if (!program._compiledProgram) program._compiledProgram = program._compile(this.context, this);
-        var uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms));
+    _redefine(_global, 'RegExp', $RegExp);
+  }
 
-        var self = _locals.get(this);
-
-        var hasPromises = false;
-
-        var _loop = function _loop(k, kl) {
-          var _uniforms$k = _slicedToArray(uniforms[k], 2),
-              uniformName = _uniforms$k[0],
-              descriptor = _uniforms$k[1];
-
-          var value = descriptor.value || descriptor.get();
-
-          if (value instanceof Promise) {
-            hasPromises = true;
-            self.STATE_ASYNC = true;
-            self.PROMISES.push(value);
-            value.then(function (data) {
-              if (uniformName in program.uniforms) program.uniforms[uniformName] = data;else descriptor.set(data);
-            });
-          }
-        };
-
-        for (var k = 0, kl = uniforms.length; k < kl; k++) {
-          _loop(k, kl);
-        }
-
-        if (hasPromises) this._renderWhenSync();
-
-        this._programs.push(program);
-      }
-    }, {
-      key: "_renderWhenSync",
-      value: function _renderWhenSync() {
-        var _this = this;
-
-        var self = _locals.get(this);
-
-        var oldPromises = [].concat(self.PROMISES);
-        Promise.all(self.PROMISES).then(function () {
-          if (self.PROMISES.length !== oldPromises.length || self.PROMISES.reduce(function (v, n, i) {
-            return v || n !== oldPromises[i];
-          }, false) // promises are not the same
-          ) return;
-          self.STATE_ASYNC = false;
-
-          _this.render(self.RENDER_REQUESTED_CAMERA);
-        });
-      }
-    }, {
-      key: "setSize",
-      value: function setSize(width, height) {
-        this.canvas.width = width;
-        this.canvas.height = height;
-      }
-    }, {
-      key: "setScene",
-      value: function setScene(scene) {
-        var _this2 = this;
-
-        var self = _locals.get(this);
-
-        this._root_objects.add(scene);
-
-        scene.traverse(function (child) {
-          if (child.isMesh) {
-            _this2.attach(child.program);
-
-            child.program.__scene = scene;
-          }
-
-          for (var i = 0, l = _this2.extensions.length; i < l; i++) {
-            _this2.extensions[i].object.call(_this2, child, self);
-          }
-        });
-        scene.on('hierarchy-update', function (_ref) {
-          var object = _ref.object;
-
-          if (object.isMesh) {
-            _this2.attach(object.program);
-
-            object.program.__scene = scene;
-          }
-
-          for (var i = 0, l = _this2.extensions.length; i < l; i++) {
-            _this2.extensions[i].object.call(_this2, object, self);
-          }
-        });
-      }
-    }, {
-      key: "render",
-      value: function render() {
-        var _this3 = this;
-
-        var camera = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-        var frameBuffer = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-        // eslint-disable-line
-        var gl = this.context;
-
-        var self = _locals.get(this);
-
-        var DRAW_CONSTANTS = self.DRAW_CONSTANTS,
-            STATE_ASYNC = self.STATE_ASYNC;
-
-        if (STATE_ASYNC) {
-          self.RENDER_REQUESTED_CAMERA = camera;
-          return;
-        }
-
-        if (frameBuffer) {
-          if (!frameBuffer._compiledFrameBuffer) frameBuffer._compile(gl);
-
-          frameBuffer._bindFramebuffer(gl);
-        } else gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-        if (camera.matrixAutoUpdate) camera.updateMatrix();
-        if (camera.matrixWorldAutoUpdate) camera.updateMatrixWorld(); // TODO: add optimization feature to avoid iterating
-
-        this._root_objects.forEach(function (root) {
-          root.traverse(function (object) {
-            if (object.matrixAutoUpdate) object.updateMatrix();
-            if (object.matrixWorldAutoUpdate) object.updateMatrixWorld();
-          });
-        }); // Clear the canvas
-
-
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
-        var _loop2 = function _loop2(i, l) {
-          var program = _this3._programs[i];
-          if (!program.enabled) return "continue";
-          var uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms)); // Tell it to use our program (pair of shaders)
-
-          gl.useProgram(program._compiledProgram);
-
-          program._bind(gl);
-
-          var hasPromises = false;
-
-          var _loop3 = function _loop3(k, kl) {
-            var _uniforms$k2 = _slicedToArray(uniforms[k], 2),
-                uniformName = _uniforms$k2[0],
-                descriptor = _uniforms$k2[1];
-
-            var value = descriptor.value || descriptor.get();
-            if (!value) return "continue";
-
-            if (value instanceof Promise) {
-              hasPromises = true;
-              self.STATE_ASYNC = true;
-              self.PROMISES.push(value);
-              value.then(function (data) {
-                if (uniformName in program.uniforms) program.uniforms[uniformName] = data;else descriptor.set(data);
-              });
-              return "continue";
-            }
-
-            if (value.isTexture) {
-              if (!value._compiledTexture) value._compile(gl);
-
-              var textureUnit = value._bind(gl);
-
-              gl.uniform1i(gl.getUniformLocation(program._compiledProgram, uniformName), textureUnit);
-              return "continue";
-            }
-
-            var isMatrix = uniformName.indexOf('$') === 0;
-
-            if (isMatrix) {
-              gl["uniformMatrix".concat(value.length === 4 ? 2 : value.length === 9 ? 3 : 4, "fv")](gl.getUniformLocation(program._compiledProgram, uniformName.slice(1)), false, value);
-            } else {
-              gl[Array.isArray(value) ? "uniform".concat(value.length, "fv") : 'uniform1f'](gl.getUniformLocation(program._compiledProgram, uniformName), value);
-            }
-          };
-
-          for (var k = 0, kl = uniforms.length; k < kl; k++) {
-            var _ret2 = _loop3(k, kl);
-
-            if (_ret2 === "continue") continue;
-          }
-
-          if (hasPromises) _this3._renderWhenSync();
-
-          if (camera) {
-            gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, 'viewMatrix'), false, glMat4_6([], camera.matrixWorld));
-            gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, 'projectionMatrix'), false, camera.projectionMatrix);
-          }
-
-          for (var _i = 0, _l = _this3.extensions.length; _i < _l; _i++) {
-            _this3.extensions[_i].render.call(_this3, gl, self);
-          }
-
-          if (program.index) gl.drawElements(DRAW_CONSTANTS[program.draw], program.count, gl.UNSIGNED_SHORT, 0);else gl.drawArrays(DRAW_CONSTANTS[program.draw], 0, program.count);
-        };
-
-        for (var i = 0, l = this._programs.length; i < l; i++) {
-          var _ret = _loop2(i, l);
-
-          if (_ret === "continue") continue;
-        }
-      }
-    }]);
-
-    return Renderer;
-  }();
-
-  _defineProperty(Renderer, "Lights", LightsExtension);
-
-  _defineProperty(Renderer, "defaultExtensions", [LightsExtension]);
+  _setSpecies('RegExp');
 
   var Geometry =
   /*#__PURE__*/
@@ -4682,11 +5697,11 @@
       _classCallCheck(this, Program);
 
       _defineProperty(this, "_compile", function (gl) {
-        var vertexShader = _this.vertexShader || Program.createShader(gl, 'vertex', _this.vert);
-        var fragmentShader = _this.fragmentShader || Program.createShader(gl, 'fragment', _this.frag);
+        _this.vertexShader = _this.vertexShader || Program.createShader(gl, 'vertex', _this.vert);
+        _this.fragmentShader = _this.fragmentShader || Program.createShader(gl, 'fragment', _this.frag);
         var program = gl.createProgram();
-        gl.attachShader(program, vertexShader);
-        gl.attachShader(program, fragmentShader);
+        gl.attachShader(program, _this.vertexShader);
+        gl.attachShader(program, _this.fragmentShader);
         gl.linkProgram(program);
         var success = gl.getProgramParameter(program, gl.LINK_STATUS);
 
@@ -4694,28 +5709,7 @@
 
         if (!vao._compiledVAO) vao._compile(gl);
 
-        vao._bind(gl); // // index attribute
-
-
-        if (_this.index) {
-          if (!_this.index._compiledBuffer) _this.index._compile(gl, true);
-
-          _this.index._bind(gl, null, true);
-        } //
-        // // non-index attributes
-
-
-        var _arr = Object.entries(_this.attributes);
-
-        for (var _i = 0; _i < _arr.length; _i++) {
-          var _arr$_i = _slicedToArray(_arr[_i], 2),
-              attrName = _arr$_i[0],
-              attr = _arr$_i[1];
-
-          if (!attr._compiledBuffer) attr._compile(gl, false);
-
-          attr._bind(gl, gl.getAttribLocation(program, attrName), false);
-        }
+        _this._bind(gl, true, program);
 
         if (success) return program; // TODO: Cleanup error logging + add troubleshooting
 
@@ -4724,34 +5718,65 @@
       });
 
       _defineProperty(this, "_bind", function (gl) {
+        var vaoNeedsUpdate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+        var program = arguments.length > 2 ? arguments[2] : undefined;
+
         _geometryRefs.get(_this)._bind(gl);
+
+        if (vaoNeedsUpdate) {
+          // // index attribute
+          if (_this.index) {
+            if (!_this.index._compiledBuffer) _this.index._compile(gl, true);
+
+            _this.index._bind(gl, null, true);
+          } //
+          // // non-index attributes
+
+
+          var _arr = Object.entries(_this.attributes);
+
+          for (var _i = 0; _i < _arr.length; _i++) {
+            var _arr$_i = _slicedToArray(_arr[_i], 2),
+                attrName = _arr$_i[0],
+                attr = _arr$_i[1];
+
+            if (!attr._compiledBuffer) attr._compile(gl, false);
+
+            attr._bind(gl, gl.getAttribLocation(program, attrName), false);
+          }
+        }
       });
 
       var _Object$assign = Object.assign({
         vert: vertDefault,
         frag: fragDefault,
         vertexShader: null,
-        fragmentShader: null
+        fragmentShader: null,
+        uniforms: {}
       }, options),
           vert = _Object$assign.vert,
           frag = _Object$assign.frag,
           draw = _Object$assign.draw,
           count = _Object$assign.count,
-          _vertexShader = _Object$assign.vertexShader,
-          _fragmentShader = _Object$assign.fragmentShader;
+          vertexShader = _Object$assign.vertexShader,
+          fragmentShader = _Object$assign.fragmentShader,
+          uniforms = _Object$assign.uniforms;
 
       var _geometry = geometry || new Geometry();
 
       _geometryRefs.set(this, _geometry);
 
-      this.vertexShader = _vertexShader;
-      this.fragmentShader = _fragmentShader;
-      this.vert = _vertexShader ? 'linked shader is used' : vert;
-      this.frag = _fragmentShader ? 'linked shader is used' : frag;
+      this.vertexShader = vertexShader;
+      this.fragmentShader = fragmentShader;
+      this.vert = vertexShader ? 'linked shader is used' : vert;
+      this.frag = fragmentShader ? 'linked shader is used' : frag;
       this.draw = draw || 'triangles';
-      this.uniforms = {};
+      this.uniforms = uniforms instanceof UniformStack ? uniforms : new UniformStack(uniforms);
       this.count = count || _geometry.getCount() || 3;
+      this.needsUpdate = true;
       this.enabled = true;
+      this.mesh = null;
+      this.state = {};
       Object.defineProperties(this, {
         attributes: {
           get: function get() {
@@ -4797,382 +5822,57 @@
     var shader = gl.createShader(type);
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
+    return Program.debugShader(gl, shader);
+  });
+
+  _defineProperty(Program, "dynamicDefines", function (gl, shader, defines) {
+    var source = gl.getShaderSource(shader);
+    source = source.substr(source.indexOf('#version 300 es') + 15, source.length);
+
+    for (var name in defines) {
+      source = source.replace(new RegExp("\\#define\\s(".concat(name, ")\\s(.*)")), '#define $1 ' + defines[name]);
+      if (source.indexOf("#define ".concat(name)) < 0) source = "#define ".concat(name, " ").concat(defines[name], " \n") + source;
+    }
+
+    gl.shaderSource(shader, '#version 300 es\n' + source); // gl.compileShader(shader);
+  });
+
+  _defineProperty(Program, "debugShader", function (gl, shader) {
     var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
     if (success) return shader; // TODO: Cleanup error logging + add troubleshooting
 
     console.warn(gl.getShaderInfoLog(shader));
-    console.warn(source.split('\n').map(function (line, i) {
+    console.warn(gl.getShaderSource(shader).split('\n').map(function (line, i) {
       return "".concat(i < 9 ? '0' : '').concat(i + 1, ":  ").concat(line);
     }).join('\n'));
     gl.deleteShader(shader);
   });
 
-  var Attribute =
-  /*#__PURE__*/
-  function () {
-    _createClass(Attribute, null, [{
-      key: "inlineArray",
-      value: function inlineArray(inArray) {
-        return inArray.reduce(function (o, a) {
-          o.push.apply(o, _toConsumableArray(a));
-          return o;
-        }, []);
-      }
-    }]);
-
-    function Attribute(array, size) {
-      var _this = this;
-
-      _classCallCheck(this, Attribute);
-
-      _defineProperty(this, "_compile", function (gl) {
-        var isIndex = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-        var BUFFER_TYPE = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
-        var buffer = gl.createBuffer();
-        gl.bindBuffer(BUFFER_TYPE, buffer);
-        gl.bufferData(BUFFER_TYPE, _this.array, gl.STATIC_DRAW);
-        _this._compiledBuffer = buffer;
-      });
-
-      _defineProperty(this, "_bind", function (gl, location, isIndex) {
-        var BUFFER_TYPE = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
-        gl.bindBuffer(BUFFER_TYPE, _this._compiledBuffer);
-        if (isIndex === 'index') return;
-        gl.enableVertexAttribArray(location); // TODO: Check for additional capabilities of vertexAttribPointer
-
-        gl.vertexAttribPointer(location, _this.size, // 2 components per iteration
-        gl.FLOAT, // the data is 32bit floats
-        false, // don't normalize the data
-        0, // 0 = move forward size * sizeof(type) each iteration to get the next position
-        0 // start at the beginning of the buffer
-        );
-      });
-
-      this.array = array;
-      this.size = size;
-      this._compiledBuffer = null;
-    }
-
-    return Attribute;
-  }();
-
-  var minivents_commonjs = function Events(target) {
-    var events = {},
-        empty = [];
-    target = target || this;
-    /**
-     *  On: listen to events
-     */
-
-    target.on = function (type, func, ctx) {
-      (events[type] = events[type] || []).push([func, ctx]);
-      return target;
-    };
-    /**
-     *  Off: stop listening to event / specific callback
-     */
-
-
-    target.off = function (type, func) {
-      type || (events = {});
-      var list = events[type] || empty,
-          i = list.length = func ? list.length : 0;
-
-      while (i--) func == list[i][0] && list.splice(i, 1);
-
-      return target;
-    };
-    /** 
-     * Emit: send event, callbacks will be triggered
-     */
-
-
-    target.emit = function (type) {
-      var e = events[type] || empty,
-          list = e.length > 0 ? e.slice(0, e.length) : e,
-          i = 0,
-          j;
-
-      while (j = list[i++]) j[0].apply(j[1], empty.slice.call(arguments, 1));
-
-      return target;
-    };
-  };
-
-  var Object3D =
-  /*#__PURE__*/
-  function (_Events) {
-    _inherits(Object3D, _Events);
-
-    function Object3D() {
-      var _this;
-
-      _classCallCheck(this, Object3D);
-
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Object3D).call(this)); // FIXME: replace identity() with create()
-
-      _this.matrix = glMat4_4([]);
-      _this.matrixWorld = glMat4_4([]);
-      _this.position = [0, 0, 0];
-      _this.scale = [1, 1, 1];
-      _this.quaternion = [0, 0, 0, 1];
-      _this.children = [];
-      _this.matrixAutoUpdate = true;
-      _this.matrixWorldAutoUpdate = true;
-      return _this;
-    }
-
-    _createClass(Object3D, [{
-      key: "updateMatrix",
-      value: function updateMatrix() {
-        glMat4_17(glMat4_18(this.matrix, this.scale), this.quaternion, this.position);
-      }
-    }, {
-      key: "updateMatrixWorld",
-      value: function updateMatrixWorld() {
-        // Consider to be called after updateMatrix()
-        if (!this.parent) {
-          glMat4_3(this.matrixWorld, this.matrix);
-          return;
-        }
-
-        glMat4_9(this.matrixWorld, this.matrix, this.parent.matrix);
-      }
-    }, {
-      key: "add",
-      value: function add(child) {
-        child.parent = this;
-        this.children.push(child);
-        var eventObject = {
-          parent: this,
-          object: child
-        };
-        child.emit('hierarchy-update', eventObject);
-        this.emit('hierarchy-update', eventObject);
-        var _parent = this.parent;
-
-        while (_parent) {
-          _parent.emit('hierarchy-update', eventObject);
-
-          _parent = _parent.parent;
-        }
-      }
-    }, {
-      key: "traverse",
-      value: function traverse(cb) {
-        var children = this.children;
-
-        for (var i = 0, l = children.length; i < l; i++) {
-          cb(children[i]);
-          children[i].traverse(cb);
-        }
-      }
-    }]);
-
-    return Object3D;
-  }(minivents_commonjs);
-
-  var Mesh =
-  /*#__PURE__*/
-  function (_Object3D) {
-    _inherits(Mesh, _Object3D);
-
-    function Mesh(geometry) {
-      var _this;
-
-      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-      _classCallCheck(this, Mesh);
-
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Mesh).call(this));
-
-      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "isMesh", true);
-
-      options = Object.assign({
-        shader: {}
-      }, options);
-      _this.program = new Program({
-        vert: options.shader.vert,
-        frag: options.shader.frag
-      }, geometry); // console.log(options.shader.uniforms);
-
-      _this.program.uniforms = Object.assign(options.shader.uniforms || {}, {
-        $modelMatrix: _this.matrixWorld
-      });
-      return _this;
-    }
-
-    _createClass(Mesh, [{
-      key: "visible",
-      get: function get() {
-        return this.program.enabled;
-      },
-      set: function set(value) {
-        this.program.enabled = value;
-      }
-    }]);
-
-    return Mesh;
-  }(Object3D);
-
-  var Scene =
-  /*#__PURE__*/
-  function (_Object3D) {
-    _inherits(Scene, _Object3D);
-
-    function Scene() {
-      _classCallCheck(this, Scene);
-
-      return _possibleConstructorReturn(this, _getPrototypeOf(Scene).call(this));
-    }
-
-    return Scene;
-  }(Object3D);
-
-  var Camera =
-  /*#__PURE__*/
-  function (_Object3D) {
-    _inherits(Camera, _Object3D);
-
-    function Camera() {
-      var _this;
-
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-      _classCallCheck(this, Camera);
-
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Camera).call(this));
-      options = Object.assign({
-        fovy: Math.PI / 2,
-        aspect: window.innerWidth / window.innerHeight,
-        near: 1,
-        far: 100
-      }, options);
-      _this.projectionMatrix = glMat4_25([], options.fovy, options.aspect, options.near, options.far);
-      return _this;
-    }
-
-    return Camera;
-  }(Object3D);
-
-  var textureUnitInt = 0;
-  var textureUnit = new WeakMap();
-  var Texture =
-  /*#__PURE__*/
-  function () {
-    _createClass(Texture, null, [{
-      key: "fromUrl",
-      value: function fromUrl(url) {
-        return new Promise(function (resolve) {
-          var img = new Image();
-          img.src = url;
-
-          img.onload = function () {
-            // eslint-disable-line
-            resolve(new Texture(img));
-          };
-        });
-      }
-    }]);
-
-    function Texture(image, width, height) {
-      _classCallCheck(this, Texture);
-
-      _defineProperty(this, "isTexture", true);
-
-      this.image = image;
-      this.width = width || 256;
-      this.height = height || 256;
-    }
-
-    _createClass(Texture, [{
-      key: "_compile",
-      value: function _compile(gl) {
-        textureUnit.set(this, textureUnitInt++); // TODO: Cleanup comments, make the use of parameters
-
-        var texture = gl.createTexture(); // make unit 0 the active texture uint
-        // (ie, the unit all other texture commands will affect
-
-        if (this.image) gl.activeTexture(gl['TEXTURE' + textureUnit.get(this)]); // Bind it to texture unit 0' 2D bind point
-
-        gl.bindTexture(gl.TEXTURE_2D, texture); // Set the parameters so we don't need mips and so we're not filtering
-        // and we don't repeat
-
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); // Upload the image into the texture.
-
-        var mipLevel = 0; // the largest mip
-
-        var internalFormat = gl.RGBA; // format we want in the texture
-
-        var srcFormat = gl.RGBA; // format of data we are supplying
-
-        var srcType = gl.UNSIGNED_BYTE; // type of data we are supplying
-
-        gl.texImage2D(gl.TEXTURE_2D, mipLevel, internalFormat, this.width, this.height, 0, // border
-        srcFormat, srcType, this.image);
-        this._compiledTexture = texture;
-      }
-    }, {
-      key: "_bind",
-      value: function _bind(gl) {
-        gl.activeTexture(gl['TEXTURE' + textureUnit.get(this)]);
-        gl.bindTexture(gl.TEXTURE_2D, this._compiledTexture);
-        return textureUnit.get(this);
-      }
-    }]);
-
-    return Texture;
-  }();
-
-  var FrameBuffer =
-  /*#__PURE__*/
-  function (_Texture) {
-    _inherits(FrameBuffer, _Texture);
-
-    function FrameBuffer(width, height) {
-      var _this;
-
-      _classCallCheck(this, FrameBuffer);
-
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(FrameBuffer).call(this, null, width, height));
-
-      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_compile", function (gl) {
-        _get(_getPrototypeOf(FrameBuffer.prototype), "_compile", _assertThisInitialized(_this)).call(_assertThisInitialized(_this), gl); // Create and bind the framebuffer
-
-
-        var fb = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fb); // attach the texture as the first color attachment
-
-        var attachmentPoint = gl.COLOR_ATTACHMENT0;
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, _this._compiledTexture, 0); // TODO: change level
-
-        _this._compiledFrameBuffer = fb;
-      });
-
-      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "_bindFramebuffer", function (gl) {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, _this._compiledFrameBuffer);
-      });
-
-      return _this;
-    }
-
-    return FrameBuffer;
-  }(Texture);
+  _defineProperty(Program, "debugProgram", function (gl, program, fragShader, vertShader) {
+    var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+    if (success) return program; // TODO: Cleanup error logging + add troubleshooting
+
+    console.error(gl.getProgramInfoLog(program));
+    console.warn('Fragment shader: \n' + gl.getShaderSource(fragShader).split('\n').map(function (line, i) {
+      return "".concat(i < 9 ? '0' : '').concat(i + 1, ":  ").concat(line);
+    }).join('\n'));
+    console.warn('Vertex shader: \n' + gl.getShaderSource(vertShader).split('\n').map(function (line, i) {
+      return "".concat(i < 9 ? '0' : '').concat(i + 1, ":  ").concat(line);
+    }).join('\n'));
+    gl.deleteProgram(program);
+  });
 
   var TYPED = _uid('typed_array');
   var VIEW = _uid('view');
   var ABV = !!(_global.ArrayBuffer && _global.DataView);
   var CONSTR = ABV;
-  var i$1 = 0;
+  var i$2 = 0;
   var l = 9;
   var Typed;
   var TypedArrayConstructors = 'Int8Array,Uint8Array,Uint8ClampedArray,Int16Array,Uint16Array,Int32Array,Uint32Array,Float32Array,Float64Array'.split(',');
 
-  while (i$1 < l) {
-    if (Typed = _global[TypedArrayConstructors[i$1++]]) {
+  while (i$2 < l) {
+    if (Typed = _global[TypedArrayConstructors[i$2++]]) {
       _hide(Typed.prototype, TYPED, true);
       _hide(Typed.prototype, VIEW, true);
     } else CONSTR = false;
@@ -6177,13 +6877,1806 @@
     };
   });
 
-  _typedArray('Uint16', 2, function (init) {
-    return function Uint16Array(data, byteOffset, length) {
-      return init(this, data, byteOffset, length);
-    };
-  });
+  var LightsExtension = {
+    init: function init(self) {
+      if (self.STATE_SHADOWMAP) return;
+      self.LIGHTS = [];
+    },
+    object: function object(_object, self) {
+      if (!_object.isLight || self.STATE_SHADOWMAP) return;
+      self.NUM_LIGHTS_CHANGED = true;
+      self.LIGHTS.push(_object);
+    },
+    program: function program(gl, _program, self) {
+      if (!self.NUM_LIGHTS_CHANGED || self.STATE_SHADOWMAP) return;
+      console.log(_program.mesh, _program.mesh.receiveShadow);
+      var defines = {
+        NUM_DIRECTIONAL_LIGHTS: self.LIGHTS.length,
+        MESH_RECEIVE_SHADOW: _program.mesh.receiveShadow
+      };
+      if (_program.mesh.receiveShadow) defines.USE_UV = true;
+      Program.dynamicDefines(gl, _program.fragmentShader, defines);
+      Program.dynamicDefines(gl, _program.vertexShader, defines);
+      _program.needsUpdate = true;
+    },
+    before: function before(gl, self) {
+      var _this = this;
+
+      if (self.STATE_SHADOWMAP) return;
+      var lights = self.LIGHTS_BUFFER = new Float32Array(self.LIGHTS.length * 12);
+      var offs = 0;
+      self.LIGHTS.forEach(function (light) {
+        if (light.shadowMap) light.shadowMap.setSize(_this.canvas.width, _this.canvas.height);
+        self.STATE_SHADOWMAP = true;
+
+        _this.render(light.shadowCamera, light.shadowMap);
+
+        self.STATE_SHADOWMAP = false; // const fb = new NEXT.FrameBuffer(window.innerWidth, window.innerHeight, {depth: true});
+
+        var dir = light.quaternion.getDirection().value; // float intensity
+
+        lights[offs++] = light.intensity; // x
+        // lights[offs++] = light.intensity; // x
+        // lights[offs++] = light.intensity; // x
+
+        lights[offs++] = 0.0; // y
+
+        lights[offs++] = 0.0; // z
+
+        lights[offs++] = 0.0; // w
+        // vec3 color
+
+        lights[offs++] = light.color[0]; // r
+
+        lights[offs++] = light.color[1]; // g
+
+        lights[offs++] = light.color[2]; // b
+
+        lights[offs++] = 0.0; // b
+        // vec3 direction
+
+        lights[offs++] = dir[0]; // x
+
+        lights[offs++] = dir[1]; // y
+
+        lights[offs++] = dir[2]; // z
+
+        lights[offs++] = 0.0; // w
+      });
+    },
+    render: function render(gl, program, self) {
+      // TODO: Move lights part to "before"
+      if (self.STATE_SHADOWMAP) return;
+      self.LIGHTS.forEach(function (light, i) {
+        var texture = light.shadowMap.texture;
+        if (!texture._compiledTexture) texture._compile(gl); // gl.uniform1i(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMaps[${i}]`), texture._bind(gl));
+        // if (!texture._compiledTexture) texture._compile(gl);
+        // texture._bind(gl);
+        // console.log(texUnit);
+        // gl.activeTexture(gl['TEXTURE' + ++self.TEXTURE_UNIT]);
+        // gl.uniform1i(gl.getUniformLocation(program._compiledProgram, `directionalShadowMaps[${i}]`), self.TEXTURE_UNIT);
+      });
+
+      if (self.LIGHTS.length > 0 && program.state.lights) {
+        var location = gl.getUniformBlockIndex(program._compiledProgram, 'Lights');
+        gl.uniformBlockBinding(program._compiledProgram, location, 0);
+        var lightsBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.UNIFORM_BUFFER, lightsBuffer);
+        gl.bufferData(gl.UNIFORM_BUFFER, self.LIGHTS_BUFFER, gl.DYNAMIC_DRAW);
+        gl.bindBuffer(gl.UNIFORM_BUFFER, null); // //...
+        // // Render
+
+        gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, lightsBuffer);
+      }
+    },
+    after: function after(gl, self) {
+      if (self.STATE_SHADOWMAP) return;
+      self.NUM_LIGHTS_CHANGED = false;
+    }
+  };
+
+  var _locals = new WeakMap();
+
+  var typeIsArray = {
+    vec2: true,
+    vec3: true,
+    vec4: true,
+    mat2: true,
+    mat3: true,
+    mat4: true
+  };
+  var Renderer =
+  /*#__PURE__*/
+  function () {
+    function Renderer() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+      _classCallCheck(this, Renderer);
+
+      options = Object.assign({
+        extensions: Renderer.defaultExtensions
+      }, options);
+      this.canvas = options instanceof HTMLCanvasElement ? options : options.canvas || document.createElement('canvas');
+      var gl = this.context = this.canvas.getContext('webgl2'); // eslint-disable-line
+      // TODO: Add webgl2 support check
+
+      this.clearColor = options.clearColor || [0, 0, 0, 0];
+      this.extensions = options.extensions;
+      this._programs = [];
+      this._root_objects = new Set();
+      gl.clearColor.apply(gl, this.clearColor); // eslint-disable-line
+
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.enable(gl.DEPTH_TEST);
+      gl.enable(gl.CULL_FACE);
+
+      _locals.set(this, {
+        STATE_ASYNC: false,
+        RENDER_REQUESTED_CAMERA: null,
+        PROMISES: [],
+        DRAW_CONSTANTS: {
+          lines: gl.LINES,
+          points: gl.POINTS,
+          triangles: gl.TRIANGLES
+        },
+        UNIFORM_FUNCS: {
+          float: function float(loc, v, u) {
+            return gl.uniform1f(loc, v);
+          },
+          vec2: function vec2(loc, v, u) {
+            return gl.uniform2fv(loc, v);
+          },
+          vec3: function vec3(loc, v, u) {
+            return gl.uniform3fv(loc, u.isValueUniform ? v.value : v);
+          },
+          vec4: function vec4(loc, v, u) {
+            return gl.uniform4fv(loc, v);
+          },
+          mat2: function mat2(loc, v, u) {
+            return gl.uniformMatrix2fv(loc, false, v);
+          },
+          mat3: function mat3(loc, v, u) {
+            return gl.uniformMatrix3fv(loc, false, v);
+          },
+          mat4: function mat4(loc, v, u) {
+            return gl.uniformMatrix4fv(loc, false, u.isValueUniform ? v.value : v);
+          }
+        }
+      });
+
+      var self = _locals.get(this);
+
+      for (var i = 0, l = this.extensions.length; i < l; i++) {
+        this.extensions[i].init.call(this, self);
+      }
+    }
+
+    _createClass(Renderer, [{
+      key: "attach",
+      value: function attach(program) {
+        if (!program._compiledProgram) program._compiledProgram = program._compile(this.context, this);
+        var uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms));
+
+        var self = _locals.get(this);
+
+        var hasPromises = false;
+
+        var _loop = function _loop(k, kl) {
+          var _uniforms$k = _slicedToArray(uniforms[k], 2),
+              uniformName = _uniforms$k[0],
+              descriptor = _uniforms$k[1];
+
+          var value = descriptor.value || descriptor.get();
+
+          if (value instanceof Promise) {
+            hasPromises = true;
+            self.STATE_ASYNC = true;
+            self.PROMISES.push(value);
+            value.then(function (data) {
+              if (uniformName in program.uniforms) program.uniforms[uniformName] = data;else descriptor.set(data);
+            });
+          }
+        };
+
+        for (var k = 0, kl = uniforms.length; k < kl; k++) {
+          _loop(k, kl);
+        }
+
+        if (hasPromises) this._renderWhenSync();
+
+        this._programs.push(program);
+      }
+    }, {
+      key: "_renderWhenSync",
+      value: function _renderWhenSync() {
+        var _this = this;
+
+        var self = _locals.get(this);
+
+        var oldPromises = [].concat(self.PROMISES);
+        Promise.all(self.PROMISES).then(function () {
+          if (self.PROMISES.length !== oldPromises.length || self.PROMISES.reduce(function (v, n, i) {
+            return v || n !== oldPromises[i];
+          }, false) // promises are not the same
+          ) return;
+          self.STATE_ASYNC = false;
+
+          _this.render(self.RENDER_REQUESTED_CAMERA);
+        });
+      }
+    }, {
+      key: "setSize",
+      value: function setSize(width, height) {
+        this.canvas.width = width;
+        this.canvas.height = height;
+      }
+    }, {
+      key: "setScene",
+      value: function setScene(scene) {
+        var _this2 = this;
+
+        var self = _locals.get(this);
+
+        this._root_objects.add(scene);
+
+        scene.traverse(function (child) {
+          if (child.isMesh) {
+            _this2.attach(child.program);
+
+            child.program.__scene = scene;
+          }
+
+          for (var i = 0, l = _this2.extensions.length; i < l; i++) {
+            _this2.extensions[i].object.call(_this2, child, self);
+          }
+        });
+        scene.on('hierarchy-update', function (_ref) {
+          var object = _ref.object;
+
+          if (object.isMesh) {
+            _this2.attach(object.program);
+
+            object.program.__scene = scene;
+          }
+
+          for (var i = 0, l = _this2.extensions.length; i < l; i++) {
+            _this2.extensions[i].object.call(_this2, object, self);
+          }
+        });
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        var camera = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+        var frameBuffer = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+        // eslint-disable-line
+        var gl = this.context;
+
+        var self = _locals.get(this);
+
+        var DRAW_CONSTANTS = self.DRAW_CONSTANTS,
+            UNIFORM_FUNCS = self.UNIFORM_FUNCS,
+            STATE_ASYNC = self.STATE_ASYNC;
+
+        if (STATE_ASYNC) {
+          self.RENDER_REQUESTED_CAMERA = camera;
+          return;
+        }
+
+        for (var i = 0, l = this.extensions.length; i < l; i++) {
+          if (this.extensions[i].before) this.extensions[i].before.call(this, gl, self);
+        }
+
+        if (frameBuffer) {
+          if (!frameBuffer._compiledFrameBuffer) frameBuffer._compile(gl);
+
+          frameBuffer._bindFramebuffer(gl);
+        } else gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        if (camera.matrixAutoUpdate) camera.updateMatrix();
+        if (camera.matrixWorldAutoUpdate) camera.updateMatrixWorld(); // TODO: add optimization feature to avoid iterating
+
+        this._root_objects.forEach(function (root) {
+          root.traverse(function (object) {
+            if (object.matrixAutoUpdate) object.updateMatrix();
+            if (object.matrixWorldAutoUpdate) object.updateMatrixWorld();
+          });
+        }); // Clear the canvas
+
+
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        self.TEXTURE_UNIT = 0;
+
+        for (var _i = 0, _l = this._programs.length; _i < _l; _i++) {
+          var program = this._programs[_i];
+          if (!program.enabled) continue; // const uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms));
+
+          for (var _i2 = 0, _l2 = this.extensions.length; _i2 < _l2; _i2++) {
+            if (this.extensions[_i2].program) this.extensions[_i2].program.call(this, gl, program, self);
+          }
+
+          if (program.needsUpdate) {
+            gl.compileShader(program.fragmentShader);
+            gl.compileShader(program.vertexShader);
+            gl.linkProgram(program._compiledProgram);
+            Program.debugProgram(gl, program._compiledProgram, program.fragmentShader, program.vertexShader);
+            Program.debugShader(gl, program.fragmentShader);
+            Program.debugShader(gl, program.vertexShader);
+            program.needsUpdate = false;
+            gl.useProgram(program._compiledProgram);
+
+            program._bind(gl, true, program._compiledProgram);
+          } else {
+            gl.useProgram(program._compiledProgram);
+
+            program._bind(gl);
+          }
+
+          var hasPromises = false;
+          var _iteratorNormalCompletion = true;
+          var _didIteratorError = false;
+          var _iteratorError = undefined;
+
+          try {
+            for (var _iterator = program.uniforms[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var uniform = _step.value;
+              var uniformName = uniform.name;
+              var value = uniform.descriptor.value || uniform.descriptor.get();
+
+              if (typeIsArray[uniform.type]) {
+                // TODO: test in action.
+                if (!uniform.cache || uniform.cache === value.toString()) {
+                  uniform.cache = value.toString();
+                  uniform.needsUpdate = true;
+                }
+              }
+
+              if (!value || !uniform.needsUpdate) continue;
+
+              if (uniform.type === 'promise') {
+                hasPromises = true;
+                self.STATE_ASYNC = true;
+                self.PROMISES.push(value);
+                continue;
+              } // console.log(uniform);
+
+
+              if (value.isTexture) {
+                if (!value._compiledTexture) value._compile(gl);
+                gl.uniform1i(gl.getUniformLocation(program._compiledProgram, uniformName), value._bind(gl));
+                continue;
+              }
+
+              var location = gl.getUniformLocation(program._compiledProgram, uniformName);
+              UNIFORM_FUNCS[uniform.type](location, value, uniform);
+              uniform.needsUpdate = false;
+            }
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator.return != null) {
+                _iterator.return();
+              }
+            } finally {
+              if (_didIteratorError) {
+                throw _iteratorError;
+              }
+            }
+          }
+
+          if (hasPromises) this._renderWhenSync();
+
+          if (camera) {
+            gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, 'viewMatrix'), false, glMat4_6([], camera.matrixWorld.value));
+            gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, 'projectionMatrix'), false, camera.projectionMatrix.value);
+          }
+
+          for (var _i3 = 0, _l3 = this.extensions.length; _i3 < _l3; _i3++) {
+            if (this.extensions[_i3].render) this.extensions[_i3].render.call(this, gl, program, self);
+          }
+
+          if (program.index) gl.drawElements(DRAW_CONSTANTS[program.draw], program.count, gl.UNSIGNED_SHORT, 0);else gl.drawArrays(DRAW_CONSTANTS[program.draw], 0, program.count);
+        }
+
+        for (var _i4 = 0, _l4 = this.extensions.length; _i4 < _l4; _i4++) {
+          if (this.extensions[_i4].after) this.extensions[_i4].after.call(this, gl, self);
+        } // gl.bindTexture(gl.TEXTURE_2D, null);
+
+      }
+    }]);
+
+    return Renderer;
+  }();
+
+  _defineProperty(Renderer, "Lights", LightsExtension);
+
+  _defineProperty(Renderer, "defaultExtensions", [LightsExtension]);
+
+  var Attribute =
+  /*#__PURE__*/
+  function () {
+    _createClass(Attribute, null, [{
+      key: "inlineArray",
+      value: function inlineArray(inArray) {
+        return inArray.reduce(function (o, a) {
+          o.push.apply(o, _toConsumableArray(a));
+          return o;
+        }, []);
+      }
+    }]);
+
+    function Attribute(array, size) {
+      var _this = this;
+
+      _classCallCheck(this, Attribute);
+
+      _defineProperty(this, "_compile", function (gl) {
+        var isIndex = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+        var BUFFER_TYPE = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
+        var buffer = gl.createBuffer();
+        gl.bindBuffer(BUFFER_TYPE, buffer);
+        gl.bufferData(BUFFER_TYPE, _this.array, gl.STATIC_DRAW);
+        _this._compiledBuffer = buffer;
+      });
+
+      _defineProperty(this, "_bind", function (gl, location, isIndex) {
+        var BUFFER_TYPE = isIndex ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
+        gl.bindBuffer(BUFFER_TYPE, _this._compiledBuffer);
+        if (isIndex === 'index') return;
+        gl.enableVertexAttribArray(location); // TODO: Check for additional capabilities of vertexAttribPointer
+
+        gl.vertexAttribPointer(location, _this.size, // 2 components per iteration
+        gl.FLOAT, // the data is 32bit floats
+        false, // don't normalize the data
+        0, // 0 = move forward size * sizeof(type) each iteration to get the next position
+        0 // start at the beginning of the buffer
+        );
+      });
+
+      this.array = array;
+      this.size = size;
+      this._compiledBuffer = null;
+    }
+
+    return Attribute;
+  }();
+
+  var Vec3 =
+  /*#__PURE__*/
+  function () {
+    function Vec3(x, y, z) {
+      _classCallCheck(this, Vec3);
+
+      _defineProperty(this, "isValueUniform", true);
+
+      _defineProperty(this, "isVec3", true);
+
+      this.value = [x, y, z];
+    }
+
+    _createClass(Vec3, [{
+      key: "set",
+      value: function set(x, y, z) {
+        this.value[0] = x;
+        this.value[1] = y;
+        this.value[2] = z;
+      }
+    }, {
+      key: "fromArray",
+      value: function fromArray(array) {
+        this.value[0] = array[0];
+        this.value[1] = array[1];
+        this.value[2] = array[2];
+      }
+    }, {
+      key: "copy",
+      value: function copy(vector) {
+        this.fromArray(vector.value);
+      }
+    }, {
+      key: "clone",
+      value: function clone() {
+        return new Vec3().copy(this);
+      }
+    }, {
+      key: "x",
+      get: function get() {
+        this.value[0];
+      },
+      set: function set(v) {
+        this.value[0] = v;
+      }
+    }, {
+      key: "y",
+      get: function get() {
+        this.value[1];
+      },
+      set: function set(v) {
+        this.value[1] = v;
+      }
+    }, {
+      key: "z",
+      get: function get() {
+        this.value[2];
+      },
+      set: function set(v) {
+        this.value[2] = v;
+      }
+    }]);
+
+    return Vec3;
+  }();
+
+  var Mat4 =
+  /*#__PURE__*/
+  function () {
+    function Mat4(matArray) {
+      _classCallCheck(this, Mat4);
+
+      _defineProperty(this, "isValueUniform", true);
+
+      _defineProperty(this, "isMat4", true);
+
+      this.value = new Float32Array(matArray || glMat4_4([]));
+    }
+
+    _createClass(Mat4, [{
+      key: "fromArray",
+      value: function fromArray(array) {
+        for (var i = 0; i < 16; i++) {
+          this.value[i] = array[i];
+        }
+      }
+    }, {
+      key: "compose",
+      value: function compose(position, quaternion, scale) {
+        glMat4_17(glMat4_18(this.value, scale.value), quaternion.value, position.value);
+      }
+    }, {
+      key: "perspective",
+      value: function perspective$$1(fovy, aspect, near, far) {
+        glMat4_25(this.value, fovy, aspect, near, far);
+      }
+    }, {
+      key: "ortho",
+      value: function ortho$$1(left, right, top, bottom, near, far) {
+        glMat4_27(this.value, left, right, top, bottom, near, far);
+      }
+    }, {
+      key: "copy",
+      value: function copy(matrix) {
+        this.fromArray(matrix.value);
+      }
+    }, {
+      key: "clone",
+      value: function clone() {
+        return new Mat4().copy(this);
+      }
+    }]);
+
+    return Mat4;
+  }();
+
+  var add_1 = add;
+  /**
+   * Adds two vec4's
+   *
+   * @param {vec4} out the receiving vector
+   * @param {vec4} a the first operand
+   * @param {vec4} b the second operand
+   * @returns {vec4} out
+   */
+
+  function add(out, a, b) {
+    out[0] = a[0] + b[0];
+    out[1] = a[1] + b[1];
+    out[2] = a[2] + b[2];
+    out[3] = a[3] + b[3];
+    return out;
+  }
+
+  /**
+   * Adds two quat's
+   *
+   * @param {quat} out the receiving quaternion
+   * @param {quat} a the first operand
+   * @param {quat} b the second operand
+   * @returns {quat} out
+   * @function
+   */
+  var add$1 = add_1;
+
+  var calculateW_1 = calculateW;
+  /**
+   * Calculates the W component of a quat from the X, Y, and Z components.
+   * Assumes that quaternion is 1 unit in length.
+   * Any existing W component will be ignored.
+   *
+   * @param {quat} out the receiving quaternion
+   * @param {quat} a quat to calculate W component of
+   * @returns {quat} out
+   */
+
+  function calculateW(out, a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2];
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    out[3] = Math.sqrt(Math.abs(1.0 - x * x - y * y - z * z));
+    return out;
+  }
+
+  var clone_1$1 = clone$1;
+  /**
+   * Creates a new vec4 initialized with values from an existing vector
+   *
+   * @param {vec4} a vector to clone
+   * @returns {vec4} a new 4D vector
+   */
+
+  function clone$1(a) {
+    var out = new Float32Array(4);
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    out[3] = a[3];
+    return out;
+  }
+
+  /**
+   * Creates a new quat initialized with values from an existing quaternion
+   *
+   * @param {quat} a quaternion to clone
+   * @returns {quat} a new quaternion
+   * @function
+   */
+  var clone$2 = clone_1$1;
+
+  var conjugate_1 = conjugate;
+  /**
+   * Calculates the conjugate of a quat
+   * If the quaternion is normalized, this function is faster than quat.inverse and produces the same result.
+   *
+   * @param {quat} out the receiving quaternion
+   * @param {quat} a quat to calculate conjugate of
+   * @returns {quat} out
+   */
+
+  function conjugate(out, a) {
+    out[0] = -a[0];
+    out[1] = -a[1];
+    out[2] = -a[2];
+    out[3] = a[3];
+    return out;
+  }
+
+  var copy_1$1 = copy$1;
+  /**
+   * Copy the values from one vec4 to another
+   *
+   * @param {vec4} out the receiving vector
+   * @param {vec4} a the source vector
+   * @returns {vec4} out
+   */
+
+  function copy$1(out, a) {
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    out[3] = a[3];
+    return out;
+  }
+
+  /**
+   * Copy the values from one quat to another
+   *
+   * @param {quat} out the receiving quaternion
+   * @param {quat} a the source quaternion
+   * @returns {quat} out
+   * @function
+   */
+  var copy$2 = copy_1$1;
+
+  var create_1$1 = create$1;
+  /**
+   * Creates a new identity quat
+   *
+   * @returns {quat} a new quaternion
+   */
+
+  function create$1() {
+    var out = new Float32Array(4);
+    out[0] = 0;
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 1;
+    return out;
+  }
+
+  var dot_1 = dot;
+  /**
+   * Calculates the dot product of two vec4's
+   *
+   * @param {vec4} a the first operand
+   * @param {vec4} b the second operand
+   * @returns {Number} dot product of a and b
+   */
+
+  function dot(a, b) {
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
+  }
+
+  /**
+   * Calculates the dot product of two quat's
+   *
+   * @param {quat} a the first operand
+   * @param {quat} b the second operand
+   * @returns {Number} dot product of a and b
+   * @function
+   */
+  var dot$1 = dot_1;
+
+  var fromMat3_1 = fromMat3;
+  /**
+   * Creates a quaternion from the given 3x3 rotation matrix.
+   *
+   * NOTE: The resultant quaternion is not normalized, so you should be sure
+   * to renormalize the quaternion yourself where necessary.
+   *
+   * @param {quat} out the receiving quaternion
+   * @param {mat3} m rotation matrix
+   * @returns {quat} out
+   * @function
+   */
+
+  function fromMat3(out, m) {
+    // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
+    // article "Quaternion Calculus and Fast Animation".
+    var fTrace = m[0] + m[4] + m[8];
+    var fRoot;
+
+    if (fTrace > 0.0) {
+      // |w| > 1/2, may as well choose w > 1/2
+      fRoot = Math.sqrt(fTrace + 1.0); // 2w
+
+      out[3] = 0.5 * fRoot;
+      fRoot = 0.5 / fRoot; // 1/(4w)
+
+      out[0] = (m[5] - m[7]) * fRoot;
+      out[1] = (m[6] - m[2]) * fRoot;
+      out[2] = (m[1] - m[3]) * fRoot;
+    } else {
+      // |w| <= 1/2
+      var i = 0;
+
+      if (m[4] > m[0]) {
+        i = 1;
+      }
+
+      if (m[8] > m[i * 3 + i]) {
+        i = 2;
+      }
+
+      var j = (i + 1) % 3;
+      var k = (i + 2) % 3;
+      fRoot = Math.sqrt(m[i * 3 + i] - m[j * 3 + j] - m[k * 3 + k] + 1.0);
+      out[i] = 0.5 * fRoot;
+      fRoot = 0.5 / fRoot;
+      out[3] = (m[j * 3 + k] - m[k * 3 + j]) * fRoot;
+      out[j] = (m[j * 3 + i] + m[i * 3 + j]) * fRoot;
+      out[k] = (m[k * 3 + i] + m[i * 3 + k]) * fRoot;
+    }
+
+    return out;
+  }
+
+  var fromValues_1 = fromValues;
+  /**
+   * Creates a new vec4 initialized with the given values
+   *
+   * @param {Number} x X component
+   * @param {Number} y Y component
+   * @param {Number} z Z component
+   * @param {Number} w W component
+   * @returns {vec4} a new 4D vector
+   */
+
+  function fromValues(x, y, z, w) {
+    var out = new Float32Array(4);
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    out[3] = w;
+    return out;
+  }
+
+  /**
+   * Creates a new quat initialized with the given values
+   *
+   * @param {Number} x X component
+   * @param {Number} y Y component
+   * @param {Number} z Z component
+   * @param {Number} w W component
+   * @returns {quat} a new quaternion
+   * @function
+   */
+  var fromValues$1 = fromValues_1;
+
+  var identity_1$1 = identity$1;
+  /**
+   * Set a quat to the identity quaternion
+   *
+   * @param {quat} out the receiving quaternion
+   * @returns {quat} out
+   */
+
+  function identity$1(out) {
+    out[0] = 0;
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 1;
+    return out;
+  }
+
+  var invert_1$1 = invert$1;
+  /**
+   * Calculates the inverse of a quat
+   *
+   * @param {quat} out the receiving quaternion
+   * @param {quat} a quat to calculate inverse of
+   * @returns {quat} out
+   */
+
+  function invert$1(out, a) {
+    var a0 = a[0],
+        a1 = a[1],
+        a2 = a[2],
+        a3 = a[3],
+        dot = a0 * a0 + a1 * a1 + a2 * a2 + a3 * a3,
+        invDot = dot ? 1.0 / dot : 0; // TODO: Would be faster to return [0,0,0,0] immediately if dot == 0
+
+    out[0] = -a0 * invDot;
+    out[1] = -a1 * invDot;
+    out[2] = -a2 * invDot;
+    out[3] = a3 * invDot;
+    return out;
+  }
+
+  var length_1 = length;
+  /**
+   * Calculates the length of a vec4
+   *
+   * @param {vec4} a vector to calculate length of
+   * @returns {Number} length of a
+   */
+
+  function length(a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2],
+        w = a[3];
+    return Math.sqrt(x * x + y * y + z * z + w * w);
+  }
+
+  /**
+   * Calculates the length of a quat
+   *
+   * @param {quat} a vector to calculate length of
+   * @returns {Number} length of a
+   * @function
+   */
+  var length$1 = length_1;
+
+  var lerp_1 = lerp;
+  /**
+   * Performs a linear interpolation between two vec4's
+   *
+   * @param {vec4} out the receiving vector
+   * @param {vec4} a the first operand
+   * @param {vec4} b the second operand
+   * @param {Number} t interpolation amount between the two inputs
+   * @returns {vec4} out
+   */
+
+  function lerp(out, a, b, t) {
+    var ax = a[0],
+        ay = a[1],
+        az = a[2],
+        aw = a[3];
+    out[0] = ax + t * (b[0] - ax);
+    out[1] = ay + t * (b[1] - ay);
+    out[2] = az + t * (b[2] - az);
+    out[3] = aw + t * (b[3] - aw);
+    return out;
+  }
+
+  /**
+   * Performs a linear interpolation between two quat's
+   *
+   * @param {quat} out the receiving quaternion
+   * @param {quat} a the first operand
+   * @param {quat} b the second operand
+   * @param {Number} t interpolation amount between the two inputs
+   * @returns {quat} out
+   * @function
+   */
+  var lerp$1 = lerp_1;
+
+  var multiply_1$1 = multiply$1;
+  /**
+   * Multiplies two quat's
+   *
+   * @param {quat} out the receiving quaternion
+   * @param {quat} a the first operand
+   * @param {quat} b the second operand
+   * @returns {quat} out
+   */
+
+  function multiply$1(out, a, b) {
+    var ax = a[0],
+        ay = a[1],
+        az = a[2],
+        aw = a[3],
+        bx = b[0],
+        by = b[1],
+        bz = b[2],
+        bw = b[3];
+    out[0] = ax * bw + aw * bx + ay * bz - az * by;
+    out[1] = ay * bw + aw * by + az * bx - ax * bz;
+    out[2] = az * bw + aw * bz + ax * by - ay * bx;
+    out[3] = aw * bw - ax * bx - ay * by - az * bz;
+    return out;
+  }
+
+  var normalize_1 = normalize;
+  /**
+   * Normalize a vec4
+   *
+   * @param {vec4} out the receiving vector
+   * @param {vec4} a vector to normalize
+   * @returns {vec4} out
+   */
+
+  function normalize(out, a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2],
+        w = a[3];
+    var len = x * x + y * y + z * z + w * w;
+
+    if (len > 0) {
+      len = 1 / Math.sqrt(len);
+      out[0] = x * len;
+      out[1] = y * len;
+      out[2] = z * len;
+      out[3] = w * len;
+    }
+
+    return out;
+  }
+
+  /**
+   * Normalize a quat
+   *
+   * @param {quat} out the receiving quaternion
+   * @param {quat} a quaternion to normalize
+   * @returns {quat} out
+   * @function
+   */
+  var normalize$1 = normalize_1;
+
+  var rotateX_1$1 = rotateX$1;
+  /**
+   * Rotates a quaternion by the given angle about the X axis
+   *
+   * @param {quat} out quat receiving operation result
+   * @param {quat} a quat to rotate
+   * @param {number} rad angle (in radians) to rotate
+   * @returns {quat} out
+   */
+
+  function rotateX$1(out, a, rad) {
+    rad *= 0.5;
+    var ax = a[0],
+        ay = a[1],
+        az = a[2],
+        aw = a[3],
+        bx = Math.sin(rad),
+        bw = Math.cos(rad);
+    out[0] = ax * bw + aw * bx;
+    out[1] = ay * bw + az * bx;
+    out[2] = az * bw - ay * bx;
+    out[3] = aw * bw - ax * bx;
+    return out;
+  }
+
+  var rotateY_1$1 = rotateY$1;
+  /**
+   * Rotates a quaternion by the given angle about the Y axis
+   *
+   * @param {quat} out quat receiving operation result
+   * @param {quat} a quat to rotate
+   * @param {number} rad angle (in radians) to rotate
+   * @returns {quat} out
+   */
+
+  function rotateY$1(out, a, rad) {
+    rad *= 0.5;
+    var ax = a[0],
+        ay = a[1],
+        az = a[2],
+        aw = a[3],
+        by = Math.sin(rad),
+        bw = Math.cos(rad);
+    out[0] = ax * bw - az * by;
+    out[1] = ay * bw + aw * by;
+    out[2] = az * bw + ax * by;
+    out[3] = aw * bw - ay * by;
+    return out;
+  }
+
+  var rotateZ_1$1 = rotateZ$1;
+  /**
+   * Rotates a quaternion by the given angle about the Z axis
+   *
+   * @param {quat} out quat receiving operation result
+   * @param {quat} a quat to rotate
+   * @param {number} rad angle (in radians) to rotate
+   * @returns {quat} out
+   */
+
+  function rotateZ$1(out, a, rad) {
+    rad *= 0.5;
+    var ax = a[0],
+        ay = a[1],
+        az = a[2],
+        aw = a[3],
+        bz = Math.sin(rad),
+        bw = Math.cos(rad);
+    out[0] = ax * bw + ay * bz;
+    out[1] = ay * bw - ax * bz;
+    out[2] = az * bw + aw * bz;
+    out[3] = aw * bw - az * bz;
+    return out;
+  }
+
+  var dot_1$1 = dot$2;
+  /**
+   * Calculates the dot product of two vec3's
+   *
+   * @param {vec3} a the first operand
+   * @param {vec3} b the second operand
+   * @returns {Number} dot product of a and b
+   */
+
+  function dot$2(a, b) {
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  }
+
+  var cross_1 = cross;
+  /**
+   * Computes the cross product of two vec3's
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a the first operand
+   * @param {vec3} b the second operand
+   * @returns {vec3} out
+   */
+
+  function cross(out, a, b) {
+    var ax = a[0],
+        ay = a[1],
+        az = a[2],
+        bx = b[0],
+        by = b[1],
+        bz = b[2];
+    out[0] = ay * bz - az * by;
+    out[1] = az * bx - ax * bz;
+    out[2] = ax * by - ay * bx;
+    return out;
+  }
+
+  var length_1$1 = length$2;
+  /**
+   * Calculates the length of a vec3
+   *
+   * @param {vec3} a vector to calculate length of
+   * @returns {Number} length of a
+   */
+
+  function length$2(a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2];
+    return Math.sqrt(x * x + y * y + z * z);
+  }
+
+  var normalize_1$1 = normalize$2;
+  /**
+   * Normalize a vec3
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a vector to normalize
+   * @returns {vec3} out
+   */
+
+  function normalize$2(out, a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2];
+    var len = x * x + y * y + z * z;
+
+    if (len > 0) {
+      //TODO: evaluate use of glm_invsqrt here?
+      len = 1 / Math.sqrt(len);
+      out[0] = a[0] * len;
+      out[1] = a[1] * len;
+      out[2] = a[2] * len;
+    }
+
+    return out;
+  }
+
+  var setAxisAngle_1 = setAxisAngle;
+  /**
+   * Sets a quat from the given angle and rotation axis,
+   * then returns it.
+   *
+   * @param {quat} out the receiving quaternion
+   * @param {vec3} axis the axis around which to rotate
+   * @param {Number} rad the angle in radians
+   * @returns {quat} out
+   **/
+
+  function setAxisAngle(out, axis, rad) {
+    rad = rad * 0.5;
+    var s = Math.sin(rad);
+    out[0] = s * axis[0];
+    out[1] = s * axis[1];
+    out[2] = s * axis[2];
+    out[3] = Math.cos(rad);
+    return out;
+  }
+
+  var rotationTo_1 = rotationTo;
+  var tmpvec3 = [0, 0, 0];
+  var xUnitVec3 = [1, 0, 0];
+  var yUnitVec3 = [0, 1, 0];
+  /**
+   * Sets a quaternion to represent the shortest rotation from one
+   * vector to another.
+   *
+   * Both vectors are assumed to be unit length.
+   *
+   * @param {quat} out the receiving quaternion.
+   * @param {vec3} a the initial vector
+   * @param {vec3} b the destination vector
+   * @returns {quat} out
+   */
+
+  function rotationTo(out, a, b) {
+    var dot = dot_1$1(a, b);
+
+    if (dot < -0.999999) {
+      cross_1(tmpvec3, xUnitVec3, a);
+
+      if (length_1$1(tmpvec3) < 0.000001) {
+        cross_1(tmpvec3, yUnitVec3, a);
+      }
+
+      normalize_1$1(tmpvec3, tmpvec3);
+      setAxisAngle_1(out, tmpvec3, Math.PI);
+      return out;
+    } else if (dot > 0.999999) {
+      out[0] = 0;
+      out[1] = 0;
+      out[2] = 0;
+      out[3] = 1;
+      return out;
+    } else {
+      cross_1(tmpvec3, a, b);
+      out[0] = tmpvec3[0];
+      out[1] = tmpvec3[1];
+      out[2] = tmpvec3[2];
+      out[3] = 1 + dot;
+      return normalize$1(out, out);
+    }
+  }
 
   var scale_1$1 = scale$1;
+  /**
+   * Scales a vec4 by a scalar number
+   *
+   * @param {vec4} out the receiving vector
+   * @param {vec4} a the vector to scale
+   * @param {Number} b amount to scale the vector by
+   * @returns {vec4} out
+   */
+
+  function scale$1(out, a, b) {
+    out[0] = a[0] * b;
+    out[1] = a[1] * b;
+    out[2] = a[2] * b;
+    out[3] = a[3] * b;
+    return out;
+  }
+
+  /**
+   * Scales a quat by a scalar number
+   *
+   * @param {quat} out the receiving vector
+   * @param {quat} a the vector to scale
+   * @param {Number} b amount to scale the vector by
+   * @returns {quat} out
+   * @function
+   */
+  var scale$2 = scale_1$1;
+
+  var set_1 = set$1;
+  /**
+   * Set the components of a vec4 to the given values
+   *
+   * @param {vec4} out the receiving vector
+   * @param {Number} x X component
+   * @param {Number} y Y component
+   * @param {Number} z Z component
+   * @param {Number} w W component
+   * @returns {vec4} out
+   */
+
+  function set$1(out, x, y, z, w) {
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    out[3] = w;
+    return out;
+  }
+
+  /**
+   * Set the components of a quat to the given values
+   *
+   * @param {quat} out the receiving quaternion
+   * @param {Number} x X component
+   * @param {Number} y Y component
+   * @param {Number} z Z component
+   * @param {Number} w W component
+   * @returns {quat} out
+   * @function
+   */
+  var set$2 = set_1;
+
+  var create_1$2 = create$2;
+  /**
+   * Creates a new identity mat3
+   *
+   * @alias mat3.create
+   * @returns {mat3} a new 3x3 matrix
+   */
+
+  function create$2() {
+    var out = new Float32Array(9);
+    out[0] = 1;
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 0;
+    out[4] = 1;
+    out[5] = 0;
+    out[6] = 0;
+    out[7] = 0;
+    out[8] = 1;
+    return out;
+  }
+
+  var setAxes_1 = setAxes;
+  var matr = create_1$2();
+  /**
+   * Sets the specified quaternion with values corresponding to the given
+   * axes. Each axis is a vec3 and is expected to be unit length and
+   * perpendicular to all other specified axes.
+   *
+   * @param {vec3} view  the vector representing the viewing direction
+   * @param {vec3} right the vector representing the local "right" direction
+   * @param {vec3} up    the vector representing the local "up" direction
+   * @returns {quat} out
+   */
+
+  function setAxes(out, view, right, up) {
+    matr[0] = right[0];
+    matr[3] = right[1];
+    matr[6] = right[2];
+    matr[1] = up[0];
+    matr[4] = up[1];
+    matr[7] = up[2];
+    matr[2] = -view[0];
+    matr[5] = -view[1];
+    matr[8] = -view[2];
+    return normalize$1(out, fromMat3_1(out, matr));
+  }
+
+  var slerp_1 = slerp;
+  /**
+   * Performs a spherical linear interpolation between two quat
+   *
+   * @param {quat} out the receiving quaternion
+   * @param {quat} a the first operand
+   * @param {quat} b the second operand
+   * @param {Number} t interpolation amount between the two inputs
+   * @returns {quat} out
+   */
+
+  function slerp(out, a, b, t) {
+    // benchmarks:
+    //    http://jsperf.com/quaternion-slerp-implementations
+    var ax = a[0],
+        ay = a[1],
+        az = a[2],
+        aw = a[3],
+        bx = b[0],
+        by = b[1],
+        bz = b[2],
+        bw = b[3];
+    var omega, cosom, sinom, scale0, scale1; // calc cosine
+
+    cosom = ax * bx + ay * by + az * bz + aw * bw; // adjust signs (if necessary)
+
+    if (cosom < 0.0) {
+      cosom = -cosom;
+      bx = -bx;
+      by = -by;
+      bz = -bz;
+      bw = -bw;
+    } // calculate coefficients
+
+
+    if (1.0 - cosom > 0.000001) {
+      // standard case (slerp)
+      omega = Math.acos(cosom);
+      sinom = Math.sin(omega);
+      scale0 = Math.sin((1.0 - t) * omega) / sinom;
+      scale1 = Math.sin(t * omega) / sinom;
+    } else {
+      // "from" and "to" quaternions are very close
+      //  ... so we can do a linear interpolation
+      scale0 = 1.0 - t;
+      scale1 = t;
+    } // calculate final values
+
+
+    out[0] = scale0 * ax + scale1 * bx;
+    out[1] = scale0 * ay + scale1 * by;
+    out[2] = scale0 * az + scale1 * bz;
+    out[3] = scale0 * aw + scale1 * bw;
+    return out;
+  }
+
+  var sqlerp_1 = sqlerp;
+  var temp1 = [0, 0, 0, 1];
+  var temp2 = [0, 0, 0, 1];
+  /**
+   * Performs a spherical linear interpolation with two control points
+   *
+   * @param {quat} out the receiving quaternion
+   * @param {quat} a the first operand
+   * @param {quat} b the second operand
+   * @param {quat} c the third operand
+   * @param {quat} d the fourth operand
+   * @param {Number} t interpolation amount
+   * @returns {quat} out
+   */
+
+  function sqlerp(out, a, b, c, d, t) {
+    slerp_1(temp1, a, d, t);
+    slerp_1(temp2, b, c, t);
+    slerp_1(out, temp1, temp2, 2 * t * (1 - t));
+    return out;
+  }
+
+  var squaredLength_1 = squaredLength;
+  /**
+   * Calculates the squared length of a vec4
+   *
+   * @param {vec4} a vector to calculate squared length of
+   * @returns {Number} squared length of a
+   */
+
+  function squaredLength(a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2],
+        w = a[3];
+    return x * x + y * y + z * z + w * w;
+  }
+
+  /**
+   * Calculates the squared length of a quat
+   *
+   * @param {quat} a vector to calculate squared length of
+   * @returns {Number} squared length of a
+   * @function
+   */
+  var squaredLength$1 = squaredLength_1;
+
+  var glQuat = {
+    add: add$1,
+    calculateW: calculateW_1,
+    clone: clone$2,
+    conjugate: conjugate_1,
+    copy: copy$2,
+    create: create_1$1,
+    dot: dot$1,
+    fromMat3: fromMat3_1,
+    fromValues: fromValues$1,
+    identity: identity_1$1,
+    invert: invert_1$1,
+    length: length$1,
+    lerp: lerp$1,
+    multiply: multiply_1$1,
+    normalize: normalize$1,
+    rotateX: rotateX_1$1,
+    rotateY: rotateY_1$1,
+    rotateZ: rotateZ_1$1,
+    rotationTo: rotationTo_1,
+    scale: scale$2,
+    set: set$2,
+    setAxes: setAxes_1,
+    setAxisAngle: setAxisAngle_1,
+    slerp: slerp_1,
+    sqlerp: sqlerp_1,
+    squaredLength: squaredLength$1
+  };
+  var glQuat_10 = glQuat.identity;
+  var glQuat_16 = glQuat.rotateX;
+
+  var epsilon = 0.000001;
+
+  var create_1$3 = create$3;
+  /**
+   * Creates a new, empty vec3
+   *
+   * @returns {vec3} a new 3D vector
+   */
+
+  function create$3() {
+    var out = new Float32Array(3);
+    out[0] = 0;
+    out[1] = 0;
+    out[2] = 0;
+    return out;
+  }
+
+  var clone_1$2 = clone$3;
+  /**
+   * Creates a new vec3 initialized with values from an existing vector
+   *
+   * @param {vec3} a vector to clone
+   * @returns {vec3} a new 3D vector
+   */
+
+  function clone$3(a) {
+    var out = new Float32Array(3);
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    return out;
+  }
+
+  var fromValues_1$1 = fromValues$2;
+  /**
+   * Creates a new vec3 initialized with the given values
+   *
+   * @param {Number} x X component
+   * @param {Number} y Y component
+   * @param {Number} z Z component
+   * @returns {vec3} a new 3D vector
+   */
+
+  function fromValues$2(x, y, z) {
+    var out = new Float32Array(3);
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    return out;
+  }
+
+  var normalize_1$2 = normalize$3;
+  /**
+   * Normalize a vec3
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a vector to normalize
+   * @returns {vec3} out
+   */
+
+  function normalize$3(out, a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2];
+    var len = x * x + y * y + z * z;
+
+    if (len > 0) {
+      //TODO: evaluate use of glm_invsqrt here?
+      len = 1 / Math.sqrt(len);
+      out[0] = a[0] * len;
+      out[1] = a[1] * len;
+      out[2] = a[2] * len;
+    }
+
+    return out;
+  }
+
+  var dot_1$2 = dot$3;
+  /**
+   * Calculates the dot product of two vec3's
+   *
+   * @param {vec3} a the first operand
+   * @param {vec3} b the second operand
+   * @returns {Number} dot product of a and b
+   */
+
+  function dot$3(a, b) {
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  }
+
+  var angle_1 = angle;
+
+
+
+
+
+
+  /**
+   * Get the angle between two 3D vectors
+   * @param {vec3} a The first operand
+   * @param {vec3} b The second operand
+   * @returns {Number} The angle in radians
+   */
+
+
+  function angle(a, b) {
+    var tempA = fromValues_1$1(a[0], a[1], a[2]);
+    var tempB = fromValues_1$1(b[0], b[1], b[2]);
+    normalize_1$2(tempA, tempA);
+    normalize_1$2(tempB, tempB);
+    var cosine = dot_1$2(tempA, tempB);
+
+    if (cosine > 1.0) {
+      return 0;
+    } else {
+      return Math.acos(cosine);
+    }
+  }
+
+  var copy_1$2 = copy$3;
+  /**
+   * Copy the values from one vec3 to another
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a the source vector
+   * @returns {vec3} out
+   */
+
+  function copy$3(out, a) {
+    out[0] = a[0];
+    out[1] = a[1];
+    out[2] = a[2];
+    return out;
+  }
+
+  var set_1$1 = set$3;
+  /**
+   * Set the components of a vec3 to the given values
+   *
+   * @param {vec3} out the receiving vector
+   * @param {Number} x X component
+   * @param {Number} y Y component
+   * @param {Number} z Z component
+   * @returns {vec3} out
+   */
+
+  function set$3(out, x, y, z) {
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    return out;
+  }
+
+  var equals_1 = equals;
+
+
+  /**
+   * Returns whether or not the vectors have approximately the same elements in the same position.
+   *
+   * @param {vec3} a The first vector.
+   * @param {vec3} b The second vector.
+   * @returns {Boolean} True if the vectors are equal, false otherwise.
+   */
+
+
+  function equals(a, b) {
+    var a0 = a[0];
+    var a1 = a[1];
+    var a2 = a[2];
+    var b0 = b[0];
+    var b1 = b[1];
+    var b2 = b[2];
+    return Math.abs(a0 - b0) <= epsilon * Math.max(1.0, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= epsilon * Math.max(1.0, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= epsilon * Math.max(1.0, Math.abs(a2), Math.abs(b2));
+  }
+
+  var exactEquals_1 = exactEquals;
+  /**
+   * Returns whether or not the vectors exactly have the same elements in the same position (when compared with ===)
+   *
+   * @param {vec3} a The first vector.
+   * @param {vec3} b The second vector.
+   * @returns {Boolean} True if the vectors are equal, false otherwise.
+   */
+
+  function exactEquals(a, b) {
+    return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+  }
+
+  var add_1$1 = add$2;
+  /**
+   * Adds two vec3's
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a the first operand
+   * @param {vec3} b the second operand
+   * @returns {vec3} out
+   */
+
+  function add$2(out, a, b) {
+    out[0] = a[0] + b[0];
+    out[1] = a[1] + b[1];
+    out[2] = a[2] + b[2];
+    return out;
+  }
+
+  var subtract_1 = subtract;
+  /**
+   * Subtracts vector b from vector a
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a the first operand
+   * @param {vec3} b the second operand
+   * @returns {vec3} out
+   */
+
+  function subtract(out, a, b) {
+    out[0] = a[0] - b[0];
+    out[1] = a[1] - b[1];
+    out[2] = a[2] - b[2];
+    return out;
+  }
+
+  var sub = subtract_1;
+
+  var multiply_1$2 = multiply$2;
+  /**
+   * Multiplies two vec3's
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a the first operand
+   * @param {vec3} b the second operand
+   * @returns {vec3} out
+   */
+
+  function multiply$2(out, a, b) {
+    out[0] = a[0] * b[0];
+    out[1] = a[1] * b[1];
+    out[2] = a[2] * b[2];
+    return out;
+  }
+
+  var mul = multiply_1$2;
+
+  var divide_1 = divide;
+  /**
+   * Divides two vec3's
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a the first operand
+   * @param {vec3} b the second operand
+   * @returns {vec3} out
+   */
+
+  function divide(out, a, b) {
+    out[0] = a[0] / b[0];
+    out[1] = a[1] / b[1];
+    out[2] = a[2] / b[2];
+    return out;
+  }
+
+  var div = divide_1;
+
+  var min_1 = min$2;
+  /**
+   * Returns the minimum of two vec3's
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a the first operand
+   * @param {vec3} b the second operand
+   * @returns {vec3} out
+   */
+
+  function min$2(out, a, b) {
+    out[0] = Math.min(a[0], b[0]);
+    out[1] = Math.min(a[1], b[1]);
+    out[2] = Math.min(a[2], b[2]);
+    return out;
+  }
+
+  var max_1 = max$1;
+  /**
+   * Returns the maximum of two vec3's
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a the first operand
+   * @param {vec3} b the second operand
+   * @returns {vec3} out
+   */
+
+  function max$1(out, a, b) {
+    out[0] = Math.max(a[0], b[0]);
+    out[1] = Math.max(a[1], b[1]);
+    out[2] = Math.max(a[2], b[2]);
+    return out;
+  }
+
+  var floor_1 = floor$1;
+  /**
+   * Math.floor the components of a vec3
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a vector to floor
+   * @returns {vec3} out
+   */
+
+  function floor$1(out, a) {
+    out[0] = Math.floor(a[0]);
+    out[1] = Math.floor(a[1]);
+    out[2] = Math.floor(a[2]);
+    return out;
+  }
+
+  var ceil_1 = ceil$1;
+  /**
+   * Math.ceil the components of a vec3
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a vector to ceil
+   * @returns {vec3} out
+   */
+
+  function ceil$1(out, a) {
+    out[0] = Math.ceil(a[0]);
+    out[1] = Math.ceil(a[1]);
+    out[2] = Math.ceil(a[2]);
+    return out;
+  }
+
+  var round_1 = round;
+  /**
+   * Math.round the components of a vec3
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a vector to round
+   * @returns {vec3} out
+   */
+
+  function round(out, a) {
+    out[0] = Math.round(a[0]);
+    out[1] = Math.round(a[1]);
+    out[2] = Math.round(a[2]);
+    return out;
+  }
+
+  var scale_1$2 = scale$3;
   /**
    * Scales a vec3 by a scalar number
    *
@@ -6193,10 +8686,194 @@
    * @returns {vec3} out
    */
 
-  function scale$1(out, a, b) {
+  function scale$3(out, a, b) {
     out[0] = a[0] * b;
     out[1] = a[1] * b;
     out[2] = a[2] * b;
+    return out;
+  }
+
+  var scaleAndAdd_1 = scaleAndAdd;
+  /**
+   * Adds two vec3's after scaling the second operand by a scalar value
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a the first operand
+   * @param {vec3} b the second operand
+   * @param {Number} scale the amount to scale b by before adding
+   * @returns {vec3} out
+   */
+
+  function scaleAndAdd(out, a, b, scale) {
+    out[0] = a[0] + b[0] * scale;
+    out[1] = a[1] + b[1] * scale;
+    out[2] = a[2] + b[2] * scale;
+    return out;
+  }
+
+  var distance_1 = distance;
+  /**
+   * Calculates the euclidian distance between two vec3's
+   *
+   * @param {vec3} a the first operand
+   * @param {vec3} b the second operand
+   * @returns {Number} distance between a and b
+   */
+
+  function distance(a, b) {
+    var x = b[0] - a[0],
+        y = b[1] - a[1],
+        z = b[2] - a[2];
+    return Math.sqrt(x * x + y * y + z * z);
+  }
+
+  var dist = distance_1;
+
+  var squaredDistance_1 = squaredDistance;
+  /**
+   * Calculates the squared euclidian distance between two vec3's
+   *
+   * @param {vec3} a the first operand
+   * @param {vec3} b the second operand
+   * @returns {Number} squared distance between a and b
+   */
+
+  function squaredDistance(a, b) {
+    var x = b[0] - a[0],
+        y = b[1] - a[1],
+        z = b[2] - a[2];
+    return x * x + y * y + z * z;
+  }
+
+  var sqrDist = squaredDistance_1;
+
+  var length_1$2 = length$3;
+  /**
+   * Calculates the length of a vec3
+   *
+   * @param {vec3} a vector to calculate length of
+   * @returns {Number} length of a
+   */
+
+  function length$3(a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2];
+    return Math.sqrt(x * x + y * y + z * z);
+  }
+
+  var len = length_1$2;
+
+  var squaredLength_1$1 = squaredLength$2;
+  /**
+   * Calculates the squared length of a vec3
+   *
+   * @param {vec3} a vector to calculate squared length of
+   * @returns {Number} squared length of a
+   */
+
+  function squaredLength$2(a) {
+    var x = a[0],
+        y = a[1],
+        z = a[2];
+    return x * x + y * y + z * z;
+  }
+
+  var sqrLen = squaredLength_1$1;
+
+  var negate_1 = negate;
+  /**
+   * Negates the components of a vec3
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a vector to negate
+   * @returns {vec3} out
+   */
+
+  function negate(out, a) {
+    out[0] = -a[0];
+    out[1] = -a[1];
+    out[2] = -a[2];
+    return out;
+  }
+
+  var inverse_1 = inverse;
+  /**
+   * Returns the inverse of the components of a vec3
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a vector to invert
+   * @returns {vec3} out
+   */
+
+  function inverse(out, a) {
+    out[0] = 1.0 / a[0];
+    out[1] = 1.0 / a[1];
+    out[2] = 1.0 / a[2];
+    return out;
+  }
+
+  var cross_1$1 = cross$1;
+  /**
+   * Computes the cross product of two vec3's
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a the first operand
+   * @param {vec3} b the second operand
+   * @returns {vec3} out
+   */
+
+  function cross$1(out, a, b) {
+    var ax = a[0],
+        ay = a[1],
+        az = a[2],
+        bx = b[0],
+        by = b[1],
+        bz = b[2];
+    out[0] = ay * bz - az * by;
+    out[1] = az * bx - ax * bz;
+    out[2] = ax * by - ay * bx;
+    return out;
+  }
+
+  var lerp_1$1 = lerp$2;
+  /**
+   * Performs a linear interpolation between two vec3's
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a the first operand
+   * @param {vec3} b the second operand
+   * @param {Number} t interpolation amount between the two inputs
+   * @returns {vec3} out
+   */
+
+  function lerp$2(out, a, b, t) {
+    var ax = a[0],
+        ay = a[1],
+        az = a[2];
+    out[0] = ax + t * (b[0] - ax);
+    out[1] = ay + t * (b[1] - ay);
+    out[2] = az + t * (b[2] - az);
+    return out;
+  }
+
+  var random_1 = random;
+  /**
+   * Generates a random vector with the given scale
+   *
+   * @param {vec3} out the receiving vector
+   * @param {Number} [scale] Length of the resulting vector. If ommitted, a unit vector will be returned
+   * @returns {vec3} out
+   */
+
+  function random(out, scale) {
+    scale = scale || 1.0;
+    var r = Math.random() * 2.0 * Math.PI;
+    var z = Math.random() * 2.0 - 1.0;
+    var zScale = Math.sqrt(1.0 - z * z) * scale;
+    out[0] = Math.cos(r) * zScale;
+    out[1] = Math.sin(r) * zScale;
+    out[2] = z * scale;
     return out;
   }
 
@@ -6223,31 +8900,714 @@
     return out;
   }
 
-  var normalize_1 = normalize;
+  var transformMat3_1 = transformMat3;
   /**
-   * Normalize a vec3
+   * Transforms the vec3 with a mat3.
    *
    * @param {vec3} out the receiving vector
-   * @param {vec3} a vector to normalize
+   * @param {vec3} a the vector to transform
+   * @param {mat4} m the 3x3 matrix to transform with
    * @returns {vec3} out
    */
 
-  function normalize(out, a) {
+  function transformMat3(out, a, m) {
     var x = a[0],
         y = a[1],
         z = a[2];
-    var len = x * x + y * y + z * z;
-
-    if (len > 0) {
-      //TODO: evaluate use of glm_invsqrt here?
-      len = 1 / Math.sqrt(len);
-      out[0] = a[0] * len;
-      out[1] = a[1] * len;
-      out[2] = a[2] * len;
-    }
-
+    out[0] = x * m[0] + y * m[3] + z * m[6];
+    out[1] = x * m[1] + y * m[4] + z * m[7];
+    out[2] = x * m[2] + y * m[5] + z * m[8];
     return out;
   }
+
+  var transformQuat_1 = transformQuat;
+  /**
+   * Transforms the vec3 with a quat
+   *
+   * @param {vec3} out the receiving vector
+   * @param {vec3} a the vector to transform
+   * @param {quat} q quaternion to transform with
+   * @returns {vec3} out
+   */
+
+  function transformQuat(out, a, q) {
+    // benchmarks: http://jsperf.com/quaternion-transform-vec3-implementations
+    var x = a[0],
+        y = a[1],
+        z = a[2],
+        qx = q[0],
+        qy = q[1],
+        qz = q[2],
+        qw = q[3],
+        // calculate quat * vec
+    ix = qw * x + qy * z - qz * y,
+        iy = qw * y + qz * x - qx * z,
+        iz = qw * z + qx * y - qy * x,
+        iw = -qx * x - qy * y - qz * z; // calculate result * inverse quat
+
+    out[0] = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+    out[1] = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+    out[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+    return out;
+  }
+
+  var rotateX_1$2 = rotateX$2;
+  /**
+   * Rotate a 3D vector around the x-axis
+   * @param {vec3} out The receiving vec3
+   * @param {vec3} a The vec3 point to rotate
+   * @param {vec3} b The origin of the rotation
+   * @param {Number} c The angle of rotation
+   * @returns {vec3} out
+   */
+
+  function rotateX$2(out, a, b, c) {
+    var by = b[1];
+    var bz = b[2]; // Translate point to the origin
+
+    var py = a[1] - by;
+    var pz = a[2] - bz;
+    var sc = Math.sin(c);
+    var cc = Math.cos(c); // perform rotation and translate to correct position
+
+    out[0] = a[0];
+    out[1] = by + py * cc - pz * sc;
+    out[2] = bz + py * sc + pz * cc;
+    return out;
+  }
+
+  var rotateY_1$2 = rotateY$2;
+  /**
+   * Rotate a 3D vector around the y-axis
+   * @param {vec3} out The receiving vec3
+   * @param {vec3} a The vec3 point to rotate
+   * @param {vec3} b The origin of the rotation
+   * @param {Number} c The angle of rotation
+   * @returns {vec3} out
+   */
+
+  function rotateY$2(out, a, b, c) {
+    var bx = b[0];
+    var bz = b[2]; // translate point to the origin
+
+    var px = a[0] - bx;
+    var pz = a[2] - bz;
+    var sc = Math.sin(c);
+    var cc = Math.cos(c); // perform rotation and translate to correct position
+
+    out[0] = bx + pz * sc + px * cc;
+    out[1] = a[1];
+    out[2] = bz + pz * cc - px * sc;
+    return out;
+  }
+
+  var rotateZ_1$2 = rotateZ$2;
+  /**
+   * Rotate a 3D vector around the z-axis
+   * @param {vec3} out The receiving vec3
+   * @param {vec3} a The vec3 point to rotate
+   * @param {vec3} b The origin of the rotation
+   * @param {Number} c The angle of rotation
+   * @returns {vec3} out
+   */
+
+  function rotateZ$2(out, a, b, c) {
+    var bx = b[0];
+    var by = b[1]; //Translate point to the origin
+
+    var px = a[0] - bx;
+    var py = a[1] - by;
+    var sc = Math.sin(c);
+    var cc = Math.cos(c); // perform rotation and translate to correct position
+
+    out[0] = bx + px * cc - py * sc;
+    out[1] = by + px * sc + py * cc;
+    out[2] = a[2];
+    return out;
+  }
+
+  var forEach_1 = forEach;
+
+  var vec = create_1$3();
+  /**
+   * Perform some operation over an array of vec3s.
+   *
+   * @param {Array} a the array of vectors to iterate over
+   * @param {Number} stride Number of elements between the start of each vec3. If 0 assumes tightly packed
+   * @param {Number} offset Number of elements to skip at the beginning of the array
+   * @param {Number} count Number of vec3s to iterate over. If 0 iterates over entire array
+   * @param {Function} fn Function to call for each vector in the array
+   * @param {Object} [arg] additional argument to pass to fn
+   * @returns {Array} a
+   * @function
+   */
+
+
+  function forEach(a, stride, offset, count, fn, arg) {
+    var i, l;
+
+    if (!stride) {
+      stride = 3;
+    }
+
+    if (!offset) {
+      offset = 0;
+    }
+
+    if (count) {
+      l = Math.min(count * stride + offset, a.length);
+    } else {
+      l = a.length;
+    }
+
+    for (i = offset; i < l; i += stride) {
+      vec[0] = a[i];
+      vec[1] = a[i + 1];
+      vec[2] = a[i + 2];
+      fn(vec, vec, arg);
+      a[i] = vec[0];
+      a[i + 1] = vec[1];
+      a[i + 2] = vec[2];
+    }
+
+    return a;
+  }
+
+  var glVec3 = {
+    EPSILON: epsilon,
+    create: create_1$3,
+    clone: clone_1$2,
+    angle: angle_1,
+    fromValues: fromValues_1$1,
+    copy: copy_1$2,
+    set: set_1$1,
+    equals: equals_1,
+    exactEquals: exactEquals_1,
+    add: add_1$1,
+    subtract: subtract_1,
+    sub: sub,
+    multiply: multiply_1$2,
+    mul: mul,
+    divide: divide_1,
+    div: div,
+    min: min_1,
+    max: max_1,
+    floor: floor_1,
+    ceil: ceil_1,
+    round: round_1,
+    scale: scale_1$2,
+    scaleAndAdd: scaleAndAdd_1,
+    distance: distance_1,
+    dist: dist,
+    squaredDistance: squaredDistance_1,
+    sqrDist: sqrDist,
+    length: length_1$2,
+    len: len,
+    squaredLength: squaredLength_1$1,
+    sqrLen: sqrLen,
+    negate: negate_1,
+    inverse: inverse_1,
+    normalize: normalize_1$2,
+    dot: dot_1$2,
+    cross: cross_1$1,
+    lerp: lerp_1$1,
+    random: random_1,
+    transformMat4: transformMat4_1,
+    transformMat3: transformMat3_1,
+    transformQuat: transformQuat_1,
+    rotateX: rotateX_1$2,
+    rotateY: rotateY_1$2,
+    rotateZ: rotateZ_1$2,
+    forEach: forEach_1
+  };
+  var glVec3_41 = glVec3.transformQuat;
+
+  var Quat =
+  /*#__PURE__*/
+  function () {
+    function Quat(matArray) {
+      _classCallCheck(this, Quat);
+
+      _defineProperty(this, "isValueUniform", true);
+
+      _defineProperty(this, "isQuat", true);
+
+      this.value = glQuat_10([]);
+    }
+
+    _createClass(Quat, [{
+      key: "fromArray",
+      value: function fromArray(array) {
+        this.value[0] = array[0];
+        this.value[1] = array[1];
+        this.value[2] = array[2];
+        this.value[3] = array[3];
+      }
+    }, {
+      key: "setFromEuler",
+      value: function setFromEuler(x, y, z) {
+        glQuat_10(this.value);
+        glQuat_16(this.value, this.value, x);
+        glQuat_16(this.value, this.value, y);
+        glQuat_16(this.value, this.value, z);
+      }
+    }, {
+      key: "getDirection",
+      value: function getDirection() {
+        var vec = new Vec3(0, 0, 1);
+        glVec3_41(vec.value, vec.value, this.value);
+        return vec;
+      }
+    }, {
+      key: "copy",
+      value: function copy(quat) {
+        this.fromArray(quat.value);
+      }
+    }, {
+      key: "clone",
+      value: function clone() {
+        return new Quat().copy(this);
+      }
+    }]);
+
+    return Quat;
+  }();
+
+  var minivents_commonjs = function Events(target) {
+    var events = {},
+        empty = [];
+    target = target || this;
+    /**
+     *  On: listen to events
+     */
+
+    target.on = function (type, func, ctx) {
+      (events[type] = events[type] || []).push([func, ctx]);
+      return target;
+    };
+    /**
+     *  Off: stop listening to event / specific callback
+     */
+
+
+    target.off = function (type, func) {
+      type || (events = {});
+      var list = events[type] || empty,
+          i = list.length = func ? list.length : 0;
+
+      while (i--) func == list[i][0] && list.splice(i, 1);
+
+      return target;
+    };
+    /** 
+     * Emit: send event, callbacks will be triggered
+     */
+
+
+    target.emit = function (type) {
+      var e = events[type] || empty,
+          list = e.length > 0 ? e.slice(0, e.length) : e,
+          i = 0,
+          j;
+
+      while (j = list[i++]) j[0].apply(j[1], empty.slice.call(arguments, 1));
+
+      return target;
+    };
+  };
+
+  var Object3D =
+  /*#__PURE__*/
+  function (_Events) {
+    _inherits(Object3D, _Events);
+
+    function Object3D() {
+      var _this;
+
+      _classCallCheck(this, Object3D);
+
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Object3D).call(this)); // FIXME: replace identity() with create()
+
+      _this.matrix = new Mat4();
+      _this.matrixWorld = new Mat4();
+      _this.position = new Vec3(0, 0, 0);
+      _this.scale = new Vec3(1, 1, 1);
+      _this.quaternion = new Quat();
+      _this.children = [];
+      _this.matrixAutoUpdate = true;
+      _this.matrixWorldAutoUpdate = true;
+      return _this;
+    } // lookAt(vector) {
+    //
+    // }
+
+
+    _createClass(Object3D, [{
+      key: "updateMatrix",
+      value: function updateMatrix() {
+        this.matrix.compose(this.position, this.quaternion, this.scale);
+      }
+    }, {
+      key: "updateMatrixWorld",
+      value: function updateMatrixWorld() {
+        // Consider to be called after updateMatrix()
+        // TODO: Replace with Math API
+        if (!this.parent) {
+          glMat4_3(this.matrixWorld.value, this.matrix.value);
+          return;
+        }
+
+        glMat4_9(this.matrixWorld.value, this.matrix.value, this.parent.matrix.value);
+      }
+    }, {
+      key: "add",
+      value: function add(child) {
+        child.parent = this;
+        this.children.push(child);
+        var eventObject = {
+          parent: this,
+          object: child
+        };
+        child.emit('hierarchy-update', eventObject);
+        this.emit('hierarchy-update', eventObject);
+        var _parent = this.parent;
+
+        while (_parent) {
+          _parent.emit('hierarchy-update', eventObject);
+
+          _parent = _parent.parent;
+        }
+      }
+    }, {
+      key: "traverse",
+      value: function traverse(cb) {
+        var children = this.children;
+
+        for (var i = 0, l = children.length; i < l; i++) {
+          cb(children[i]);
+          children[i].traverse(cb);
+        }
+      }
+    }]);
+
+    return Object3D;
+  }(minivents_commonjs);
+
+  var Mesh =
+  /*#__PURE__*/
+  function (_Object3D) {
+    _inherits(Mesh, _Object3D);
+
+    function Mesh(geometry) {
+      var _this;
+
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      _classCallCheck(this, Mesh);
+
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Mesh).call(this));
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "isMesh", true);
+
+      options = Object.assign({
+        shader: {}
+      }, options);
+      _this.program = new Program({
+        vert: options.shader.vert,
+        frag: options.shader.frag,
+        uniforms: Object.assign(options.shader.uniforms || {}, {
+          modelMatrix: _this.matrixWorld
+        })
+      }, geometry);
+      _this.castShadow = false;
+      _this.receiveShadow = false;
+      _this.program.mesh = _assertThisInitialized(_assertThisInitialized(_this));
+      Object.assign(_this.program.state, options.shader.state || {});
+      return _this;
+    }
+
+    _createClass(Mesh, [{
+      key: "visible",
+      get: function get() {
+        return this.program.enabled;
+      },
+      set: function set(value) {
+        this.program.enabled = value;
+      }
+    }]);
+
+    return Mesh;
+  }(Object3D);
+
+  var Scene =
+  /*#__PURE__*/
+  function (_Object3D) {
+    _inherits(Scene, _Object3D);
+
+    function Scene() {
+      _classCallCheck(this, Scene);
+
+      return _possibleConstructorReturn(this, _getPrototypeOf(Scene).call(this));
+    }
+
+    return Scene;
+  }(Object3D);
+
+  var Camera =
+  /*#__PURE__*/
+  function (_Object3D) {
+    _inherits(Camera, _Object3D);
+
+    _createClass(Camera, null, [{
+      key: "ortho",
+      value: function ortho(width, height) {
+        var near = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
+        var far = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 100;
+        return new Camera({
+          left: -width / 2,
+          right: width / 2,
+          top: height / 2,
+          bottom: -height / 2,
+          near: near,
+          far: far
+        });
+      }
+    }]);
+
+    function Camera() {
+      var _this;
+
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+      _classCallCheck(this, Camera);
+
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Camera).call(this));
+      options = _this.options = Object.assign({
+        type: 'perspective',
+        fovy: Math.PI / 2,
+        aspect: window.innerWidth / window.innerHeight,
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        near: 1,
+        far: 100
+      }, options);
+      _this.projectionMatrix = new Mat4();
+
+      _this.update();
+
+      return _this;
+    }
+
+    _createClass(Camera, [{
+      key: "update",
+      value: function update() {
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        options = this.options = Object.assign(this.options, options);
+        this.type = options.type;
+        if (this.type === 'perspective') this.projectionMatrix.perspective(options.fovy, options.aspect, options.near, options.far);else this.projectionMatrix.ortho(options.left, options.right, options.top, options.bottom, options.near, options.far);
+      }
+    }]);
+
+    return Camera;
+  }(Object3D);
+
+  var textureUnitInt = 0;
+  var textureUnit = new WeakMap();
+
+  var _gl = new WeakMap();
+
+  var Texture =
+  /*#__PURE__*/
+  function () {
+    _createClass(Texture, null, [{
+      key: "fromUrl",
+      value: function fromUrl(url) {
+        return new Promise(function (resolve) {
+          var img = new Image();
+          img.src = url;
+
+          img.onload = function () {
+            // eslint-disable-line
+            resolve(new Texture(img));
+          };
+        });
+      }
+    }]);
+
+    function Texture(image, width, height) {
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+      _classCallCheck(this, Texture);
+
+      _defineProperty(this, "isTexture", true);
+
+      this.image = image;
+      this.width = width || 256;
+      this.height = height || 256;
+      this.format = options.format || 'RGBA';
+      this.internal = options.internal || options.format || 'RGBA';
+      this.type = options.type || 'UNSIGNED_BYTE';
+      this.wrapS = options.wrapS || 'CLAMP_TO_EDGE';
+      this.wrapT = options.wrapT || options.wrapS || 'CLAMP_TO_EDGE';
+      this.minFilter = options.minFilter || 'LINEAR';
+      this.magFilter = options.magFilter || options.minFilter || 'LINEAR';
+    }
+
+    _createClass(Texture, [{
+      key: "_compile",
+      value: function _compile(gl) {
+        _gl.set(this, gl);
+
+        textureUnit.set(this, textureUnitInt++); // TODO: Cleanup comments, make the use of parameters
+
+        var texture = gl.createTexture(); // make unit 0 the active texture uint
+        // (ie, the unit all other texture commands will affect
+        // if (this.image) {
+        // gl.activeTexture(gl['TEXTURE' + textureUnit.get(this)]);
+        // }
+        // Bind it to texture unit 0' 2D bind point
+
+        gl.bindTexture(gl.TEXTURE_2D, texture); // Set the parameters so we don't need mips and so we're not filtering
+        // and we don't repeat
+
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl[this.wrapS]);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl[this.wrapT]);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl[this.minFilter]);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl[this.magFilter]);
+        gl.texImage2D(gl.TEXTURE_2D, 0, // mipLevel, the largest mip
+        gl[this.internal], // internalFormat, format we want in the texture
+        this.width, this.height, 0, // border
+        gl[this.format], // srcFormat, format of data we are supplying
+        gl[this.type], this.image); // gl.bindTexture(gl.TEXTURE_2D, null);
+
+        this._compiledTexture = texture;
+      }
+    }, {
+      key: "setSize",
+      value: function setSize(width, height) {
+        this.width = width;
+        this.height = height;
+
+        if (this._compiledTexture) {
+          var gl = _gl.get(this);
+
+          gl.bindTexture(gl.TEXTURE_2D, this._compiledTexture);
+          gl.texImage2D(gl.TEXTURE_2D, 0, // mipLevel, the largest mip
+          gl[this.internal], // internalFormat, format we want in the texture
+          width, height, 0, // border
+          gl[this.format], // srcFormat, format of data we are supplying
+          gl[this.type], this.image);
+        }
+      }
+    }, {
+      key: "_bind",
+      value: function _bind(gl) {
+        var unit = textureUnit.get(this);
+        gl.activeTexture(gl['TEXTURE' + unit]);
+        gl.bindTexture(gl.TEXTURE_2D, this._compiledTexture);
+        return textureUnit.get(this);
+      }
+    }]);
+
+    return Texture;
+  }();
+
+  var FrameBuffer =
+  /*#__PURE__*/
+  function () {
+    function FrameBuffer(width, height) {
+      var _this = this;
+
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      _classCallCheck(this, FrameBuffer);
+
+      _defineProperty(this, "_compile", function (gl) {
+        // Create and bind the framebuffer
+        var fb = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+
+        if (_this.color) {
+          _this.texture._compile(gl);
+
+          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, _this.texture._compiledTexture, 0); // TODO: change level
+        }
+
+        if (_this.depth) {
+          _this.depthTexture._compile(gl);
+
+          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, _this.depthTexture._compiledTexture, 0); // TODO: change level
+        }
+
+        if (_this.stencil) {
+          _this.stencilTexture._compile(gl);
+
+          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.TEXTURE_2D, _this.stencilTexture._compiledTexture, 0); // TODO: change level
+        }
+        _this._compiledFrameBuffer = fb;
+      });
+
+      _defineProperty(this, "_bindFramebuffer", function (gl) {
+        // gl.bindTexture(gl.TEXTURE_2D, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, _this._compiledFrameBuffer); // gl.enable(gl.DEPTH_TEST);
+        // gl.clear(gl.DEPTH_BUFFER_BIT);
+      });
+
+      options = Object.assign({
+        color: true,
+        depth: true,
+        stencil: false
+      }, options);
+      this.width = width;
+      this.height = height;
+      this.color = Boolean(options.color);
+      this.depth = Boolean(options.depth);
+      this.stencil = Boolean(options.stencil);
+      if (this.color) this.texture = new Texture(null, width, height, options);
+
+      if (this.depth) {
+        this.depthTexture = new Texture(null, width, height, {
+          internal: 'DEPTH_COMPONENT24',
+          format: 'DEPTH_COMPONENT',
+          type: 'UNSIGNED_INT',
+          minFilter: 'NEAREST',
+          magFilter: 'NEAREST'
+        });
+      }
+
+      if (this.stencil) {
+        // FIXME: Make stencil work
+        this.stencilTexture = new Texture(null, width, height, {
+          internal: 'DEPTH_STENCIL',
+          format: 'DEPTH_STENCIL',
+          type: 'UNSIGNED_INT',
+          minFilter: 'NEAREST',
+          magFilter: 'NEAREST'
+        });
+      }
+    }
+
+    _createClass(FrameBuffer, [{
+      key: "setSize",
+      value: function setSize(width, height) {
+        this.width = width;
+        this.height = height;
+        if (this.color) this.texture.setSize(width, height);
+        if (this.depth) this.depthTexture.setSize(width, height);
+        if (this.stencil) this.stencilTexture.setSize(width, height);
+      }
+    }]);
+
+    return FrameBuffer;
+  }();
+
+  _typedArray('Uint16', 2, function (init) {
+    return function Uint16Array(data, byteOffset, length) {
+      return init(this, data, byteOffset, length);
+    };
+  });
 
   var matRotY = identity_1([]);
   var matRotZ = identity_1([]);
@@ -6279,9 +9639,9 @@
         rotateY_1(matRotY, matRotY, angleY);
         transformMat4_1(tmpVec3, up, matRotZ);
         transformMat4_1(tmpVec3, tmpVec3, matRotY);
-        scale_1$1(tmpVec3, tmpVec3, -radius);
+        scale_1$2(tmpVec3, tmpVec3, -radius);
         positions.push(tmpVec3.slice());
-        normalize_1(tmpVec3, tmpVec3);
+        normalize_1$2(tmpVec3, tmpVec3);
         normals.push(tmpVec3.slice());
         uvs.push([normalizedY, normalizedZ]);
       }
@@ -6449,10 +9809,15 @@
           USE_COLOR: true,
           USE_MAP: Boolean(options.map)
         }, options.defines || {}),
-        alias: ['map'],
+        alias: {
+          map: 'map'
+        },
         modifiers: options.modifiers || {}
       }));
       _this.map = options.map;
+
+      _this.initializeUniforms();
+
       return _this;
     }
 
@@ -6473,13 +9838,23 @@
 
       _this = _possibleConstructorReturn(this, _getPrototypeOf(LambertMaterial).call(this, {
         type: 'lambert',
-        defines: {
+        defines: Object.assign({
           USE_COLOR: true,
           USE_MAP: Boolean(options.map)
-        },
-        alias: ['map']
+        }, options.defines || {}),
+        alias: {
+          map: 'map',
+          diffuse: 'color'
+        }
       }));
+      _this.color = options.color || [0, 0, 0];
       _this.map = options.map;
+      _this.state = {
+        lights: true
+      };
+
+      _this.initializeUniforms();
+
       return _this;
     }
 
@@ -6500,7 +9875,8 @@
 
       _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "isLight", true);
 
-      _this.color = [];
+      _this.color = [1, 1, 1];
+      _this.intensity = 1;
       return _this;
     }
 
@@ -6521,6 +9897,13 @@
 
       _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "type", 'DirectionalLight');
 
+      _this.shadowCamera = new Camera.ortho(1, 1);
+      _this.shadowCamera.parent = _assertThisInitialized(_assertThisInitialized(_this));
+      _this.shadowMap = new FrameBuffer(null, null, {
+        color: true,
+        depth: true
+      });
+      window.shadowMap = _this.shadowMap;
       return _this;
     }
 
@@ -6539,11 +9922,15 @@
   exports.Camera = Camera;
   exports.Texture = Texture;
   exports.FrameBuffer = FrameBuffer;
+  exports.UniformStack = UniformStack;
   exports.Sphere = Sphere;
   exports.Plane = Plane;
   exports.FlatMaterial = FlatMaterial;
   exports.LambertMaterial = LambertMaterial;
   exports.DirectionalLight = DirectionalLight;
+  exports.Vec3 = Vec3;
+  exports.Mat4 = Mat4;
+  exports.Quat = Quat;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

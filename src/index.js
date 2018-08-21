@@ -7,3 +7,4 @@ export * from './core/index';
 export * from './primitives/index';
 export * from './materials/index';
 export * from './lights/index';
+export * from './math/index';

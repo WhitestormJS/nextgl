@@ -7,3 +7,4 @@ export * from './Scene';
 export * from './Camera';
 export * from './Texture';
 export * from './FrameBuffer';
+export * from './UniformStack';

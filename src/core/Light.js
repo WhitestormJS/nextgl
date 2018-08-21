@@ -5,6 +5,7 @@ export class Light extends Object3D {
 
   constructor() {
     super();
-    this.color = [];
+    this.color = [1, 1, 1];
+    this.intensity = 1;
   }
 }

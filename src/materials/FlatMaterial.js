@@ -8,10 +8,13 @@ export class FlatMaterial extends Material {
         USE_COLOR: true,
         USE_MAP: Boolean(options.map)
       }, options.defines || {}),
-      alias: ['map'],
+      alias: {
+        map: 'map'
+      },
       modifiers: options.modifiers || {}
     });
 
     this.map = options.map;
+    this.initializeUniforms();
   }
 }

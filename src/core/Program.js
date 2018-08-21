@@ -1,5 +1,6 @@
 import fragDefault from '../shaders/lib/default.frag';
 import vertDefault from '../shaders/lib/default.vert';
+import {UniformStack} from './UniformStack';
 
 import {Geometry} from './Geometry';
 
@@ -13,6 +14,23 @@ export class Program {
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
 
+    return Program.debugShader(gl, shader);
+  }
+
+  static dynamicDefines = (gl, shader, defines) => {
+    let source = gl.getShaderSource(shader);
+    source = source.substr(source.indexOf('#version 300 es') + 15, source.length);
+
+    for (let name in defines) {
+      source = source.replace(new RegExp(`\\#define\\s(${name})\\s(.*)`), '#define $1 ' + defines[name]);
+      if (source.indexOf(`#define ${name}`) < 0) source = `#define ${name} ${defines[name]} \n` + source;
+    }
+
+    gl.shaderSource(shader, '#version 300 es\n' + source);
+    // gl.compileShader(shader);
+  }
+
+  static debugShader = (gl, shader) => {
     const success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
 
     if (success)
@@ -21,7 +39,7 @@ export class Program {
     // TODO: Cleanup error logging + add troubleshooting
     console.warn(gl.getShaderInfoLog(shader));
     console.warn(
-      source.split('\n')
+      gl.getShaderSource(shader).split('\n')
         .map((line, i) => `${i < 9 ? '0' : ''}${i+1}:  ${line}`)
         .join('\n')
     );
@@ -29,15 +47,40 @@ export class Program {
     gl.deleteShader(shader);
   }
 
+  static debugProgram = (gl, program, fragShader, vertShader) => {
+    const success = gl.getProgramParameter(program, gl.LINK_STATUS);
+
+    if (success)
+      return program;
+
+    // TODO: Cleanup error logging + add troubleshooting
+    console.error(gl.getProgramInfoLog(program));
+
+    console.warn('Fragment shader: \n' +
+      gl.getShaderSource(fragShader).split('\n')
+        .map((line, i) => `${i < 9 ? '0' : ''}${i+1}:  ${line}`)
+        .join('\n')
+    );
+
+    console.warn('Vertex shader: \n' +
+      gl.getShaderSource(vertShader).split('\n')
+        .map((line, i) => `${i < 9 ? '0' : ''}${i+1}:  ${line}`)
+        .join('\n')
+    );
+
+    gl.deleteProgram(program);
+  }
+
   constructor(options = {}, geometry) {
     const {
       vert, frag, draw, count,
-      vertexShader, fragmentShader
+      vertexShader, fragmentShader, uniforms
     } = Object.assign({
       vert: vertDefault,
       frag: fragDefault,
       vertexShader: null,
-      fragmentShader: null
+      fragmentShader: null,
+      uniforms: {}
     }, options);
 
     const _geometry = geometry || new Geometry();
@@ -51,9 +94,12 @@ export class Program {
     this.frag = fragmentShader ? 'linked shader is used' : frag;
 
     this.draw = draw || 'triangles';
-    this.uniforms = {};
+    this.uniforms = uniforms instanceof UniformStack ? uniforms : new UniformStack(uniforms);
     this.count = count || _geometry.getCount() || 3;
+    this.needsUpdate = true;
     this.enabled = true;
+    this.mesh = null;
+    this.state = {};
 
     Object.defineProperties(this, {
       attributes: {
@@ -86,13 +132,13 @@ export class Program {
   }
 
   _compile = gl => {
-    const vertexShader = this.vertexShader || Program.createShader(gl, 'vertex', this.vert);
-    const fragmentShader = this.fragmentShader || Program.createShader(gl, 'fragment', this.frag);
+    this.vertexShader = this.vertexShader || Program.createShader(gl, 'vertex', this.vert);
+    this.fragmentShader = this.fragmentShader || Program.createShader(gl, 'fragment', this.frag);
 
     const program = gl.createProgram();
 
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
+    gl.attachShader(program, this.vertexShader);
+    gl.attachShader(program, this.fragmentShader);
     gl.linkProgram(program);
 
     const success = gl.getProgramParameter(program, gl.LINK_STATUS);
@@ -100,19 +146,7 @@ export class Program {
     const vao = _geometryRefs.get(this);
 
     if (!vao._compiledVAO) vao._compile(gl);
-    vao._bind(gl);
-
-    // // index attribute
-    if (this.index) {
-      if (!this.index._compiledBuffer) this.index._compile(gl, true);
-      this.index._bind(gl, null, true);
-    }
-    //
-    // // non-index attributes
-    for (const [attrName, attr] of Object.entries(this.attributes)) {
-      if (!attr._compiledBuffer) attr._compile(gl, false);
-      attr._bind(gl, gl.getAttribLocation(program, attrName), false);
-    }
+    this._bind(gl, true, program);
 
     if (success)
       return program;
@@ -122,7 +156,21 @@ export class Program {
     gl.deleteProgram(program);
   }
 
-  _bind = gl => {
+  _bind = (gl, vaoNeedsUpdate = false, program) => {
     _geometryRefs.get(this)._bind(gl);
+
+    if (vaoNeedsUpdate) {
+      // // index attribute
+      if (this.index) {
+        if (!this.index._compiledBuffer) this.index._compile(gl, true);
+        this.index._bind(gl, null, true);
+      }
+      //
+      // // non-index attributes
+      for (const [attrName, attr] of Object.entries(this.attributes)) {
+        if (!attr._compiledBuffer) attr._compile(gl, false);
+        attr._bind(gl, gl.getAttribLocation(program, attrName), false);
+      }
+    }
   }
 }

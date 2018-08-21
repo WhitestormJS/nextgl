@@ -1,3 +1,8 @@
-float lightness = dot(dirLight.xyz, normal);
+#if (NUM_DIRECTIONAL_LIGHTS > 0)
+  vec3 matColor = color;
+  color = vec3(0, 0, 0);
+#endif
 
-outColor = vec4(color * lightness, 1);
+[f directional_lights]
+
+// test

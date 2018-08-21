@@ -9,6 +9,10 @@ export class Shader {
   static parse(raw, modifiers) {
     return raw.replace(/\n(\s*)\[([fv])\s([aA-zZ]*)\]/g, (match, spaces, shaderType, chunkName) => {
       chunkName = shaderType + '_' + chunkName;
+
+      if (!(chunkName in Shader.collection.chunks))
+        throw new Error(`No such chunk "${chunkName}"`);
+
       let chunk = Shader.collection.chunks[chunkName]
         .split('\n')
         .slice(1)

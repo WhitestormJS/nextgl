@@ -13,13 +13,18 @@ export class Mesh extends Object3D {
 
     this.program = new Program({
       vert: options.shader.vert,
-      frag: options.shader.frag
+      frag: options.shader.frag,
+      uniforms: Object.assign(options.shader.uniforms || {}, {
+        modelMatrix: this.matrixWorld
+      })
     }, geometry);
 
-    // console.log(options.shader.uniforms);
-    this.program.uniforms = Object.assign(options.shader.uniforms || {}, {
-      $modelMatrix: this.matrixWorld
-    });
+    this.castShadow = false;
+    this.receiveShadow = false;
+
+    this.program.mesh = this;
+
+    Object.assign(this.program.state, options.shader.state || {});
   }
 
   get visible() {

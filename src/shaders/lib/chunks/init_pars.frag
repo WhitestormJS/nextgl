@@ -1,5 +1,5 @@
 precision mediump float;
 
 #ifdef USE_COLOR
-  uniform vec3 u_diffuse;
+  uniform vec3 diffuse;
 #endif

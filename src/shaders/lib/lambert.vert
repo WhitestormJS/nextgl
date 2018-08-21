@@ -6,5 +6,5 @@ void main() {
   [v normal]
   [v uv]
 
-  gl_Position = projectionMatrix * viewMatrix * modelMatrix * position;
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
 }

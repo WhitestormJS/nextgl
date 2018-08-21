@@ -1,4 +1,7 @@
 import {identity, fromScaling, multiply, fromRotationTranslation, copy} from 'gl-mat4';
+import {Vec3} from '../math/Vec3';
+import {Mat4} from '../math/Mat4';
+import {Quat} from '../math/Quat';
 import Events from 'minivents';
 
 export class Object3D extends Events {
@@ -6,27 +9,32 @@ export class Object3D extends Events {
     super();
 
     // FIXME: replace identity() with create()
-    this.matrix = identity([]);
-    this.matrixWorld = identity([]);
-    this.position = [0, 0, 0];
-    this.scale = [1, 1, 1];
-    this.quaternion = [0, 0, 0, 1];
+    this.matrix = new Mat4();
+    this.matrixWorld = new Mat4();
+    this.position = new Vec3(0, 0, 0);
+    this.scale = new Vec3(1, 1, 1);
+    this.quaternion = new Quat();
     this.children = [];
     this.matrixAutoUpdate = true;
     this.matrixWorldAutoUpdate = true;
   }
 
+  // lookAt(vector) {
+  //
+  // }
+
   updateMatrix() {
-    fromRotationTranslation(fromScaling(this.matrix, this.scale), this.quaternion, this.position);
+    this.matrix.compose(this.position, this.quaternion, this.scale);
   }
 
   updateMatrixWorld() { // Consider to be called after updateMatrix()
+    // TODO: Replace with Math API
     if (!this.parent) {
-      copy(this.matrixWorld, this.matrix);
+      copy(this.matrixWorld.value, this.matrix.value);
       return;
     }
 
-    multiply(this.matrixWorld, this.matrix, this.parent.matrix);
+    multiply(this.matrixWorld.value, this.matrix.value, this.parent.matrix.value);
   }
 
   add(child) {
