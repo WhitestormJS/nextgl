@@ -62,6 +62,9 @@ export class Renderer {
   }
 
   attach(program) {
+    if (!program._compiledProgram)
+      program._compiledProgram = program._compile(this.context, this);
+
     const uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms));
     const self = _locals.get(this);
 
@@ -179,9 +182,6 @@ export class Renderer {
     for (let i = 0, l = this._programs.length; i < l; i++) {
       const program = this._programs[i];
       if (!program.enabled) continue;
-
-      if (!program._compiledProgram)
-        program._compiledProgram = program._compile(gl, this);
       // const uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms));
 
       for (let i = 0, l = this.extensions.length; i < l; i++)

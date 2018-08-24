@@ -86,11 +86,10 @@ export default {
       const projectionViewMatrix = multiply([], light.shadowCamera.projectionMatrix.value, invert([], light.shadowCamera.matrixWorld.value));
       gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMatricies[${i}]`), false, projectionViewMatrix);
 
-      if (!texture._compiledTexture) texture._compile(gl);
       shadowMapIndices.push(texture._bind(gl));
     });
 
-    // console.log(shadowMapIndices);
+    console.log(shadowMapIndices);
 
     gl.uniform1iv(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMaps[0]`), shadowMapIndices);
 

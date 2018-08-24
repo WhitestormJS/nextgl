@@ -15,7 +15,7 @@ export class DirectionalLight extends Light {
     this.shadowCamera = new Camera.ortho(10, 10);
     this.shadowCamera.matrixAutoUpdate = false;
     this.shadowCamera.matrixWorldAutoUpdate = false;
-    this.shadowMap = new FrameBuffer(options.shadow.width, options.shadow.height, {color: true, depth: true});
+    this.shadowMap = new FrameBuffer(options.shadow.width, options.shadow.height, {color: false, depth: true});
 
     window['shadowMap' + i] = this.shadowMap;
   }

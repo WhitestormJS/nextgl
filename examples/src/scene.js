@@ -36,19 +36,19 @@ dirLight2.intensity = 0.5;
 dirLight2.position.set(0, 5, 0);
 dirLight2.quaternion.setFromEuler(-Math.PI / 3, 0, 0);
 
-// const dirLight3 = new NEXT.DirectionalLight({
-//   shadow: {
-//     width: 2048,
-//     height: 2048
-//   }
-// });
-//
-// dirLight3.intensity = 0.5;
-// dirLight3.position.set(0, 5, 0);
-// dirLight3.quaternion.setFromEuler(-Math.PI / 1.5, 0, 0);
+const dirLight3 = new NEXT.DirectionalLight({
+  shadow: {
+    width: 2048,
+    height: 2048
+  }
+});
+
+dirLight3.intensity = 0.5;
+dirLight3.position.set(0, 5, 0);
+dirLight3.quaternion.setFromEuler(-Math.PI / 1.5, 0, 0);
 scene.add(dirLight);
 scene.add(dirLight2);
-// scene.add(dirLight3);
+scene.add(dirLight3);
 
 const camera = new NEXT.Camera({
   type: 'perspective',
@@ -130,7 +130,7 @@ const flat2 = new NEXT.FlatMaterial({
 });
 
 setTimeout(() => {
-  flat2.uniforms.fbo = dirLight.shadowMap.texture;
+  // flat2.uniforms.fbo = dirLight.shadowMap.texture;
 }, 1000);
 
 // flat2

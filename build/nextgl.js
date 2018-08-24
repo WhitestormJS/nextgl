@@ -7978,10 +7978,9 @@
         var texture = light.shadowMap.depthTexture;
         var projectionViewMatrix = glMat4_9([], light.shadowCamera.projectionMatrix.value, glMat4_6([], light.shadowCamera.matrixWorld.value));
         gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, "directionalLightShadowMatricies[".concat(i, "]")), false, projectionViewMatrix);
-        if (!texture._compiledTexture) texture._compile(gl);
         shadowMapIndices.push(texture._bind(gl));
-      }); // console.log(shadowMapIndices);
-
+      });
+      console.log(shadowMapIndices);
       gl.uniform1iv(gl.getUniformLocation(program._compiledProgram, "directionalLightShadowMaps[0]"), shadowMapIndices);
 
       if (self.LIGHTS.length > 0 && program.state.lights) {
@@ -8081,6 +8080,7 @@
     _createClass(Renderer, [{
       key: "attach",
       value: function attach(program) {
+        if (!program._compiledProgram) program._compiledProgram = program._compile(this.context, this);
         var uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms));
 
         var self = _locals.get(this);
@@ -8216,8 +8216,7 @@
 
         for (var _i = 0, _l = this._programs.length; _i < _l; _i++) {
           var program = this._programs[_i];
-          if (!program.enabled) continue;
-          if (!program._compiledProgram) program._compiledProgram = program._compile(gl, this); // const uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms));
+          if (!program.enabled) continue; // const uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms));
 
           for (var _i2 = 0, _l2 = this.extensions.length; _i2 < _l2; _i2++) {
             if (this.extensions[_i2].program) this.extensions[_i2].program.call(this, gl, program, self);
@@ -10153,7 +10152,7 @@
       _this.shadowCamera.matrixAutoUpdate = false;
       _this.shadowCamera.matrixWorldAutoUpdate = false;
       _this.shadowMap = new FrameBuffer(options.shadow.width, options.shadow.height, {
-        color: true,
+        color: false,
         depth: true
       });
       window['shadowMap' + i$3] = _this.shadowMap;
