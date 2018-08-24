@@ -27,6 +27,7 @@
     "gulp": "^3.9.1",
     "gulp-cli": "^2.0.1",
     "gulp-watch": "^5.0.1",
+    "lerp": "^1.0.3",
     "normals": "^1.1.0",
     "rollup": "^0.64.1",
     "rollup-plugin-babel": "^4.0.0-beta.8",

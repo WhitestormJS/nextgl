@@ -62,9 +62,6 @@ export class Renderer {
   }
 
   attach(program) {
-    if (!program._compiledProgram)
-      program._compiledProgram = program._compile(this.context, this);
-
     const uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms));
     const self = _locals.get(this);
 
@@ -170,7 +167,11 @@ export class Renderer {
     });
 
     // Clear the canvas
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    if (frameBuffer)
+      gl.viewport(0, 0, frameBuffer.width, frameBuffer.height);
+    else
+      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     self.TEXTURE_UNIT = 0;
@@ -178,20 +179,29 @@ export class Renderer {
     for (let i = 0, l = this._programs.length; i < l; i++) {
       const program = this._programs[i];
       if (!program.enabled) continue;
+
+      if (!program._compiledProgram)
+        program._compiledProgram = program._compile(gl, this);
       // const uniforms = Object.entries(Object.getOwnPropertyDescriptors(program.uniforms));
 
       for (let i = 0, l = this.extensions.length; i < l; i++)
         if (this.extensions[i].program) this.extensions[i].program.call(this, gl, program, self);
 
       if (program.needsUpdate) {
-        gl.compileShader(program.fragmentShader);
-        gl.compileShader(program.vertexShader);
+        const {vertexShader, fragmentShader} = program;
+
+        gl.shaderSource(vertexShader, Program.preprocessShader(vertexShader.source));
+        gl.shaderSource(fragmentShader, Program.preprocessShader(fragmentShader.source));
+
+        gl.compileShader(vertexShader);
+        gl.compileShader(fragmentShader);
+
         gl.linkProgram(program._compiledProgram);
 
-        Program.debugProgram(gl, program._compiledProgram, program.fragmentShader, program.vertexShader);
+        Program.debugProgram(gl, program._compiledProgram, fragmentShader, vertexShader);
 
-        Program.debugShader(gl, program.fragmentShader);
-        Program.debugShader(gl, program.vertexShader);
+        Program.debugShader(gl, fragmentShader);
+        Program.debugShader(gl, vertexShader);
 
         program.needsUpdate = false;
 

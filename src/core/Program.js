@@ -6,19 +6,48 @@ import {Geometry} from './Geometry';
 
 const _geometryRefs = new WeakMap();
 
+function unrollLoops(string) {
+  const regex = /#define ([aA-zZ]+) (\d+)/g;
+
+  const defines = string.match(regex)
+    .map(regex.exec.bind(regex))
+    .reduce((c, v) => Object.assign(c, v ? {[v[1]]: Number(v[2])} : {}), {});
+
+	const pattern = /#pragma unroll_loop[\s]+?for \(int i \= (\d+)\; i < ([aA-zZ]+)\; i\+\+\) \{([\s\S]+?)(?=\})\}/g;
+
+	function replace(match, start, end, snippet) {
+    console.log(end in defines ? defines[end] : end);
+		let unroll = '';
+
+		for (let i = parseInt( start ); i < parseInt( end in defines ? defines[end] : end ); i++) {
+			unroll += snippet.replace(/\[i\]/g, '[' + i + ']').replace(/([^aA-zZ]+)i([^aA-zZ]+)/g, `$1${i}$2`);
+      console.log(snippet);
+		}
+
+		return unroll;
+	}
+
+  const res = string.replace(pattern, replace);
+  // console.log(res);
+
+	return res;
+}
+
 export class Program {
+  static sources = new Map();
+
   static createShader = (gl, type, source) => {
     type = type === 'vertex' ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER;
     const shader = gl.createShader(type);
 
-    gl.shaderSource(shader, source);
+    gl.shaderSource(shader, Program.preprocessShader(source));
     gl.compileShader(shader);
 
     return Program.debugShader(gl, shader);
   }
 
   static dynamicDefines = (gl, shader, defines) => {
-    let source = gl.getShaderSource(shader);
+    let source = shader.source || gl.getShaderSource(vertexShader);
     source = source.substr(source.indexOf('#version 300 es') + 15, source.length);
 
     for (let name in defines) {
@@ -26,8 +55,7 @@ export class Program {
       if (source.indexOf(`#define ${name}`) < 0) source = `#define ${name} ${defines[name]} \n` + source;
     }
 
-    gl.shaderSource(shader, '#version 300 es\n' + source);
-    // gl.compileShader(shader);
+    shader.source = '#version 300 es\n' + source;
   }
 
   static debugShader = (gl, shader) => {
@@ -71,6 +99,11 @@ export class Program {
     gl.deleteProgram(program);
   }
 
+  static preprocessShader = source => {
+    // return source;
+    return unrollLoops(source);
+  }
+
   constructor(options = {}, geometry) {
     const {
       vert, frag, draw, count,
@@ -90,8 +123,11 @@ export class Program {
     this.vertexShader = vertexShader;
     this.fragmentShader = fragmentShader;
 
-    this.vert = vertexShader ? 'linked shader is used' : vert;
-    this.frag = fragmentShader ? 'linked shader is used' : frag;
+    this.vert = vertexShader ? gl.getShaderSource(vertexShader) : vert;
+    this.frag = fragmentShader ? gl.getShaderSource(fragmentShader) : frag;
+
+    // console.log(Program.sources.get(this.vertexShader));
+    // debugger;
 
     this.draw = draw || 'triangles';
     this.uniforms = uniforms instanceof UniformStack ? uniforms : new UniformStack(uniforms);
@@ -134,6 +170,20 @@ export class Program {
   _compile = gl => {
     this.vertexShader = this.vertexShader || Program.createShader(gl, 'vertex', this.vert);
     this.fragmentShader = this.fragmentShader || Program.createShader(gl, 'fragment', this.frag);
+
+    Object.defineProperty(this.vertexShader, 'source', {
+      get: () => this.vert,
+      set: (source) => {
+        this.vert = source;
+      }
+    });
+
+    Object.defineProperty(this.fragmentShader, 'source', {
+      get: () => this.frag,
+      set: (source) => {
+        this.frag = source;
+      }
+    });
 
     const program = gl.createProgram();
 

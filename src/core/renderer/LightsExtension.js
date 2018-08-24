@@ -1,3 +1,5 @@
+import {multiply, invert, identity, transpose, copy} from 'gl-mat4';
+import {transformMat4} from 'gl-vec3';
 import {Program} from '../Program';
 
 export default {
@@ -13,8 +15,6 @@ export default {
   },
   program(gl, program, self) {
     if (!self.NUM_LIGHTS_CHANGED || self.STATE_SHADOWMAP) return;
-
-    console.log(program.mesh, program.mesh.receiveShadow);
 
     const defines = {
       NUM_DIRECTIONAL_LIGHTS: self.LIGHTS.length,
@@ -34,13 +34,25 @@ export default {
 
     let offs = 0;
     self.LIGHTS.forEach(light => {
-      if (light.shadowMap) light.shadowMap.setSize(this.canvas.width, this.canvas.height);
+      // if (light.shadowMap) light.shadowMap.setSize(this.canvas.width, this.canvas.height);
+
+      // TODO: lvl up all matricies
+      light.updateMatrix();
+      light.updateMatrixWorld(); // invert
+
+      light.shadowCamera.matrixWorld.copy(light.matrixWorld);
 
       self.STATE_SHADOWMAP = true;
+      if (window.test) window.test.visible = false;
       this.render(light.shadowCamera, light.shadowMap);
+      if (window.test) window.test.visible = true;
       self.STATE_SHADOWMAP = false;
-      // const fb = new NEXT.FrameBuffer(window.innerWidth, window.innerHeight, {depth: true});
+
+      // identity(light.shadowCamera.matrixWorld.value);
+
       const dir = light.quaternion.getDirection().value;
+      // const pos = light.position.value;
+      // transformMat4(pos, pos, light.shadowCamera.matrixWorld);
 
       // float intensity
       lights[offs++] = light.intensity; // x
@@ -66,18 +78,21 @@ export default {
   render(gl, program, self) { // TODO: Move lights part to "before"
     if (self.STATE_SHADOWMAP) return;
 
+    let shadowMapIndices = [];
+
     self.LIGHTS.forEach((light, i) => {
-      const texture = light.shadowMap.texture;
+      const texture = light.shadowMap.depthTexture;
+
+      const projectionViewMatrix = multiply([], light.shadowCamera.projectionMatrix.value, invert([], light.shadowCamera.matrixWorld.value));
+      gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMatricies[${i}]`), false, projectionViewMatrix);
 
       if (!texture._compiledTexture) texture._compile(gl);
-      // gl.uniform1i(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMaps[${i}]`), texture._bind(gl));
-
-      // if (!texture._compiledTexture) texture._compile(gl);
-      // texture._bind(gl);
-      // console.log(texUnit);
-      // gl.activeTexture(gl['TEXTURE' + ++self.TEXTURE_UNIT]);
-      // gl.uniform1i(gl.getUniformLocation(program._compiledProgram, `directionalShadowMaps[${i}]`), self.TEXTURE_UNIT);
+      shadowMapIndices.push(texture._bind(gl));
     });
+
+    // console.log(shadowMapIndices);
+
+    gl.uniform1iv(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMaps[0]`), shadowMapIndices);
 
     if (self.LIGHTS.length > 0 && program.state.lights) {
       const location = gl.getUniformBlockIndex(program._compiledProgram, 'Lights');

@@ -4,10 +4,11 @@ import {Mat4} from '../math/Mat4';
 export class Camera extends Object3D {
   static ortho(width, height, near = 1, far = 100) {
     return new Camera({
+      type: 'ortho',
       left: -width / 2,
       right: width / 2,
-      top: height / 2,
-      bottom: -height / 2,
+      top: -height / 2,
+      bottom: height / 2,
       near, far
     });
   }

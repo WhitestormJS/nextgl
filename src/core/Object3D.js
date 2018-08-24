@@ -27,14 +27,14 @@ export class Object3D extends Events {
     this.matrix.compose(this.position, this.quaternion, this.scale);
   }
 
-  updateMatrixWorld() { // Consider to be called after updateMatrix()
+  updateMatrixWorld(parent) { // Consider to be called after updateMatrix()
     // TODO: Replace with Math API
-    if (!this.parent) {
+    if (!this.parent && !parent) {
       copy(this.matrixWorld.value, this.matrix.value);
       return;
     }
 
-    multiply(this.matrixWorld.value, this.matrix.value, this.parent.matrix.value);
+    multiply(this.matrixWorld.value, this.matrix.value, (parent || this.parent).matrix.value);
   }
 
   add(child) {

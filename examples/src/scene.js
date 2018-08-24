@@ -1,4 +1,5 @@
 import _controls from 'orbit-controls';
+import lerp from 'lerp';
 const controls = _controls({
   position: [0, 0, 10]
 });
@@ -12,11 +13,41 @@ NEXT.Shader.collection = NEXT.shaders;
 
 const scene = new NEXT.Scene();
 
-const dirLight = new NEXT.DirectionalLight();
-dirLight.intensity = 3;
-dirLight.position.set(0, 10, 0);
+const dirLight = new NEXT.DirectionalLight({
+  shadow: {
+    width: 2048,
+    height: 2048
+  }
+});
+
+dirLight.intensity = 0.5;
+dirLight.position.set(0, 5, 0);
 dirLight.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+
+const dirLight2 = new NEXT.DirectionalLight({
+  shadow: {
+    width: 2048,
+    height: 2048
+  }
+});
+
+dirLight2.intensity = 0.5;
+dirLight2.position.set(0, 5, 0);
+dirLight2.quaternion.setFromEuler(-Math.PI / 3, 0, 0);
+
+const dirLight3 = new NEXT.DirectionalLight({
+  shadow: {
+    width: 2048,
+    height: 2048
+  }
+});
+
+dirLight3.intensity = 0.5;
+dirLight3.position.set(0, 5, 0);
+dirLight3.quaternion.setFromEuler(-Math.PI / 1.5, 0, 0);
+scene.add(dirLight2);
 scene.add(dirLight);
+scene.add(dirLight3);
 
 const camera = new NEXT.Camera({
   type: 'perspective',
@@ -82,7 +113,7 @@ const flat2 = new NEXT.FlatMaterial({
     `,
     f_main: () => `
       // float n = 1.0;
-      // float f = 100.0;
+      // float f = 1000.0;
       // float z = texture(fbo, v_uv).x;
       // float grey = (2.0 * n) / (f + n - z*(f-n));
       // color = vec3(grey);
@@ -99,18 +130,19 @@ const flat2 = new NEXT.FlatMaterial({
 
 setTimeout(() => {
   console.log(flat2.uniforms);
-  flat2.uniforms.fbo = window.shadowMap.texture;
+  flat2.uniforms.fbo = dirLight3.shadowMap.depthTexture;
 }, 1000);
 
 // flat2
 
 const plane = new NEXT.Plane({
   width: 4,
-  height: 2,
+  height: 4,
   shader: flat2
 });
 
 plane.position.set(6, 0, 0);
+window.test = plane;
 // plane.quaternion.setFromEuler(-Math.PI, 0, 0);
 
 // vec3.set(plane.position, 6, 0, 0);
@@ -119,7 +151,7 @@ scene.add(plane);
 
 let cam = camera;
 
-(function update() {
+(function update(time) {
   requestAnimationFrame(update);
 
   controls.update();
@@ -134,6 +166,13 @@ let cam = camera;
 
   // plane.visible = false;
   // renderer.render(orthoCamera, fb);
+  const progress = (Math.sin(time / 400) + 1) / 2;
+
+  if (typeof dirLight !== 'undefined') {
+    dirLight.position.y = lerp(10, 5, progress);
+    dirLight.quaternion.setFromEuler(lerp(-Math.PI / 2, -Math.PI/ 3, progress), 0, 0);
+  }
+
   plane.visible = true;
   renderer.render(camera);
 })();

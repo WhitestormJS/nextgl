@@ -94,7 +94,7 @@ export class Texture {
   _bind(gl) {
     const unit = textureUnit.get(this);
 
-    gl.activeTexture(gl['TEXTURE' + unit]);
+    gl.activeTexture(gl.TEXTURE0 + unit);
     gl.bindTexture(gl.TEXTURE_2D, this._compiledTexture);
 
     return textureUnit.get(this);

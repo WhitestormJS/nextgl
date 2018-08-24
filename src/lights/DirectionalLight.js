@@ -2,16 +2,21 @@ import {Light} from '../core/Light';
 import {Camera} from '../core/Camera';
 import {FrameBuffer} from '../core/FrameBuffer';
 
+let i = 0;
+
 export class DirectionalLight extends Light {
   type = 'DirectionalLight';
 
-  constructor() {
-    super();
+  constructor(options = {}) {
+    super(options);
 
-    this.shadowCamera = new Camera.ortho(1, 1);
-    this.shadowCamera.parent = this;
-    this.shadowMap = new FrameBuffer(null, null, {color: true, depth: true});
+    options.shadow = Object.assign({}, Light.shadowDefaults, options.shadow || {});
 
-    window.shadowMap = this.shadowMap;
+    this.shadowCamera = new Camera.ortho(10, 10);
+    this.shadowCamera.matrixAutoUpdate = false;
+    this.shadowCamera.matrixWorldAutoUpdate = false;
+    this.shadowMap = new FrameBuffer(options.shadow.width, options.shadow.height, {color: true, depth: true});
+
+    window['shadowMap' + i] = this.shadowMap;
   }
 }
