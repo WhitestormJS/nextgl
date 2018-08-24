@@ -16,22 +16,22 @@ vec3 processDirectionalLight(in vec3 matColor, in DirectionalLight directionalLi
 
 float processDirectionalLightShadow(in vec4 ShadowCoord, sampler2D shadowMap) {
   #ifdef MESH_RECEIVE_SHADOW
-    ShadowCoord.z -= 0.05; // bias
+    if (MESH_RECEIVE_SHADOW) {
+      ShadowCoord.z -= 0.05; // bias
 
-    bvec4 inFrustumVec = bvec4 (ShadowCoord.x >= 0.0, ShadowCoord.x <= 1.0, ShadowCoord.y >= 0.0, ShadowCoord.y <= 1.0);
-    bool inFrustum = all(inFrustumVec);
+      bvec4 inFrustumVec = bvec4 (ShadowCoord.x >= 0.0, ShadowCoord.x <= 1.0, ShadowCoord.y >= 0.0, ShadowCoord.y <= 1.0);
+      bool inFrustum = all(inFrustumVec);
 
-    if (all(bvec2(inFrustum, ShadowCoord.z <= 1.0))) {
-      float shadowColor = texture(shadowMap, ShadowCoord.xy).r; // unpackRGBAToDepth(texture(directionalLightShadowMaps[i], ShadowCoord.xy));
-      vec3 darkness = vec3(0.0);
+      if (all(bvec2(inFrustum, ShadowCoord.z <= 1.0))) {
+        float shadowColor = texture(shadowMap, ShadowCoord.xy).r; // unpackRGBAToDepth(texture(directionalLightShadowMaps[i], ShadowCoord.xy));
+        vec3 darkness = vec3(0.0);
 
-      return shadowColor < ShadowCoord.z ? 0.0 : 1.0;
+        return shadowColor < ShadowCoord.z ? 0.0 : 1.0;
+      }
     }
-
-    return 1.0;
-  #else
-    return 1.0;
   #endif
+
+  return 1.0;
 }
 
 const float UnpackDownscale = 255. / 256.; // 0..1 -> fraction (excluding 1)

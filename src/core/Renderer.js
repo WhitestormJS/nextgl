@@ -155,6 +155,14 @@ export class Renderer {
     } else
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
+    // Clear the canvas
+    if (frameBuffer)
+      gl.viewport(0, 0, frameBuffer.width, frameBuffer.height);
+    else
+      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
     if (camera.matrixAutoUpdate) camera.updateMatrix();
     if (camera.matrixWorldAutoUpdate) camera.updateMatrixWorld();
 
@@ -165,14 +173,6 @@ export class Renderer {
         if (object.matrixWorldAutoUpdate) object.updateMatrixWorld();
       });
     });
-
-    // Clear the canvas
-    if (frameBuffer)
-      gl.viewport(0, 0, frameBuffer.width, frameBuffer.height);
-    else
-      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     self.TEXTURE_UNIT = 0;
 

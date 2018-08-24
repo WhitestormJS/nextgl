@@ -112,13 +112,13 @@
     default: lights$2
   });
 
-  var directional_lights_pars$2 = "#define GLSLIFY 1\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  uniform sampler2D directionalLightShadowMaps[NUM_DIRECTIONAL_LIGHTS];\n  in vec4 v_directionalShadowCoords[NUM_DIRECTIONAL_LIGHTS];\n#endif\n\nstruct DirectionalLight\n{\n  float intensity;\n  vec3 color;\n  vec3 direction;\n};\n\nvec3 processDirectionalLight(in vec3 matColor, in DirectionalLight directionalLight, in vec3 normal) {\n  return matColor * dot(directionalLight.direction, normal) * directionalLight.intensity;\n}\n\nfloat processDirectionalLightShadow(in vec4 ShadowCoord, sampler2D shadowMap) {\n  #ifdef MESH_RECEIVE_SHADOW\n    ShadowCoord.z -= 0.05; // bias\n\n    bvec4 inFrustumVec = bvec4 (ShadowCoord.x >= 0.0, ShadowCoord.x <= 1.0, ShadowCoord.y >= 0.0, ShadowCoord.y <= 1.0);\n    bool inFrustum = all(inFrustumVec);\n\n    if (all(bvec2(inFrustum, ShadowCoord.z <= 1.0))) {\n      float shadowColor = texture(shadowMap, ShadowCoord.xy).r; // unpackRGBAToDepth(texture(directionalLightShadowMaps[i], ShadowCoord.xy));\n      vec3 darkness = vec3(0.0);\n\n      return shadowColor < ShadowCoord.z ? 0.0 : 1.0;\n    }\n\n    return 1.0;\n  #else\n    return 1.0;\n  #endif\n}\n\nconst float UnpackDownscale = 255. / 256.; // 0..1 -> fraction (excluding 1)\n\nconst vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256.,  256. );\nconst vec4 UnpackFactors = UnpackDownscale / vec4( PackFactors, 1. );\n\nfloat unpackRGBAToDepth( const in vec4 v ) {\n\treturn dot( v, UnpackFactors );\n}\n"; // eslint-disable-line
+  var directional_lights_pars$2 = "#define GLSLIFY 1\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  uniform sampler2D directionalLightShadowMaps[NUM_DIRECTIONAL_LIGHTS];\n  in vec4 v_directionalShadowCoords[NUM_DIRECTIONAL_LIGHTS];\n#endif\n\nstruct DirectionalLight\n{\n  float intensity;\n  vec3 color;\n  vec3 direction;\n};\n\nvec3 processDirectionalLight(in vec3 matColor, in DirectionalLight directionalLight, in vec3 normal) {\n  return matColor * dot(directionalLight.direction, normal) * directionalLight.intensity;\n}\n\nfloat processDirectionalLightShadow(in vec4 ShadowCoord, sampler2D shadowMap) {\n  #ifdef MESH_RECEIVE_SHADOW\n    if (MESH_RECEIVE_SHADOW) {\n      ShadowCoord.z -= 0.05; // bias\n\n      bvec4 inFrustumVec = bvec4 (ShadowCoord.x >= 0.0, ShadowCoord.x <= 1.0, ShadowCoord.y >= 0.0, ShadowCoord.y <= 1.0);\n      bool inFrustum = all(inFrustumVec);\n\n      if (all(bvec2(inFrustum, ShadowCoord.z <= 1.0))) {\n        float shadowColor = texture(shadowMap, ShadowCoord.xy).r; // unpackRGBAToDepth(texture(directionalLightShadowMaps[i], ShadowCoord.xy));\n        vec3 darkness = vec3(0.0);\n\n        return shadowColor < ShadowCoord.z ? 0.0 : 1.0;\n      }\n    }\n  #endif\n\n  return 1.0;\n}\n\nconst float UnpackDownscale = 255. / 256.; // 0..1 -> fraction (excluding 1)\n\nconst vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256.,  256. );\nconst vec4 UnpackFactors = UnpackDownscale / vec4( PackFactors, 1. );\n\nfloat unpackRGBAToDepth( const in vec4 v ) {\n\treturn dot( v, UnpackFactors );\n}\n"; // eslint-disable-line
 
   var directional_lights_pars$3 = /*#__PURE__*/Object.freeze({
     default: directional_lights_pars$2
   });
 
-  var directional_lights$2 = "#define GLSLIFY 1\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  DirectionalLight directionalLight;\n  vec4 ShadowCoord;\n  float lightAffection;\n\n  #pragma unroll_loop\n  for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; i++) {\n    directionalLight = directionalLights[i];\n    ShadowCoord = v_directionalShadowCoords[i];\n\n    lightAffection = processDirectionalLightShadow(ShadowCoord, directionalLightShadowMaps[i]);\n    color += processDirectionalLight(matColor, directionalLight, normal) * lightAffection;\n  }\n#endif\n"; // eslint-disable-line
+  var directional_lights$2 = "#define GLSLIFY 1\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  float lightAffection;\n\n  #pragma unroll_loop\n  for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; i++) {\n    lightAffection = processDirectionalLightShadow(v_directionalShadowCoords[i], directionalLightShadowMaps[i]);\n    color += processDirectionalLight(matColor, directionalLights[i], normal) * lightAffection;\n  }\n#endif\n"; // eslint-disable-line
 
   var directional_lights$3 = /*#__PURE__*/Object.freeze({
     default: directional_lights$2
@@ -8197,8 +8197,11 @@
           if (!frameBuffer._compiledFrameBuffer) frameBuffer._compile(gl);
 
           frameBuffer._bindFramebuffer(gl);
-        } else gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        } else gl.bindFramebuffer(gl.FRAMEBUFFER, null); // Clear the canvas
 
+
+        if (frameBuffer) gl.viewport(0, 0, frameBuffer.width, frameBuffer.height);else gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         if (camera.matrixAutoUpdate) camera.updateMatrix();
         if (camera.matrixWorldAutoUpdate) camera.updateMatrixWorld(); // TODO: add optimization feature to avoid iterating
 
@@ -8207,11 +8210,8 @@
             if (object.matrixAutoUpdate) object.updateMatrix();
             if (object.matrixWorldAutoUpdate) object.updateMatrixWorld();
           });
-        }); // Clear the canvas
+        });
 
-
-        if (frameBuffer) gl.viewport(0, 0, frameBuffer.width, frameBuffer.height);else gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         self.TEXTURE_UNIT = 0;
 
         for (var _i = 0, _l = this._programs.length; _i < _l; _i++) {
@@ -9695,6 +9695,7 @@
       this.wrapT = options.wrapT || options.wrapS || 'CLAMP_TO_EDGE';
       this.minFilter = options.minFilter || 'LINEAR';
       this.magFilter = options.magFilter || options.minFilter || 'LINEAR';
+      this.isActive = false;
     }
 
     _createClass(Texture, [{

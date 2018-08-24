@@ -28,6 +28,7 @@ export class Texture {
     this.wrapT = options.wrapT || options.wrapS || 'CLAMP_TO_EDGE';
     this.minFilter = options.minFilter || 'LINEAR';
     this.magFilter = options.magFilter || options.minFilter || 'LINEAR';
+    this.isActive = false;
   }
 
   _compile(gl) {
