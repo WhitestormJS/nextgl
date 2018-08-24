@@ -19,12 +19,10 @@ export default {
     babel({runtimeHelpers: true}),
     commonjs({ignoreGlobal: true}),
     resolve(),
-    ...(process.env.FXGL_SERVE ? [ // SERVE
-      serve({
-        open: true,
-        port: 3000,
-        contentBase: './'
-      })
-    ] : [])
+    ...(process.env.FXGL_SERVE ? [serve({
+      open: true,
+      port: 3000,
+      contentBase: './'
+    })] : [])
   ]
 };
