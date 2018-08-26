@@ -16,8 +16,8 @@ const scene = new NEXT.Scene();
 
 const dirLight = new NEXT.DirectionalLight({
   shadow: {
-    width: 2048,
-    height: 2048
+    width: 100,
+    height: 100
   }
 });
 
@@ -27,8 +27,8 @@ dirLight.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 
 const dirLight2 = new NEXT.DirectionalLight({
   shadow: {
-    width: 2048,
-    height: 2048
+    width: 100,
+    height: 100
   }
 });
 
@@ -38,17 +38,29 @@ dirLight2.quaternion.setFromEuler(-Math.PI / 3, 0, 0);
 
 const dirLight3 = new NEXT.DirectionalLight({
   shadow: {
+    width: 100,
+    height: 100
+  }
+});
+
+dirLight3.intensity = 0.2;
+dirLight3.position.set(0, 5, 0);
+dirLight3.quaternion.setFromEuler(-Math.PI / 1.5, 0, 0);
+
+const dirLight4 = new NEXT.DirectionalLight({
+  shadow: {
     width: 2048,
     height: 2048
   }
 });
 
-dirLight3.intensity = 0.5;
-dirLight3.position.set(0, 5, 0);
-dirLight3.quaternion.setFromEuler(-Math.PI / 1.5, 0, 0);
+dirLight4.intensity = 0.2;
+dirLight4.position.set(0, 5, 0);
+dirLight4.quaternion.setFromEuler(-Math.PI / 1.7, 0, 0);
 scene.add(dirLight);
 scene.add(dirLight2);
 scene.add(dirLight3);
+// scene.add(dirLight4);
 
 const camera = new NEXT.Camera({
   type: 'perspective',
@@ -113,12 +125,12 @@ const flat2 = new NEXT.FlatMaterial({
       uniform sampler2D fbo;
     `,
     f_main: () => `
-      // float n = 1.0;
-      // float f = 100.0;
-      // float z = texture(fbo, v_uv).x;
-      // float grey = (2.0 * n) / (f + n - z*(f-n));
-      // color = vec3(grey);
-      color = texture(fbo, v_uv).xyz;
+      float n = 1.0;
+      float f = 1.6;
+      float z = texture(fbo, v_uv).x;
+      float grey = (2.0 * n) / (f + n - z*(f-n));
+      color = vec3(grey);
+      // color = texture(fbo, v_uv).xyz;
     `,
     v_main: () => `
       v_uv.y = 1.0 - v_uv.y;
@@ -129,11 +141,13 @@ const flat2 = new NEXT.FlatMaterial({
   }
 });
 
-setTimeout(() => {
-  // flat2.uniforms.fbo = dirLight.shadowMap.texture;
-}, 1000);
+// setTimeout(() => {
+  flat2.uniforms.fbo = dirLight.shadowMap.depthTexture;
+// }, 1000);
 
 // flat2
+
+window.flat2 = flat2;
 
 const plane = new NEXT.Plane({
   width: 4,
@@ -169,20 +183,27 @@ let cam = camera;
   const progress = (Math.sin(time / 400) + 1) / 2;
 
   if (typeof dirLight !== 'undefined') {
-    // dirLight.position.y = lerp(10, 5, progress);
-    // dirLight.quaternion.setFromEuler(lerp(-Math.PI / 2, -Math.PI/ 3, progress), 0, 0);
+    dirLight.position.y = lerp(10, 5, progress);
+    dirLight.quaternion.setFromEuler(lerp(-Math.PI / 2, -Math.PI/ 3, progress), 0, 0);
+
+    // dirLight3.position.y = lerp(5, 10, progress);
+    // dirLight3.quaternion.setFromEuler(lerp(-Math.PI / 3, -Math.PI/ 2, progress), 0, 0);
   }
 
   plane.visible = true;
+
+  // if (!window.tester)
   renderer.render(camera);
+  //
+  // window.tester = true;
 })();
 
-console.log(orthoCamera);
+// console.log(orthoCamera);
 
 renderer.setScene(scene);
-// renderer.render(orthoCamera);
 
 window.renderer = renderer;
+window.dirLight = dirLight;
 
 // const sphereGeo = NEXT.Sphere.Geometry({
 //   radius: 1

@@ -112,7 +112,7 @@
     default: lights$2
   });
 
-  var directional_lights_pars$2 = "#define GLSLIFY 1\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  uniform sampler2D directionalLightShadowMaps[NUM_DIRECTIONAL_LIGHTS];\n  in vec4 v_directionalShadowCoords[NUM_DIRECTIONAL_LIGHTS];\n#endif\n\nstruct DirectionalLight\n{\n  float intensity;\n  vec3 color;\n  vec3 direction;\n};\n\nvec3 processDirectionalLight(in vec3 matColor, in DirectionalLight directionalLight, in vec3 normal) {\n  return matColor * dot(directionalLight.direction, normal) * directionalLight.intensity;\n}\n\nfloat processDirectionalLightShadow(in vec4 ShadowCoord, sampler2D shadowMap) {\n  #ifdef MESH_RECEIVE_SHADOW\n    if (MESH_RECEIVE_SHADOW) {\n      ShadowCoord.z -= 0.05; // bias\n\n      bvec4 inFrustumVec = bvec4 (ShadowCoord.x >= 0.0, ShadowCoord.x <= 1.0, ShadowCoord.y >= 0.0, ShadowCoord.y <= 1.0);\n      bool inFrustum = all(inFrustumVec);\n\n      if (all(bvec2(inFrustum, ShadowCoord.z <= 1.0))) {\n        float shadowColor = texture(shadowMap, ShadowCoord.xy).r; // unpackRGBAToDepth(texture(directionalLightShadowMaps[i], ShadowCoord.xy));\n        vec3 darkness = vec3(0.0);\n\n        return shadowColor < ShadowCoord.z ? 0.0 : 1.0;\n      }\n    }\n  #endif\n\n  return 1.0;\n}\n\nconst float UnpackDownscale = 255. / 256.; // 0..1 -> fraction (excluding 1)\n\nconst vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256.,  256. );\nconst vec4 UnpackFactors = UnpackDownscale / vec4( PackFactors, 1. );\n\nfloat unpackRGBAToDepth( const in vec4 v ) {\n\treturn dot( v, UnpackFactors );\n}\n"; // eslint-disable-line
+  var directional_lights_pars$2 = "#define GLSLIFY 1\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  uniform sampler2D directionalLightShadowMaps[NUM_DIRECTIONAL_LIGHTS];\n  in vec4 v_directionalShadowCoords[NUM_DIRECTIONAL_LIGHTS];\n#endif\n\nstruct DirectionalLight\n{\n  float intensity;\n  vec3 color;\n  vec3 direction;\n};\n\nvec3 processDirectionalLight(in vec3 matColor, in DirectionalLight directionalLight, in vec3 normal) {\n  return matColor * dot(directionalLight.direction, normal) * directionalLight.intensity;\n}\n\nfloat aastep(float value) {\n  float afwidth = length(vec2(dFdx(value), dFdy(value))) * 0.70710678118654757;\n  return smoothstep(0.5 - afwidth, 0.5 + afwidth, value);\n}\n\nfloat sdf2(float value, float zPlane) {\n  float sigDist = value - zPlane;\n  return sigDist / fwidth(sigDist);\n}\n\nfloat processDirectionalLightShadow(in vec4 ShadowCoord, sampler2D shadowMap) {\n  #ifdef MESH_RECEIVE_SHADOW\n    if (MESH_RECEIVE_SHADOW) {\n      ShadowCoord.z -= 0.05; // bias\n\n      bvec4 inFrustumVec = bvec4 (ShadowCoord.x >= 0.0, ShadowCoord.x <= 1.0, ShadowCoord.y >= 0.0, ShadowCoord.y <= 1.0);\n      bool inFrustum = all(inFrustumVec);\n\n      if (all(bvec2(inFrustum, ShadowCoord.z <= 1.0))) {\n        float shadowColor = texture(shadowMap, ShadowCoord.xy).r; // unpackRGBAToDepth(texture(directionalLightShadowMaps[i], ShadowCoord.xy));\n        vec3 darkness = vec3(0.0);\n\n        return shadowColor < ShadowCoord.z ? 0.0 : 1.0;\n        // return (sdf2(shadowColor) - ShadowCoord.z) > 0.0 ? 1.0 : 0.0;\n        // return sdf2(shadowColor, ShadowCoord.z);\n      }\n    }\n  #endif\n\n  return 1.0;\n}\n\nconst float UnpackDownscale = 255. / 256.; // 0..1 -> fraction (excluding 1)\n\nconst vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256.,  256. );\nconst vec4 UnpackFactors = UnpackDownscale / vec4( PackFactors, 1. );\n\nfloat unpackRGBAToDepth( const in vec4 v ) {\n\treturn dot( v, UnpackFactors );\n}\n"; // eslint-disable-line
 
   var directional_lights_pars$3 = /*#__PURE__*/Object.freeze({
     default: directional_lights_pars$2
@@ -7932,7 +7932,9 @@
         self.STATE_SHADOWMAP = true;
         if (window.test) window.test.visible = false;
 
-        _this.render(light.shadowCamera, light.shadowMap);
+        _this.render(light.shadowCamera, light.shadowMap, {
+          depthOnly: true
+        });
 
         if (window.test) window.test.visible = true;
         self.STATE_SHADOWMAP = false; // identity(light.shadowCamera.matrixWorld.value);
@@ -7973,17 +7975,16 @@
     render: function render(gl, program, self) {
       // TODO: Move lights part to "before"
       if (self.STATE_SHADOWMAP) return;
-      var shadowMapIndices = [];
-      self.LIGHTS.forEach(function (light, i) {
-        var texture = light.shadowMap.depthTexture;
-        var projectionViewMatrix = glMat4_9([], light.shadowCamera.projectionMatrix.value, glMat4_6([], light.shadowCamera.matrixWorld.value));
-        gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, "directionalLightShadowMatricies[".concat(i, "]")), false, projectionViewMatrix);
-        shadowMapIndices.push(texture._bind(gl));
-      });
-      console.log(shadowMapIndices);
-      gl.uniform1iv(gl.getUniformLocation(program._compiledProgram, "directionalLightShadowMaps[0]"), shadowMapIndices);
 
-      if (self.LIGHTS.length > 0 && program.state.lights) {
+      if (self.LIGHTS.length > 0 && program.state.lights && program.mesh.receiveShadow) {
+        var shadowMapIndices = [];
+        self.LIGHTS.forEach(function (light, i) {
+          var texture = light.shadowMap.depthTexture;
+          var projectionViewMatrix = glMat4_9([], light.shadowCamera.projectionMatrix.value, glMat4_6([], light.shadowCamera.matrixWorld.value));
+          gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, "directionalLightShadowMatricies[".concat(i, "]")), false, projectionViewMatrix);
+          shadowMapIndices.push(texture._bind(gl));
+        });
+        gl.uniform1iv(gl.getUniformLocation(program._compiledProgram, "directionalLightShadowMaps[0]"), shadowMapIndices);
         var location = gl.getUniformBlockIndex(program._compiledProgram, 'Lights');
         gl.uniformBlockBinding(program._compiledProgram, location, 0);
         var lightsBuffer = gl.createBuffer();
@@ -8032,9 +8033,12 @@
       this._root_objects = new Set();
       gl.clearColor.apply(gl, this.clearColor); // eslint-disable-line
 
-      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.clearDepth(1.0); // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      // gl.clearDepth(1.0);
+
       gl.enable(gl.DEPTH_TEST);
       gl.enable(gl.CULL_FACE);
+      gl.depthFunc(gl.LEQUAL);
 
       _locals.set(this, {
         STATE_ASYNC: false,
@@ -8197,11 +8201,13 @@
           if (!frameBuffer._compiledFrameBuffer) frameBuffer._compile(gl);
 
           frameBuffer._bindFramebuffer(gl);
-        } else gl.bindFramebuffer(gl.FRAMEBUFFER, null); // Clear the canvas
+        } else {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        }
 
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // Clear the canvas
 
         if (frameBuffer) gl.viewport(0, 0, frameBuffer.width, frameBuffer.height);else gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         if (camera.matrixAutoUpdate) camera.updateMatrix();
         if (camera.matrixWorldAutoUpdate) camera.updateMatrixWorld(); // TODO: add optimization feature to avoid iterating
 
@@ -8270,15 +8276,18 @@
                 self.PROMISES.push(value);
                 continue;
               } // console.log(uniform);
+              // if (value.isTexture && optimizations.depthOnly)
+              //   continue;
 
+
+              var location = gl.getUniformLocation(program._compiledProgram, uniformName);
 
               if (value.isTexture) {
                 if (!value._compiledTexture) value._compile(gl);
-                gl.uniform1i(gl.getUniformLocation(program._compiledProgram, uniformName), value._bind(gl));
+                gl.uniform1i(location, value._bind(gl));
                 continue;
               }
 
-              var location = gl.getUniformLocation(program._compiledProgram, uniformName);
               UNIFORM_FUNCS[uniform.type](location, value, uniform);
               uniform.needsUpdate = false;
             }
@@ -8314,6 +8323,7 @@
         for (var _i4 = 0, _l4 = this.extensions.length; _i4 < _l4; _i4++) {
           if (this.extensions[_i4].after) this.extensions[_i4].after.call(this, gl, self);
         } // gl.bindTexture(gl.TEXTURE_2D, null);
+        // gl.bindTexture(gl.TEXTURE_2D, null);
 
       }
     }]);
@@ -9654,7 +9664,7 @@
     return Camera;
   }(Object3D);
 
-  var textureUnitInt = 0;
+  var textureUnitInt = 1;
   var textureUnit = new WeakMap();
 
   var _gl = new WeakMap();
@@ -9702,7 +9712,7 @@
       value: function _compile(gl) {
         _gl.set(this, gl);
 
-        textureUnit.set(this, textureUnitInt++); // TODO: Cleanup comments, make the use of parameters
+        textureUnit.set(this, textureUnitInt); // TODO: Cleanup comments, make the use of parameters
 
         var texture = gl.createTexture(); // make unit 0 the active texture uint
         // (ie, the unit all other texture commands will affect
@@ -9711,7 +9721,8 @@
         // }
         // Bind it to texture unit 0' 2D bind point
 
-        gl.bindTexture(gl.TEXTURE_2D, texture); // Set the parameters so we don't need mips and so we're not filtering
+        gl.bindTexture(gl.TEXTURE_2D, texture); // gl.activeTexture(gl.TEXTURE0 + textureUnitInt);
+        // Set the parameters so we don't need mips and so we're not filtering
         // and we don't repeat
 
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl[this.wrapS]);
@@ -9722,9 +9733,12 @@
         gl[this.internal], // internalFormat, format we want in the texture
         this.width, this.height, 0, // border
         gl[this.format], // srcFormat, format of data we are supplying
-        gl[this.type], this.image); // gl.bindTexture(gl.TEXTURE_2D, null);
+        gl[this.type], this.image);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        console.log('compile', textureUnitInt);
+        this._compiledTexture = texture; // gl.bindTexture(gl.TEXTURE_2D, this._compiledTexture);
 
-        this._compiledTexture = texture;
+        textureUnitInt++;
       }
     }, {
       key: "setSize",
@@ -9736,6 +9750,7 @@
           var gl = _gl.get(this);
 
           gl.bindTexture(gl.TEXTURE_2D, this._compiledTexture);
+          console.log('update', unit);
           gl.texImage2D(gl.TEXTURE_2D, 0, // mipLevel, the largest mip
           gl[this.internal], // internalFormat, format we want in the texture
           width, height, 0, // border
@@ -9749,7 +9764,7 @@
         var unit = textureUnit.get(this);
         gl.activeTexture(gl.TEXTURE0 + unit);
         gl.bindTexture(gl.TEXTURE_2D, this._compiledTexture);
-        return textureUnit.get(this);
+        return unit;
       }
     }]);
 
@@ -9792,9 +9807,8 @@
       });
 
       _defineProperty(this, "_bindFramebuffer", function (gl) {
-        // gl.bindTexture(gl.TEXTURE_2D, null);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, _this._compiledFrameBuffer); // gl.enable(gl.DEPTH_TEST);
-        // gl.clear(gl.DEPTH_BUFFER_BIT);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, _this._compiledFrameBuffer);
       });
 
       options = Object.assign({
@@ -9811,7 +9825,7 @@
 
       if (this.depth) {
         this.depthTexture = new Texture(null, width, height, {
-          internal: 'DEPTH_COMPONENT24',
+          internal: 'DEPTH_COMPONENT16',
           format: 'DEPTH_COMPONENT',
           type: 'UNSIGNED_INT',
           minFilter: 'NEAREST',
@@ -10013,9 +10027,12 @@
         var data = primitivePlane(width, height, widthSegments, heightSegments);
         var geometry = new Geometry();
         geometry.setIndex(new Attribute(new Uint16Array(Attribute.inlineArray(data.cells)), 1));
-        geometry.setAttribute('position', new Attribute(new Float32Array(Attribute.inlineArray(data.positions)), 3));
+        var poss = new Attribute(new Float32Array(Attribute.inlineArray(data.positions)), 3);
+        geometry.setAttribute('position', poss);
         geometry.setAttribute('normal', new Attribute(new Float32Array(Attribute.inlineArray(data.normals)), 3));
-        geometry.setAttribute('uv', new Attribute(new Float32Array(Attribute.inlineArray(data.uvs)), 2));
+        var uvs = new Attribute(new Float32Array(Attribute.inlineArray(data.uvs)), 2);
+        geometry.setAttribute('uv', uvs);
+        console.log(poss, uvs);
         return geometry;
       }
     }]);

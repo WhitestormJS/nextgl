@@ -19,7 +19,7 @@ export class FrameBuffer {
 
     if (this.depth) {
       this.depthTexture = new Texture(null, width, height, {
-        internal: 'DEPTH_COMPONENT24',
+        internal: 'DEPTH_COMPONENT16',
         format: 'DEPTH_COMPONENT',
         type: 'UNSIGNED_INT',
         minFilter: 'NEAREST',
@@ -72,9 +72,7 @@ export class FrameBuffer {
   }
 
   _bindFramebuffer = gl => {
-    // gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, this._compiledFrameBuffer);
-    // gl.enable(gl.DEPTH_TEST);
-    // gl.clear(gl.DEPTH_BUFFER_BIT);
   }
 }

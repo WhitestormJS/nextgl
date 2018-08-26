@@ -14,6 +14,16 @@ vec3 processDirectionalLight(in vec3 matColor, in DirectionalLight directionalLi
   return matColor * dot(directionalLight.direction, normal) * directionalLight.intensity;
 }
 
+float aastep(float value) {
+  float afwidth = length(vec2(dFdx(value), dFdy(value))) * 0.70710678118654757;
+  return smoothstep(0.5 - afwidth, 0.5 + afwidth, value);
+}
+
+float sdf2(float value, float zPlane) {
+  float sigDist = value - zPlane;
+  return sigDist / fwidth(sigDist);
+}
+
 float processDirectionalLightShadow(in vec4 ShadowCoord, sampler2D shadowMap) {
   #ifdef MESH_RECEIVE_SHADOW
     if (MESH_RECEIVE_SHADOW) {
@@ -27,6 +37,8 @@ float processDirectionalLightShadow(in vec4 ShadowCoord, sampler2D shadowMap) {
         vec3 darkness = vec3(0.0);
 
         return shadowColor < ShadowCoord.z ? 0.0 : 1.0;
+        // return (sdf2(shadowColor) - ShadowCoord.z) > 0.0 ? 1.0 : 0.0;
+        // return sdf2(shadowColor, ShadowCoord.z);
       }
     }
   #endif

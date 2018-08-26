@@ -44,7 +44,7 @@ export default {
 
       self.STATE_SHADOWMAP = true;
       if (window.test) window.test.visible = false;
-      this.render(light.shadowCamera, light.shadowMap);
+      this.render(light.shadowCamera, light.shadowMap, {depthOnly: true});
       if (window.test) window.test.visible = true;
       self.STATE_SHADOWMAP = false;
 
@@ -78,22 +78,20 @@ export default {
   render(gl, program, self) { // TODO: Move lights part to "before"
     if (self.STATE_SHADOWMAP) return;
 
-    let shadowMapIndices = [];
+    if (self.LIGHTS.length > 0 && program.state.lights && program.mesh.receiveShadow) {
+      let shadowMapIndices = [];
 
-    self.LIGHTS.forEach((light, i) => {
-      const texture = light.shadowMap.depthTexture;
+      self.LIGHTS.forEach((light, i) => {
+        const texture = light.shadowMap.depthTexture;
 
-      const projectionViewMatrix = multiply([], light.shadowCamera.projectionMatrix.value, invert([], light.shadowCamera.matrixWorld.value));
-      gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMatricies[${i}]`), false, projectionViewMatrix);
+        const projectionViewMatrix = multiply([], light.shadowCamera.projectionMatrix.value, invert([], light.shadowCamera.matrixWorld.value));
+        gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMatricies[${i}]`), false, projectionViewMatrix);
 
-      shadowMapIndices.push(texture._bind(gl));
-    });
+        shadowMapIndices.push(texture._bind(gl));
+      });
 
-    console.log(shadowMapIndices);
+      gl.uniform1iv(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMaps[0]`), shadowMapIndices);
 
-    gl.uniform1iv(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMaps[0]`), shadowMapIndices);
-
-    if (self.LIGHTS.length > 0 && program.state.lights) {
       const location = gl.getUniformBlockIndex(program._compiledProgram, 'Lights');
       gl.uniformBlockBinding(program._compiledProgram, location, 0);
 

@@ -30,10 +30,13 @@ export class Renderer {
     this._root_objects = new Set();
 
     gl.clearColor.apply(gl, this.clearColor); // eslint-disable-line
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clearDepth(1.0);
+    // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // gl.clearDepth(1.0);
 
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
+    gl.depthFunc(gl.LEQUAL);
 
     _locals.set(this, {
       STATE_ASYNC: false,
@@ -139,7 +142,7 @@ export class Renderer {
     });
   }
 
-  render(camera = null, frameBuffer = null) { // eslint-disable-line
+  render(camera = null, frameBuffer = null, optimizations = {}) { // eslint-disable-line
     const gl = this.context;
     const self = _locals.get(this);
     const {DRAW_CONSTANTS, UNIFORM_FUNCS, STATE_ASYNC} = self;
@@ -155,16 +158,17 @@ export class Renderer {
     if (frameBuffer) {
       if (!frameBuffer._compiledFrameBuffer) frameBuffer._compile(gl);
       frameBuffer._bindFramebuffer(gl);
-    } else
+    } else {
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // Clear the canvas
     if (frameBuffer)
       gl.viewport(0, 0, frameBuffer.width, frameBuffer.height);
     else
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     if (camera.matrixAutoUpdate) camera.updateMatrix();
     if (camera.matrixWorldAutoUpdate) camera.updateMatrixWorld();
@@ -236,13 +240,17 @@ export class Renderer {
         }
 
         // console.log(uniform);
+        // if (value.isTexture && optimizations.depthOnly)
+        //   continue;
+
+        const location = gl.getUniformLocation(program._compiledProgram, uniformName);
+
         if (value.isTexture) {
           if (!value._compiledTexture) value._compile(gl);
-          gl.uniform1i(gl.getUniformLocation(program._compiledProgram, uniformName), value._bind(gl));
+          gl.uniform1i(location, value._bind(gl));
           continue;
         }
 
-        const location = gl.getUniformLocation(program._compiledProgram, uniformName);
         UNIFORM_FUNCS[uniform.type](location, value, uniform);
 
         uniform.needsUpdate = false;
@@ -268,6 +276,7 @@ export class Renderer {
     for (let i = 0, l = this.extensions.length; i < l; i++)
       if (this.extensions[i].after) this.extensions[i].after.call(this, gl, self);
 
+    // gl.bindTexture(gl.TEXTURE_2D, null);
     // gl.bindTexture(gl.TEXTURE_2D, null);
   }
 }

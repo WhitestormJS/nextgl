@@ -1,4 +1,4 @@
-let textureUnitInt = 0;
+let textureUnitInt = 1;
 
 const textureUnit = new WeakMap();
 const _gl = new WeakMap();
@@ -33,7 +33,8 @@ export class Texture {
 
   _compile(gl) {
     _gl.set(this, gl);
-    textureUnit.set(this, textureUnitInt++);
+
+    textureUnit.set(this, textureUnitInt);
     // TODO: Cleanup comments, make the use of parameters
     const texture = gl.createTexture();
 
@@ -43,8 +44,10 @@ export class Texture {
       // gl.activeTexture(gl['TEXTURE' + textureUnit.get(this)]);
     // }
 
+
     // Bind it to texture unit 0' 2D bind point
     gl.bindTexture(gl.TEXTURE_2D, texture);
+    // gl.activeTexture(gl.TEXTURE0 + textureUnitInt);
 
     // Set the parameters so we don't need mips and so we're not filtering
     // and we don't repeat
@@ -65,9 +68,13 @@ export class Texture {
       this.image
     );
 
-    // gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+
+    console.log('compile', textureUnitInt);
 
     this._compiledTexture = texture;
+    // gl.bindTexture(gl.TEXTURE_2D, this._compiledTexture);
+    textureUnitInt++;
   }
 
   setSize(width, height) {
@@ -77,6 +84,8 @@ export class Texture {
     if (this._compiledTexture) {
       const gl = _gl.get(this);
       gl.bindTexture(gl.TEXTURE_2D, this._compiledTexture);
+
+      console.log('update', unit);
 
       gl.texImage2D(
         gl.TEXTURE_2D,
@@ -98,6 +107,6 @@ export class Texture {
     gl.activeTexture(gl.TEXTURE0 + unit);
     gl.bindTexture(gl.TEXTURE_2D, this._compiledTexture);
 
-    return textureUnit.get(this);
+    return unit;
   }
 }

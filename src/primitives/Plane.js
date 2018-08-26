@@ -10,9 +10,13 @@ export class Plane extends Mesh {
     const geometry = new Geometry();
 
     geometry.setIndex(new Attribute(new Uint16Array(Attribute.inlineArray(data.cells)), 1));
-    geometry.setAttribute('position', new Attribute(new Float32Array(Attribute.inlineArray(data.positions)), 3));
+    const poss = new Attribute(new Float32Array(Attribute.inlineArray(data.positions)), 3)
+    geometry.setAttribute('position', poss);
     geometry.setAttribute('normal', new Attribute(new Float32Array(Attribute.inlineArray(data.normals)), 3));
-    geometry.setAttribute('uv', new Attribute(new Float32Array(Attribute.inlineArray(data.uvs)), 2));
+    const uvs = new Attribute(new Float32Array(Attribute.inlineArray(data.uvs)), 2);
+    geometry.setAttribute('uv', uvs);
+
+    console.log(poss, uvs)
 
     return geometry;
   }
