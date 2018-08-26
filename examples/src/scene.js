@@ -16,19 +16,19 @@ const scene = new NEXT.Scene();
 
 const dirLight = new NEXT.DirectionalLight({
   shadow: {
-    width: 100,
-    height: 100
+    width: 50,
+    height: 50
   }
 });
 
-dirLight.intensity = 0.5;
+dirLight.intensity = 1;
 dirLight.position.set(0, 5, 0);
-dirLight.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+dirLight.quaternion.setFromEuler(-Math.PI / 3, 0, 0);
 
 const dirLight2 = new NEXT.DirectionalLight({
   shadow: {
-    width: 100,
-    height: 100
+    width: 50,
+    height: 50
   }
 });
 
@@ -38,8 +38,8 @@ dirLight2.quaternion.setFromEuler(-Math.PI / 3, 0, 0);
 
 const dirLight3 = new NEXT.DirectionalLight({
   shadow: {
-    width: 100,
-    height: 100
+    width: 50,
+    height: 50
   }
 });
 
@@ -49,8 +49,8 @@ dirLight3.quaternion.setFromEuler(-Math.PI / 1.5, 0, 0);
 
 const dirLight4 = new NEXT.DirectionalLight({
   shadow: {
-    width: 2048,
-    height: 2048
+    width: 50,
+    height: 50
   }
 });
 
@@ -58,8 +58,8 @@ dirLight4.intensity = 0.2;
 dirLight4.position.set(0, 5, 0);
 dirLight4.quaternion.setFromEuler(-Math.PI / 1.7, 0, 0);
 scene.add(dirLight);
-scene.add(dirLight2);
-scene.add(dirLight3);
+// scene.add(dirLight2);
+// scene.add(dirLight3);
 // scene.add(dirLight4);
 
 const camera = new NEXT.Camera({
@@ -105,8 +105,8 @@ sphere1.position.set(0, 0, 0);
 scene.add(sphere1);
 
 const planeReceiver = new NEXT.Plane({
-  width: 10,
-  height: 10,
+  width: 20,
+  height: 20,
   shader: material2
 });
 
@@ -184,7 +184,7 @@ let cam = camera;
 
   if (typeof dirLight !== 'undefined') {
     dirLight.position.y = lerp(10, 5, progress);
-    dirLight.quaternion.setFromEuler(lerp(-Math.PI / 2, -Math.PI/ 3, progress), 0, 0);
+    dirLight.quaternion.setFromEuler(lerp(-Math.PI / 2, -Math.PI/ 4, progress), 0, 0);
 
     // dirLight3.position.y = lerp(5, 10, progress);
     // dirLight3.quaternion.setFromEuler(lerp(-Math.PI / 3, -Math.PI/ 2, progress), 0, 0);
