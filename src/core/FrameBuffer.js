@@ -1,4 +1,5 @@
 import {Texture} from './Texture';
+import {CubeTexture} from './CubeTexture';
 
 export class FrameBuffer {
   constructor(width, height, options = {}) {
@@ -14,17 +15,18 @@ export class FrameBuffer {
     this.color = Boolean(options.color);
     this.depth = Boolean(options.depth);
     this.stencil = Boolean(options.stencil);
+    this.cube = Boolean(options.cube);
 
-    if (this.color) this.texture = new Texture(null, width, height, options);
+    if (this.color) {
+      this.texture = this.cube
+        ? new CubeTexture(null, width, height, options)
+        : new Texture(null, width, height, options);
+    }
 
     if (this.depth) {
-      this.depthTexture = new Texture(null, width, height, {
-        internal: 'DEPTH_COMPONENT16',
-        format: 'DEPTH_COMPONENT',
-        type: 'UNSIGNED_INT',
-        minFilter: 'NEAREST',
-        magFilter: 'NEAREST'
-      });
+      this.depthTexture = this.cube
+        ? new CubeTexture.createDepthTexture(width, height)
+        : new Texture.createDepthTexture(width, height);
     }
 
     if (this.stencil) {

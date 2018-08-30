@@ -2,8 +2,9 @@ import {Light} from '../core/Light';
 import {Camera} from '../core/Camera';
 import {FrameBuffer} from '../core/FrameBuffer';
 
-export class DirectionalLight extends Light {
-  type = 'DirectionalLight';
+// TODO: make PointLight
+export class PointLight extends Light {
+  type = 'PointLight';
 
   constructor(options = {}) {
     super(options);

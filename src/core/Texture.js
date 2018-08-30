@@ -1,6 +1,5 @@
-let textureUnitInt = 1;
+import getTextureUnit from './utils/getTextureUnit';
 
-const textureUnit = new WeakMap();
 const _gl = new WeakMap();
 
 export class Texture {
@@ -14,6 +13,16 @@ export class Texture {
       img.onload = () => { // eslint-disable-line
         resolve(new Texture(img));
       };
+    });
+  }
+
+  static createDepthTexture(width, height) {
+    return new Texture(null, width, height, {
+      internal: 'DEPTH_COMPONENT16',
+      format: 'DEPTH_COMPONENT',
+      type: 'UNSIGNED_INT',
+      minFilter: 'NEAREST',
+      magFilter: 'NEAREST'
     });
   }
 
@@ -34,7 +43,7 @@ export class Texture {
   _compile(gl) {
     _gl.set(this, gl);
 
-    textureUnit.set(this, textureUnitInt);
+    const unit = getTextureUnit(this);
     // TODO: Cleanup comments, make the use of parameters
     const texture = gl.createTexture();
 
@@ -70,11 +79,11 @@ export class Texture {
 
     gl.bindTexture(gl.TEXTURE_2D, null);
 
-    console.log('compile', textureUnitInt);
+    console.log('compile', unit);
 
     this._compiledTexture = texture;
     // gl.bindTexture(gl.TEXTURE_2D, this._compiledTexture);
-    textureUnitInt++;
+    // textureUnitInt++;
   }
 
   setSize(width, height) {
@@ -102,7 +111,7 @@ export class Texture {
   }
 
   _bind(gl) {
-    const unit = textureUnit.get(this);
+    const unit = getTextureUnit(this);
 
     gl.activeTexture(gl.TEXTURE0 + unit);
     gl.bindTexture(gl.TEXTURE_2D, this._compiledTexture);

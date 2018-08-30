@@ -6,18 +6,25 @@ export default {
   init(self) {
     if (self.STATE_SHADOWMAP) return;
     self.LIGHTS = [];
+    self.NUM_DIR_LIGHTS = 0;
+    self.NUM_POINT_LIGHTS = 0;
   },
   object(object, self) {
     if (!object.isLight || self.STATE_SHADOWMAP) return;
 
     self.NUM_LIGHTS_CHANGED = true;
     self.LIGHTS.push(object);
+
+    if (object.type === 'DirectionalLight')
+      self.NUM_DIR_LIGHTS++;
+    else if (object.type === 'PointLight')
+      self.NUM_POINT_LIGHTS++;
   },
   program(gl, program, self) {
     if (!self.NUM_LIGHTS_CHANGED || self.STATE_SHADOWMAP) return;
 
     const defines = {
-      NUM_DIRECTIONAL_LIGHTS: self.LIGHTS.length,
+      NUM_DIRECTIONAL_LIGHTS: self.NUM_DIR_LIGHTS,
       MESH_RECEIVE_SHADOW: program.mesh.receiveShadow
     };
 
@@ -30,50 +37,97 @@ export default {
   },
   before(gl, self) {
     if (self.STATE_SHADOWMAP) return;
-    const lights = self.LIGHTS_BUFFER = new Float32Array(self.LIGHTS.length * 12);
+
+    const dirLights = new Float32Array(self.NUM_DIR_LIGHTS * 16);
+    const pointLights = new Float32Array(self.NUM_POINT_LIGHTS * 16);
 
     let offs = 0;
     self.LIGHTS.forEach(light => {
-      // if (light.shadowMap) light.shadowMap.setSize(this.canvas.width, this.canvas.height);
-
       // TODO: lvl up all matricies
       light.updateMatrix();
       light.updateMatrixWorld(); // invert
 
-      light.shadowCamera.matrixWorld.copy(light.matrixWorld);
+      switch (light.type) {
+        case 'DirectionalLight':
+          light.shadowCamera.matrixWorld.copy(light.matrixWorld);
 
-      self.STATE_SHADOWMAP = true;
-      if (window.test) window.test.visible = false;
-      this.render(light.shadowCamera, light.shadowMap, {depthOnly: true});
-      if (window.test) window.test.visible = true;
-      self.STATE_SHADOWMAP = false;
+          self.STATE_SHADOWMAP = true;
+          if (window.test) window.test.visible = false;
+          this.render(light.shadowCamera, light.shadowMap, {depthOnly: true});
+          if (window.test) window.test.visible = true;
+          self.STATE_SHADOWMAP = false;
 
-      // identity(light.shadowCamera.matrixWorld.value);
+          // identity(light.shadowCamera.matrixWorld.value);
 
-      const dir = light.quaternion.getDirection().value;
-      // const pos = light.position.value;
-      // transformMat4(pos, pos, light.shadowCamera.matrixWorld);
+          const dir = light.quaternion.getDirection().value;
 
-      // float intensity
-      lights[offs++] = light.intensity; // x
-      // lights[offs++] = light.intensity; // x
-      // lights[offs++] = light.intensity; // x
-      lights[offs++] = 0.0; // y
-      lights[offs++] = 0.0; // z
-      lights[offs++] = 0.0; // w
+          // float intensity
+          dirLights[offs++] = light.intensity; // x
+          dirLights[offs++] = 0.0; // y
+          dirLights[offs++] = 0.0; // z
+          dirLights[offs++] = 0.0; // w
 
-      // vec3 color
-      lights[offs++] = light.color[0]; // r
-      lights[offs++] = light.color[1]; // g
-      lights[offs++] = light.color[2]; // b
-      lights[offs++] = 0.0; // b
+          // vec3 color
+          dirLights[offs++] = light.color[0]; // r
+          dirLights[offs++] = light.color[1]; // g
+          dirLights[offs++] = light.color[2]; // b
+          dirLights[offs++] = 0.0; // b
 
-      // vec3 direction
-      lights[offs++] = dir[0]; // x
-      lights[offs++] = dir[1]; // y
-      lights[offs++] = dir[2]; // z
-      lights[offs++] = 0.0; // w
+          // vec3 direction
+          dirLights[offs++] = dir[0]; // x
+          dirLights[offs++] = dir[1]; // y
+          dirLights[offs++] = dir[2]; // z
+          dirLights[offs++] = 0.0; // w
+
+          // vec2 shadowSize
+          dirLights[offs++] = light.shadowMap.width; // x
+          dirLights[offs++] = light.shadowMap.height; // y
+          dirLights[offs++] = 0.0; // z
+          dirLights[offs++] = 0.0; // w
+          break;
+        case 'PointLight':
+          light.shadowCamera.matrixWorld.copy(light.matrixWorld);
+
+          self.STATE_SHADOWMAP = true;
+          if (window.test) window.test.visible = false;
+          this.render(light.shadowCamera, light.shadowMap, {depthOnly: true});
+          if (window.test) window.test.visible = true;
+          self.STATE_SHADOWMAP = false;
+
+          // identity(light.shadowCamera.matrixWorld.value);
+
+          const dir = light.quaternion.getDirection().value;
+
+          // float intensity
+          pointLights[offs++] = light.intensity; // x
+          pointLights[offs++] = 0.0; // y
+          pointLights[offs++] = 0.0; // z
+          pointLights[offs++] = 0.0; // w
+
+          // vec3 color
+          pointLights[offs++] = light.color[0]; // r
+          pointLights[offs++] = light.color[1]; // g
+          pointLights[offs++] = light.color[2]; // b
+          pointLights[offs++] = 0.0; // b
+
+          // vec3 direction
+          pointLights[offs++] = dir[0]; // x
+          pointLights[offs++] = dir[1]; // y
+          pointLights[offs++] = dir[2]; // z
+          pointLights[offs++] = 0.0; // w
+
+          // vec2 shadowSize
+          pointLights[offs++] = light.shadowMap.width; // x
+          pointLights[offs++] = light.shadowMap.height; // y
+          pointLights[offs++] = 0.0; // z
+          pointLights[offs++] = 0.0; // w
+          break;
+        default:
+
+      }
     });
+
+    self.LIGHTS_BUFFER = dirLights;
   },
   render(gl, program, self) { // TODO: Move lights part to "before"
     if (self.STATE_SHADOWMAP) return;
@@ -82,12 +136,18 @@ export default {
       let shadowMapIndices = [];
 
       self.LIGHTS.forEach((light, i) => {
-        const texture = light.shadowMap.depthTexture;
+        switch (light.type) {
+          case 'DirectionalLight':
+            const texture = light.shadowMap.depthTexture;
 
-        const projectionViewMatrix = multiply([], light.shadowCamera.projectionMatrix.value, invert([], light.shadowCamera.matrixWorld.value));
-        gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMatricies[${i}]`), false, projectionViewMatrix);
+            const projectionViewMatrix = multiply([], light.shadowCamera.projectionMatrix.value, invert([], light.shadowCamera.matrixWorld.value));
+            gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMatricies[${i}]`), false, projectionViewMatrix);
 
-        shadowMapIndices.push(texture._bind(gl));
+            shadowMapIndices.push(texture._bind(gl));
+            break;
+          default:
+
+        }
       });
 
       gl.uniform1iv(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMaps[0]`), shadowMapIndices);

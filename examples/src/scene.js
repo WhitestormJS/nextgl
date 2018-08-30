@@ -16,49 +16,50 @@ const scene = new NEXT.Scene();
 
 const dirLight = new NEXT.DirectionalLight({
   shadow: {
-    width: 50,
-    height: 50
+    width: 100,
+    height: 100
   }
 });
 
-dirLight.intensity = 1;
-dirLight.position.set(0, 5, 0);
-dirLight.quaternion.setFromEuler(-Math.PI / 3, 0, 0);
+dirLight.intensity = 0.2;
+dirLight.position.set(0, 10, 0);
+dirLight.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
 
 const dirLight2 = new NEXT.DirectionalLight({
   shadow: {
-    width: 50,
-    height: 50
+    width: 100,
+    height: 100
   }
 });
 
-dirLight2.intensity = 0.5;
+dirLight2.intensity = 0.2;
 dirLight2.position.set(0, 5, 0);
 dirLight2.quaternion.setFromEuler(-Math.PI / 3, 0, 0);
 
-const dirLight3 = new NEXT.DirectionalLight({
+const pointLight = new NEXT.PointLight({
   shadow: {
-    width: 50,
-    height: 50
+    width: 100,
+    height: 100
   }
 });
 
-dirLight3.intensity = 0.2;
-dirLight3.position.set(0, 5, 0);
-dirLight3.quaternion.setFromEuler(-Math.PI / 1.5, 0, 0);
-
-const dirLight4 = new NEXT.DirectionalLight({
-  shadow: {
-    width: 50,
-    height: 50
-  }
-});
-
-dirLight4.intensity = 0.2;
-dirLight4.position.set(0, 5, 0);
-dirLight4.quaternion.setFromEuler(-Math.PI / 1.7, 0, 0);
+pointLight.intensity = 0.2;
+pointLight.position.set(0, 5, 0);
+pointLight.quaternion.setFromEuler(-Math.PI / 1.5, 0, 0);
+//
+// const dirLight4 = new NEXT.DirectionalLight({
+//   shadow: {
+//     width: 100,
+//     height: 100
+//   }
+// });
+//
+// dirLight4.intensity = 0.2;
+// dirLight4.position.set(0, 5, 0);
+// dirLight4.quaternion.setFromEuler(-Math.PI / 1.7, 0, 0);
 scene.add(dirLight);
-// scene.add(dirLight2);
+scene.add(dirLight2);
+scene.add(pointLight);
 // scene.add(dirLight3);
 // scene.add(dirLight4);
 

@@ -142,7 +142,7 @@ export class Renderer {
     });
   }
 
-  render(camera = null, frameBuffer = null, optimizations = {}) { // eslint-disable-line
+  render(camera = null, frameBuffer = null, options = {}) { // eslint-disable-line
     const gl = this.context;
     const self = _locals.get(this);
     const {DRAW_CONSTANTS, UNIFORM_FUNCS, STATE_ASYNC} = self;
@@ -240,7 +240,7 @@ export class Renderer {
         }
 
         // console.log(uniform);
-        // if (value.isTexture && optimizations.depthOnly)
+        // if (value.isTexture && options.depthOnly)
         //   continue;
 
         const location = gl.getUniformLocation(program._compiledProgram, uniformName);
@@ -260,7 +260,7 @@ export class Renderer {
         this._renderWhenSync();
 
       if (camera) {
-        gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, 'viewMatrix'), false, invert([], camera.matrixWorld.value));
+        gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, 'viewMatrix'), false, options.viewMatrix || invert([], camera.matrixWorld.value));
         gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, 'projectionMatrix'), false, camera.projectionMatrix.value);
       }
 
