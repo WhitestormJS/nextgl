@@ -6,7 +6,7 @@ export default {
   init(self) {
     if (self.STATE_SHADOWMAP) return;
     self.LIGHTS = [];
-    self.NUM_DIR_LIGHTS = 0;
+    self.NUM_DIRECTIONAL_LIGHTS = 0;
     self.NUM_POINT_LIGHTS = 0;
   },
   object(object, self) {
@@ -16,7 +16,7 @@ export default {
     self.LIGHTS.push(object);
 
     if (object.type === 'DirectionalLight')
-      self.NUM_DIR_LIGHTS++;
+      self.NUM_DIRECTIONAL_LIGHTS++;
     else if (object.type === 'PointLight')
       self.NUM_POINT_LIGHTS++;
   },
@@ -24,9 +24,11 @@ export default {
     if (!self.NUM_LIGHTS_CHANGED || self.STATE_SHADOWMAP) return;
 
     const defines = {
-      NUM_DIRECTIONAL_LIGHTS: self.NUM_DIR_LIGHTS,
+      NUM_DIRECTIONAL_LIGHTS: self.NUM_DIRECTIONAL_LIGHTS,
+      NUM_POINT_LIGHTS: self.NUM_POINT_LIGHTS,
       MESH_RECEIVE_SHADOW: program.mesh.receiveShadow
     };
+
 
     if (program.mesh.receiveShadow) defines.USE_UV = true;
 
@@ -38,23 +40,22 @@ export default {
   before(gl, self) {
     if (self.STATE_SHADOWMAP) return;
 
-    const dirLights = new Float32Array(self.NUM_DIR_LIGHTS * 16);
+    const dirLights = new Float32Array(self.NUM_DIRECTIONAL_LIGHTS * 16);
     const pointLights = new Float32Array(self.NUM_POINT_LIGHTS * 16);
+    const lights = new Float32Array(dirLights.length + pointLights.length);
 
-    let offs = 0;
+    let dirOffs = 0, pointOffs = 0;
     self.LIGHTS.forEach(light => {
       // TODO: lvl up all matricies
       light.updateMatrix();
       light.updateMatrixWorld(); // invert
 
       switch (light.type) {
-        case 'DirectionalLight':
+        case 'DirectionalLight': {
           light.shadowCamera.matrixWorld.copy(light.matrixWorld);
 
           self.STATE_SHADOWMAP = true;
-          if (window.test) window.test.visible = false;
           this.render(light.shadowCamera, light.shadowMap, {depthOnly: true});
-          if (window.test) window.test.visible = true;
           self.STATE_SHADOWMAP = false;
 
           // identity(light.shadowCamera.matrixWorld.value);
@@ -62,95 +63,108 @@ export default {
           const dir = light.quaternion.getDirection().value;
 
           // float intensity
-          dirLights[offs++] = light.intensity; // x
-          dirLights[offs++] = 0.0; // y
-          dirLights[offs++] = 0.0; // z
-          dirLights[offs++] = 0.0; // w
+          dirLights[dirOffs++] = light.intensity; // x
+          dirLights[dirOffs++] = 0.0; // y
+          dirLights[dirOffs++] = 0.0; // z
+          dirLights[dirOffs++] = 0.0; // w
 
           // vec3 color
-          dirLights[offs++] = light.color[0]; // r
-          dirLights[offs++] = light.color[1]; // g
-          dirLights[offs++] = light.color[2]; // b
-          dirLights[offs++] = 0.0; // b
+          dirLights[dirOffs++] = light.color[0]; // r
+          dirLights[dirOffs++] = light.color[1]; // g
+          dirLights[dirOffs++] = light.color[2]; // b
+          dirLights[dirOffs++] = 0.0; // b
 
           // vec3 direction
-          dirLights[offs++] = dir[0]; // x
-          dirLights[offs++] = dir[1]; // y
-          dirLights[offs++] = dir[2]; // z
-          dirLights[offs++] = 0.0; // w
+          dirLights[dirOffs++] = dir[0]; // x
+          dirLights[dirOffs++] = dir[1]; // y
+          dirLights[dirOffs++] = dir[2]; // z
+          dirLights[dirOffs++] = 0.0; // w
 
           // vec2 shadowSize
-          dirLights[offs++] = light.shadowMap.width; // x
-          dirLights[offs++] = light.shadowMap.height; // y
-          dirLights[offs++] = 0.0; // z
-          dirLights[offs++] = 0.0; // w
+          dirLights[dirOffs++] = light.shadowMap.width; // x
+          dirLights[dirOffs++] = light.shadowMap.height; // y
+          dirLights[dirOffs++] = 0.0; // z
+          dirLights[dirOffs++] = 0.0; // w
           break;
-        case 'PointLight':
+        } case 'PointLight': {
           light.shadowCamera.matrixWorld.copy(light.matrixWorld);
 
           self.STATE_SHADOWMAP = true;
-          if (window.test) window.test.visible = false;
           this.render(light.shadowCamera, light.shadowMap, {depthOnly: true});
-          if (window.test) window.test.visible = true;
           self.STATE_SHADOWMAP = false;
 
           // identity(light.shadowCamera.matrixWorld.value);
 
-          const dir = light.quaternion.getDirection().value;
+
+
+          const pos = light.position.value;
+          // console.log(pos);
 
           // float intensity
-          pointLights[offs++] = light.intensity; // x
-          pointLights[offs++] = 0.0; // y
-          pointLights[offs++] = 0.0; // z
-          pointLights[offs++] = 0.0; // w
+          pointLights[pointOffs++] = light.intensity; // x
+          pointLights[pointOffs++] = 0.0; // y
+          pointLights[pointOffs++] = 0.0; // z
+          pointLights[pointOffs++] = 0.0; // w
 
           // vec3 color
-          pointLights[offs++] = light.color[0]; // r
-          pointLights[offs++] = light.color[1]; // g
-          pointLights[offs++] = light.color[2]; // b
-          pointLights[offs++] = 0.0; // b
+          pointLights[pointOffs++] = light.color[0]; // r
+          pointLights[pointOffs++] = light.color[1]; // g
+          pointLights[pointOffs++] = light.color[2]; // b
+          pointLights[pointOffs++] = 0.0; // b
 
-          // vec3 direction
-          pointLights[offs++] = dir[0]; // x
-          pointLights[offs++] = dir[1]; // y
-          pointLights[offs++] = dir[2]; // z
-          pointLights[offs++] = 0.0; // w
+          // vec3 position
+          pointLights[pointOffs++] = pos[0]; // x
+          pointLights[pointOffs++] = pos[1]; // y
+          pointLights[pointOffs++] = pos[2]; // z
+          pointLights[pointOffs++] = 0.0; // w
 
           // vec2 shadowSize
-          pointLights[offs++] = light.shadowMap.width; // x
-          pointLights[offs++] = light.shadowMap.height; // y
-          pointLights[offs++] = 0.0; // z
-          pointLights[offs++] = 0.0; // w
+          pointLights[pointOffs++] = light.shadowMap.width; // x
+          pointLights[pointOffs++] = light.shadowMap.height; // y
+          pointLights[pointOffs++] = 0.0; // z
+          pointLights[pointOffs++] = 0.0; // w
           break;
-        default:
-
+        } default:
       }
     });
 
-    self.LIGHTS_BUFFER = dirLights;
+    lights.set(dirLights, 0);
+    lights.set(pointLights, dirLights.length);
+
+    self.LIGHTS_BUFFER = lights;
   },
   render(gl, program, self) { // TODO: Move lights part to "before"
     if (self.STATE_SHADOWMAP) return;
 
     if (self.LIGHTS.length > 0 && program.state.lights && program.mesh.receiveShadow) {
-      let shadowMapIndices = [];
+      let directionalShadowMapIndices = [];
+      let pointShadowMapIndices = [];
 
       self.LIGHTS.forEach((light, i) => {
         switch (light.type) {
-          case 'DirectionalLight':
+          case 'DirectionalLight': {
             const texture = light.shadowMap.depthTexture;
 
             const projectionViewMatrix = multiply([], light.shadowCamera.projectionMatrix.value, invert([], light.shadowCamera.matrixWorld.value));
             gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMatricies[${i}]`), false, projectionViewMatrix);
 
-            shadowMapIndices.push(texture._bind(gl));
+            directionalShadowMapIndices.push(texture._bind(gl));
             break;
-          default:
+          } case 'PointLight': {
+            const texture = light.shadowMap.depthTexture;
+
+            const projectionViewMatrix = multiply([], light.shadowCamera.projectionMatrix.value, invert([], light.shadowCamera.matrixWorld.value));
+            gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, `pointLightShadowMatricies[${i}]`), false, projectionViewMatrix);
+
+            pointShadowMapIndices.push(texture._bind(gl));
+            break;
+          } default:
 
         }
       });
 
-      gl.uniform1iv(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMaps[0]`), shadowMapIndices);
+      gl.uniform1iv(gl.getUniformLocation(program._compiledProgram, `directionalLightShadowMaps[0]`), directionalShadowMapIndices);
+      gl.uniform1iv(gl.getUniformLocation(program._compiledProgram, `pointLightShadowMaps[0]`), pointShadowMapIndices);
 
       const location = gl.getUniformBlockIndex(program._compiledProgram, 'Lights');
       gl.uniformBlockBinding(program._compiledProgram, location, 0);

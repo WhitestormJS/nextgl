@@ -4,19 +4,25 @@
   (factory((global.NEXT = {})));
 }(this, (function (exports) { 'use strict';
 
-  var init_pars = "// test\nprecision mediump float;\n#define GLSLIFY 1\nin vec3 position;\n\nuniform mat4 projectionMatrix;\nuniform mat4 viewMatrix;\nuniform mat4 modelMatrix;\n"; // eslint-disable-line
+  var init_pars = "// test\nprecision mediump float;\n#define GLSLIFY 1\nin vec3 position;\nout vec3 vPosition;\nout vec4 vWorldPosition;\n\nuniform mat4 projectionMatrix;\nuniform mat4 viewMatrix;\nuniform mat4 modelMatrix;\n"; // eslint-disable-line
 
   var init_pars$1 = /*#__PURE__*/Object.freeze({
     default: init_pars
   });
 
-  var lights_pars = "#define GLSLIFY 1\n#define NUM_DIRECTIONAL_LIGHTS 0\n\n// test\n[v directional_lights_pars]\n\n// test\n"; // eslint-disable-line
+  var init = "#define GLSLIFY 1\nvPosition = position;\nvWorldPosition = modelMatrix * vec4(position, 1.0);\n"; // eslint-disable-line
+
+  var init$1 = /*#__PURE__*/Object.freeze({
+    default: init
+  });
+
+  var lights_pars = "#define GLSLIFY 1\n#define NUM_DIRECTIONAL_LIGHTS 0\n#define NUM_POINT_LIGHTS 0\n\n// test\n[v directional_lights_pars]\n[v point_lights_pars]\n\n// test\n"; // eslint-disable-line
 
   var lights_pars$1 = /*#__PURE__*/Object.freeze({
     default: lights_pars
   });
 
-  var lights = "#define GLSLIFY 1\n// test\n[v directional_lights]\n\n// test\n"; // eslint-disable-line
+  var lights = "#define GLSLIFY 1\n// test\n[v directional_lights]\n[v point_lights]\n\n// test\n"; // eslint-disable-line
 
   var lights$1 = /*#__PURE__*/Object.freeze({
     default: lights
@@ -32,6 +38,18 @@
 
   var directional_lights$1 = /*#__PURE__*/Object.freeze({
     default: directional_lights
+  });
+
+  var point_lights_pars = "#define GLSLIFY 1\n#if (NUM_POINT_LIGHTS > 0)\n  uniform mat4 pointLightShadowMatricies[NUM_POINT_LIGHTS];\n  out vec4 v_pointShadowCoords[NUM_POINT_LIGHTS];\n#endif\n"; // eslint-disable-line
+
+  var point_lights_pars$1 = /*#__PURE__*/Object.freeze({
+    default: point_lights_pars
+  });
+
+  var point_lights = "#define GLSLIFY 1\n// #if (NUM_POINT_LIGHTS > 0)\n//   out vec4 v_pointShadowCoord[NUM_DIRECTIONAL_LIGHTS];\n// #endif\n\n#if (NUM_POINT_LIGHTS > 0)\n  for (int i = 0; i < NUM_POINT_LIGHTS; i++) {\n    vec4 ShadowCoord = pointLightShadowMatricies[i] * modelMatrix * vec4(position, 1.0);\n\n    ShadowCoord.xyz /= 2.0;\n    ShadowCoord.xyz += vec3(0.5);\n    ShadowCoord.xyz /= ShadowCoord.w;\n\n    v_pointShadowCoords[i] = ShadowCoord;\n  }\n#endif\n"; // eslint-disable-line
+
+  var point_lights$1 = /*#__PURE__*/Object.freeze({
+    default: point_lights
   });
 
   var main = "#define GLSLIFY 1\n// placeholder\n"; // eslint-disable-line
@@ -76,52 +94,52 @@
     default: color
   });
 
-  var init_pars$2 = "precision mediump float;\n#define GLSLIFY 1\n\nuniform mat4 projectionMatrix;\nuniform mat4 modelMatrix;\nuniform mat4 viewMatrix;\n\n#ifdef USE_COLOR\n  uniform vec3 diffuse;\n#endif\n"; // eslint-disable-line
+  var init_pars$2 = "precision mediump float;\n#define GLSLIFY 1\n\nin vec3 vPosition;\nin vec4 vWorldPosition;\n\nuniform mat4 projectionMatrix;\nuniform mat4 modelMatrix;\nuniform mat4 viewMatrix;\n\n#ifdef USE_COLOR\n  uniform vec3 diffuse;\n#endif\n"; // eslint-disable-line
 
   var init_pars$3 = /*#__PURE__*/Object.freeze({
     default: init_pars$2
   });
 
-  var init = "#define GLSLIFY 1\nvec3 color;\n\n#ifdef USE_COLOR\n  color = diffuse;\n#endif\n"; // eslint-disable-line
+  var init$2 = "#define GLSLIFY 1\nvec3 color;\n\n#ifdef USE_COLOR\n  color = diffuse;\n#endif\n"; // eslint-disable-line
 
-  var init$1 = /*#__PURE__*/Object.freeze({
-    default: init
+  var init$3 = /*#__PURE__*/Object.freeze({
+    default: init$2
   });
 
-  var lambert_light_pars = "#define GLSLIFY 1\nuniform vec3 u_lightDir;\n"; // eslint-disable-line
-
-  var lambert_light_pars$1 = /*#__PURE__*/Object.freeze({
-    default: lambert_light_pars
-  });
-
-  var lambert_light = "#define GLSLIFY 1\n// requires [f normal]\nfloat lightness = dot(u_lightDir, normal);\n\ncolor = color * lightness;\n"; // eslint-disable-line
-
-  var lambert_light$1 = /*#__PURE__*/Object.freeze({
-    default: lambert_light
-  });
-
-  var lights_pars$2 = "#define GLSLIFY 1\n#define NUM_DIRECTIONAL_LIGHTS 0\n\n[f directional_lights_pars]\n\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  // uniform DirectionalLight directionalLights[NUM_DIRECTIONAL_LIGHTS];\n\n  uniform Lights {\n    DirectionalLight directionalLights[NUM_DIRECTIONAL_LIGHTS];\n    // #if (NUM_DIRECTIONAL_LIGHTS > 0)\n    // #endif\n  };\n#endif\n"; // eslint-disable-line
+  var lights_pars$2 = "#define GLSLIFY 1\n#define NUM_DIRECTIONAL_LIGHTS 0\n#define NUM_POINT_LIGHTS 0\n\nfloat sdf(float value, float zPlane) {\n  float sigDist = value - zPlane;\n  return (sigDist) / fwidth(sigDist);\n}\n\n#define SHADOW_SUPPLIER_FUNC linearSDFShadowSupplier\n#define SHADOW_SAMPLER_FUNC poisonShadowSampler\n// #define SHADOW_SUPPLIER_FUNC emptyShadowSupplier\n// #define SHADOW_SAMPLER_FUNC emptyShadowSampler\n\nfloat emptyShadowSupplier(sampler2D tex, vec2 uv, vec2 resolution, float zCoord, float bias) {\n  return texture(tex, uv).r < zCoord - bias ? 0.0 : 1.0;\n}\n\nfloat linearSDFShadowSupplier(sampler2D tex, vec2 uv, vec2 resolution, float zCoord, float bias) {\n  vec2 weight = fract(uv * resolution);\n  vec2 scale = vec2(1.0) / resolution;\n\n  vec4 bottom = mix(\n    texture(tex, uv), // 00\n    texture(tex, uv + vec2(1, 0) * scale), // 10\n    weight.x\n  );\n\n  vec4 top = mix(\n    texture(tex, uv + vec2(0, 1) * scale), // 01\n    texture(tex, uv + vec2(1, 1) * scale), // 11\n    weight.x\n  );\n\n  return sdf(zCoord - mix(bottom, top, weight.y).r, 0.05) < 0.0 ? 1.0 : 0.0;\n}\n\nvec2 poissonDisk[16] = vec2[](\n   vec2( -0.94201624, -0.39906216 ),\n   vec2( 0.94558609, -0.76890725 ),\n   vec2( -0.094184101, -0.92938870 ),\n   vec2( 0.34495938, 0.29387760 ),\n   vec2( -0.91588581, 0.45771432 ),\n   vec2( -0.81544232, -0.87912464 ),\n   vec2( -0.38277543, 0.27676845 ),\n   vec2( 0.97484398, 0.75648379 ),\n   vec2( 0.44323325, -0.97511554 ),\n   vec2( 0.53742981, -0.47373420 ),\n   vec2( -0.26496911, -0.41893023 ),\n   vec2( 0.79197514, 0.19090188 ),\n   vec2( -0.24188840, 0.99706507 ),\n   vec2( -0.81409955, 0.91437590 ),\n   vec2( 0.19984126, 0.78641367 ),\n   vec2( 0.14383161, -0.14100790 )\n);\n\n// Returns a random number based on a vec3 and an int.\nfloat random(vec3 seed, int i) {\n\tvec4 seed4 = vec4(seed,i);\n\tfloat dot_product = dot(seed4, vec4(12.9898,78.233,45.164,94.673));\n\treturn fract(sin(dot_product) * 43758.5453);\n}\n\nfloat poisonShadowSampler(sampler2D tex, vec2 uv, vec2 resolution, float zCoord, float bias) {\n  float color = 0.0;\n\n  for (int i = 0; i < 4; i++) {\n    int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;\n    color += SHADOW_SUPPLIER_FUNC(tex, uv + poissonDisk[index] / 50.0, resolution, zCoord, bias) / 4.0;\n  }\n\n  return color;\n}\n\nfloat emptyShadowSampler(sampler2D tex, vec2 uv, vec2 resolution, float zCoord, float bias) {\n  return SHADOW_SUPPLIER_FUNC(tex, uv, resolution, zCoord, bias);\n}\n\n[f directional_lights_pars]\n[f point_lights_pars]\n\n#if (NUM_DIRECTIONAL_LIGHTS > 0 || NUM_POINT_LIGHTS > 0)\n  // uniform DirectionalLight directionalLights[NUM_DIRECTIONAL_LIGHTS];\n\n  uniform Lights {\n    #if (NUM_DIRECTIONAL_LIGHTS > 0)\n      DirectionalLight directionalLights[NUM_DIRECTIONAL_LIGHTS];\n    #endif\n    #if (NUM_POINT_LIGHTS > 0)\n      PointLight pointLights[NUM_POINT_LIGHTS];\n    #endif\n    // #if (NUM_DIRECTIONAL_LIGHTS > 0)\n    // #endif\n  };\n#endif\n"; // eslint-disable-line
 
   var lights_pars$3 = /*#__PURE__*/Object.freeze({
     default: lights_pars$2
   });
 
-  var lights$2 = "#define GLSLIFY 1\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  vec3 matColor = color;\n  color = vec3(0, 0, 0);\n#endif\n\n[f directional_lights]\n\n// test\n"; // eslint-disable-line
+  var lights$2 = "#define GLSLIFY 1\n#if (NUM_DIRECTIONAL_LIGHTS > 0 || NUM_POINT_LIGHTS > 0)\n  vec3 matColor = color;\n  color = vec3(0, 0, 0);\n#endif\n\nfloat lightAffection;\n\n[f directional_lights]\n[f point_lights]\n\n// test\n"; // eslint-disable-line
 
   var lights$3 = /*#__PURE__*/Object.freeze({
     default: lights$2
   });
 
-  var directional_lights_pars$2 = "#extension GL_OES_standard_derivatives : enable\n#define GLSLIFY 1\n\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  uniform sampler2D directionalLightShadowMaps[NUM_DIRECTIONAL_LIGHTS];\n  in vec4 v_directionalShadowCoords[NUM_DIRECTIONAL_LIGHTS];\n#endif\n\nstruct DirectionalLight\n{\n  float intensity;\n  vec3 color;\n  vec3 direction;\n  vec2 shadowSize;\n};\n\nvec3 processDirectionalLight(in vec3 matColor, in DirectionalLight directionalLight, in vec3 normal) {\n  return matColor * dot(directionalLight.direction, normal) * directionalLight.intensity;\n}\n\nfloat sdf(float value, float zPlane) {\n  float sigDist = value - zPlane;\n  return (sigDist) / fwidth(sigDist);\n}\n\n#define SHADOW_SUPPLIER_FUNC linearSDFShadowSupplier\n#define SHADOW_SAMPLER_FUNC poisonShadowSampler\n// #define SHADOW_SUPPLIER_FUNC emptyShadowSupplier\n// #define SHADOW_SAMPLER_FUNC emptyShadowSampler\n\nfloat emptyShadowSupplier(sampler2D tex, vec2 uv, vec2 resolution, float zCoord, float bias) {\n  return texture(tex, uv).r < zCoord - bias ? 0.0 : 1.0;\n}\n\nfloat linearSDFShadowSupplier(sampler2D tex, vec2 uv, vec2 resolution, float zCoord, float bias) {\n  vec2 weight = fract(uv * resolution);\n  vec2 scale = vec2(1.0) / resolution;\n\n  vec4 bottom = mix(\n    texture(tex, uv), // 00\n    texture(tex, uv + vec2(1, 0) * scale), // 10\n    weight.x\n  );\n\n  vec4 top = mix(\n    texture(tex, uv + vec2(0, 1) * scale), // 01\n    texture(tex, uv + vec2(1, 1) * scale), // 11\n    weight.x\n  );\n\n  return sdf(zCoord - mix(bottom, top, weight.y).r, 0.05) < 0.0 ? 1.0 : 0.0;\n}\n\nvec2 poissonDisk[16] = vec2[](\n   vec2( -0.94201624, -0.39906216 ),\n   vec2( 0.94558609, -0.76890725 ),\n   vec2( -0.094184101, -0.92938870 ),\n   vec2( 0.34495938, 0.29387760 ),\n   vec2( -0.91588581, 0.45771432 ),\n   vec2( -0.81544232, -0.87912464 ),\n   vec2( -0.38277543, 0.27676845 ),\n   vec2( 0.97484398, 0.75648379 ),\n   vec2( 0.44323325, -0.97511554 ),\n   vec2( 0.53742981, -0.47373420 ),\n   vec2( -0.26496911, -0.41893023 ),\n   vec2( 0.79197514, 0.19090188 ),\n   vec2( -0.24188840, 0.99706507 ),\n   vec2( -0.81409955, 0.91437590 ),\n   vec2( 0.19984126, 0.78641367 ),\n   vec2( 0.14383161, -0.14100790 )\n);\n\n// Returns a random number based on a vec3 and an int.\nfloat random(vec3 seed, int i) {\n\tvec4 seed4 = vec4(seed,i);\n\tfloat dot_product = dot(seed4, vec4(12.9898,78.233,45.164,94.673));\n\treturn fract(sin(dot_product) * 43758.5453);\n}\n\nfloat poisonShadowSampler(sampler2D tex, vec2 uv, vec2 resolution, float zCoord, float bias) {\n  float color = 0.0;\n\n  for (int i = 0; i < 4; i++) {\n    int index = int(16.0 * random(gl_FragCoord.xyy, i)) % 16;\n    color += SHADOW_SUPPLIER_FUNC(tex, uv + poissonDisk[index] / 50.0, resolution, zCoord, bias) / 4.0;\n  }\n\n  return color;\n}\n\nfloat emptyShadowSampler(sampler2D tex, vec2 uv, vec2 resolution, float zCoord, float bias) {\n  return SHADOW_SUPPLIER_FUNC(tex, uv, resolution, zCoord, bias);\n}\n\nfloat processDirectionalLightShadow(in vec4 ShadowCoord, sampler2D shadowMap, in DirectionalLight directionalLight) {\n  #ifdef MESH_RECEIVE_SHADOW\n    if (MESH_RECEIVE_SHADOW) {\n      // ShadowCoord.z /= fwidth(ShadowCoord.z); // bias 0.72 * ShadowCoord.z, 0.05 +\n\n      bvec4 inFrustumVec = bvec4 (ShadowCoord.x >= 0.0, ShadowCoord.x <= 1.0, ShadowCoord.y >= 0.0, ShadowCoord.y <= 1.0);\n      bool inFrustum = all(inFrustumVec);\n\n      if (all(bvec2(inFrustum, ShadowCoord.z <= 1.0))) {\n        float bias = 0.05;\n        return SHADOW_SAMPLER_FUNC(shadowMap, ShadowCoord.xy, directionalLight.shadowSize, ShadowCoord.z, bias);\n      }\n    }\n  #endif\n\n  return 1.0;\n}\n\nconst float UnpackDownscale = 255. / 256.; // 0..1 -> fraction (excluding 1)\n\nconst vec3 PackFactors = vec3( 256. * 256. * 256., 256. * 256.,  256. );\nconst vec4 UnpackFactors = UnpackDownscale / vec4( PackFactors, 1. );\n\nfloat unpackRGBAToDepth( const in vec4 v ) {\n\treturn dot( v, UnpackFactors );\n}\n"; // eslint-disable-line
+  var directional_lights_pars$2 = "#extension GL_OES_standard_derivatives : enable\n#define GLSLIFY 1\n\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  uniform sampler2D directionalLightShadowMaps[NUM_DIRECTIONAL_LIGHTS];\n  in vec4 v_directionalShadowCoords[NUM_DIRECTIONAL_LIGHTS];\n#endif\n\nstruct DirectionalLight\n{\n  float intensity;\n  vec3 color;\n  vec3 direction;\n  vec2 shadowSize;\n};\n\nvec3 processDirectionalLight(in vec3 matColor, in DirectionalLight directionalLight, in vec3 normal) {\n  return matColor * max(dot(directionalLight.direction, normal), 0.0) * directionalLight.intensity;\n}\n\nfloat processDirectionalLightShadow(in vec4 ShadowCoord, sampler2D shadowMap, in DirectionalLight directionalLight) {\n  #ifdef MESH_RECEIVE_SHADOW\n    if (MESH_RECEIVE_SHADOW) {\n      // ShadowCoord.z /= fwidth(ShadowCoord.z); // bias 0.72 * ShadowCoord.z, 0.05 +\n\n      bvec4 inFrustumVec = bvec4 (ShadowCoord.x >= 0.0, ShadowCoord.x <= 1.0, ShadowCoord.y >= 0.0, ShadowCoord.y <= 1.0);\n      bool inFrustum = all(inFrustumVec);\n\n      if (all(bvec2(inFrustum, ShadowCoord.z <= 1.0))) {\n        float bias = 0.05;\n        return SHADOW_SAMPLER_FUNC(shadowMap, ShadowCoord.xy, directionalLight.shadowSize, ShadowCoord.z, bias);\n      }\n    }\n  #endif\n\n  return 1.0;\n}\n"; // eslint-disable-line
 
   var directional_lights_pars$3 = /*#__PURE__*/Object.freeze({
     default: directional_lights_pars$2
   });
 
-  var directional_lights$2 = "#define GLSLIFY 1\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  float lightAffection;\n\n  #pragma unroll_loop\n  for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; i++) {\n    lightAffection = processDirectionalLightShadow(v_directionalShadowCoords[i], directionalLightShadowMaps[i], directionalLights[i]);\n    color += processDirectionalLight(matColor, directionalLights[i], normal) * lightAffection;\n  }\n#endif\n"; // eslint-disable-line
+  var directional_lights$2 = "#define GLSLIFY 1\n#if (NUM_DIRECTIONAL_LIGHTS > 0)\n  #pragma unroll_loop\n  for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; i++) {\n    lightAffection = processDirectionalLightShadow(v_directionalShadowCoords[i], directionalLightShadowMaps[i], directionalLights[i]);\n    color += processDirectionalLight(matColor, directionalLights[i], normal) * lightAffection;\n  }\n#endif\n"; // eslint-disable-line
 
   var directional_lights$3 = /*#__PURE__*/Object.freeze({
     default: directional_lights$2
+  });
+
+  var point_lights_pars$2 = "#extension GL_OES_standard_derivatives : enable\n#define GLSLIFY 1\n\n#if (NUM_POINT_LIGHTS > 0)\n  uniform sampler2D pointLightShadowMaps[NUM_POINT_LIGHTS];\n  in vec4 v_pointShadowCoords[NUM_POINT_LIGHTS];\n#endif\n\nstruct PointLight\n{\n  float intensity;\n  vec3 color;\n  vec3 position;\n  vec2 shadowSize;\n};\n\nvec2 cubeToUV(vec3 v, float texelSizeY) {\n\n\t// Number of texels to avoid at the edge of each square\n\n\tvec3 absV = abs( v );\n\n\t// Intersect unit cube\n\n\tfloat scaleToCube = 1.0 / max( absV.x, max( absV.y, absV.z ) );\n\tabsV *= scaleToCube;\n\n\t// Apply scale to avoid seams\n\n\t// two texels less per square (one texel will do for NEAREST)\n\tv *= scaleToCube * ( 1.0 - 2.0 * texelSizeY );\n\n\t// Unwrap\n\n\t// space: -1 ... 1 range for each square\n\t//\n\t// #X##\t\tdim    := ( 4 , 2 )\n\t//  # #\t\tcenter := ( 1 , 1 )\n\n\tvec2 planar = v.xy;\n\n\tfloat almostATexel = 1.5 * texelSizeY;\n\tfloat almostOne = 1.0 - almostATexel;\n\n\tif ( absV.z >= almostOne ) {\n\n\t\tif ( v.z > 0.0 )\n\t\t\tplanar.x = 4.0 - v.x;\n\n\t} else if ( absV.x >= almostOne ) {\n\n\t\tfloat signX = sign( v.x );\n\t\tplanar.x = v.z * signX + 2.0 * signX;\n\n\t} else if ( absV.y >= almostOne ) {\n\n\t\tfloat signY = sign( v.y );\n\t\tplanar.x = v.x + 2.0 * signY + 2.0;\n\t\tplanar.y = v.z * signY - 2.0;\n\n\t}\n\n\t// Transform to UV space\n\n\t// scale := 0.5 / dim\n\t// translate := ( center + 0.5 ) / dim\n\treturn vec2( 0.125, 0.25 ) * planar + vec2( 0.375, 0.75 );\n}\n\nvec3 processPointLight(in vec3 matColor, in PointLight pointLight, in vec3 normal) {\n  vec3 lightRay = -normalize(vWorldPosition.xyz - pointLight.position);\n  return matColor * max(dot(lightRay, normal), 0.0); // matColor * max(dot(lightRay, normal), 0.0) * pointLight.intensity;\n}\n\nfloat processPointLightShadow(in vec4 ShadowCoord, sampler2D shadowMap, in PointLight pointLight) {\n  #ifdef MESH_RECEIVE_SHADOW\n    if (MESH_RECEIVE_SHADOW) {\n      // ShadowCoord.z /= fwidth(ShadowCoord.z); // bias 0.72 * ShadowCoord.z, 0.05 +\n\n      bvec4 inFrustumVec = bvec4 (ShadowCoord.x >= 0.0, ShadowCoord.x <= 1.0, ShadowCoord.y >= 0.0, ShadowCoord.y <= 1.0);\n      bool inFrustum = all(inFrustumVec);\n\n      if (all(bvec2(inFrustum, ShadowCoord.z <= 1.0))) {\n        float bias = 0.05;\n        return SHADOW_SAMPLER_FUNC(shadowMap, ShadowCoord.xy, pointLight.shadowSize, ShadowCoord.z, bias);\n      }\n    }\n  #endif\n\n  return 1.0;\n}\n"; // eslint-disable-line
+
+  var point_lights_pars$3 = /*#__PURE__*/Object.freeze({
+    default: point_lights_pars$2
+  });
+
+  var point_lights$2 = "#define GLSLIFY 1\n//intensity\n\n#if (NUM_POINT_LIGHTS > 0)\n  #pragma unroll_loop\n  for (int i = 0; i < NUM_POINT_LIGHTS; i++) {\n    // lightAffection = processPointLightShadow(v_pointShadowCoords[i], pointLightShadowMaps[i], pointLights[i]);\n    color += processPointLight(matColor, pointLights[i], normal) * 1.0;\n    // color += pointLights[i].position;\n  }\n\n  // color = processPointLight(matColor, pointLights[0], normal) * 1.0;\n#endif\n"; // eslint-disable-line
+
+  var point_lights$3 = /*#__PURE__*/Object.freeze({
+    default: point_lights$2
   });
 
   var main$2 = "#define GLSLIFY 1\n// placeholder\n"; // eslint-disable-line
@@ -168,87 +186,96 @@
 
   var require$$0 = ( init_pars$1 && init_pars ) || init_pars$1;
 
-  var require$$1 = ( lights_pars$1 && lights_pars ) || lights_pars$1;
+  var require$$1 = ( init$1 && init ) || init$1;
 
-  var require$$2 = ( lights$1 && lights ) || lights$1;
+  var require$$2 = ( lights_pars$1 && lights_pars ) || lights_pars$1;
 
-  var require$$3 = ( directional_lights_pars$1 && directional_lights_pars ) || directional_lights_pars$1;
+  var require$$3 = ( lights$1 && lights ) || lights$1;
 
-  var require$$4 = ( directional_lights$1 && directional_lights ) || directional_lights$1;
+  var require$$4 = ( directional_lights_pars$1 && directional_lights_pars ) || directional_lights_pars$1;
 
-  var require$$5 = ( main$1 && main ) || main$1;
+  var require$$5 = ( directional_lights$1 && directional_lights ) || directional_lights$1;
 
-  var require$$6 = ( normal_pars$1 && normal_pars ) || normal_pars$1;
+  var require$$6 = ( point_lights_pars$1 && point_lights_pars ) || point_lights_pars$1;
 
-  var require$$7 = ( normal$1 && normal ) || normal$1;
+  var require$$7 = ( point_lights$1 && point_lights ) || point_lights$1;
 
-  var require$$8 = ( pars$1 && pars ) || pars$1;
+  var require$$8 = ( main$1 && main ) || main$1;
 
-  var require$$9 = ( uv_pars$1 && uv_pars ) || uv_pars$1;
+  var require$$9 = ( normal_pars$1 && normal_pars ) || normal_pars$1;
 
-  var require$$10 = ( uv$1 && uv ) || uv$1;
+  var require$$10 = ( normal$1 && normal ) || normal$1;
 
-  var require$$11 = ( color$1 && color ) || color$1;
+  var require$$11 = ( pars$1 && pars ) || pars$1;
 
-  var require$$12 = ( init_pars$3 && init_pars$2 ) || init_pars$3;
+  var require$$12 = ( uv_pars$1 && uv_pars ) || uv_pars$1;
 
-  var require$$13 = ( init$1 && init ) || init$1;
+  var require$$13 = ( uv$1 && uv ) || uv$1;
 
-  var require$$14 = ( lambert_light_pars$1 && lambert_light_pars ) || lambert_light_pars$1;
+  var require$$14 = ( color$1 && color ) || color$1;
 
-  var require$$15 = ( lambert_light$1 && lambert_light ) || lambert_light$1;
+  var require$$15 = ( init_pars$3 && init_pars$2 ) || init_pars$3;
 
-  var require$$16 = ( lights_pars$3 && lights_pars$2 ) || lights_pars$3;
+  var require$$16 = ( init$3 && init$2 ) || init$3;
 
-  var require$$17 = ( lights$3 && lights$2 ) || lights$3;
+  var require$$17 = ( lights_pars$3 && lights_pars$2 ) || lights_pars$3;
 
-  var require$$18 = ( directional_lights_pars$3 && directional_lights_pars$2 ) || directional_lights_pars$3;
+  var require$$18 = ( lights$3 && lights$2 ) || lights$3;
 
-  var require$$19 = ( directional_lights$3 && directional_lights$2 ) || directional_lights$3;
+  var require$$19 = ( directional_lights_pars$3 && directional_lights_pars$2 ) || directional_lights_pars$3;
 
-  var require$$20 = ( main$3 && main$2 ) || main$3;
+  var require$$20 = ( directional_lights$3 && directional_lights$2 ) || directional_lights$3;
 
-  var require$$21 = ( map_pars$1 && map_pars ) || map_pars$1;
+  var require$$21 = ( point_lights_pars$3 && point_lights_pars$2 ) || point_lights_pars$3;
 
-  var require$$22 = ( map$1 && map ) || map$1;
+  var require$$22 = ( point_lights$3 && point_lights$2 ) || point_lights$3;
 
-  var require$$23 = ( normal_pars$3 && normal_pars$2 ) || normal_pars$3;
+  var require$$23 = ( main$3 && main$2 ) || main$3;
 
-  var require$$24 = ( normal$3 && normal$2 ) || normal$3;
+  var require$$24 = ( map_pars$1 && map_pars ) || map_pars$1;
 
-  var require$$25 = ( pars$3 && pars$2 ) || pars$3;
+  var require$$25 = ( map$1 && map ) || map$1;
 
-  var require$$26 = ( uv_pars$3 && uv_pars$2 ) || uv_pars$3;
+  var require$$26 = ( normal_pars$3 && normal_pars$2 ) || normal_pars$3;
+
+  var require$$27 = ( normal$3 && normal$2 ) || normal$3;
+
+  var require$$28 = ( pars$3 && pars$2 ) || pars$3;
+
+  var require$$29 = ( uv_pars$3 && uv_pars$2 ) || uv_pars$3;
 
   // This file is autogenerated.
   var chunks = {
     v_init_pars: require$$0,
-    v_lights_pars: require$$1,
-    v_lights: require$$2,
-    v_directional_lights_pars: require$$3,
-    v_directional_lights: require$$4,
-    v_main: require$$5,
-    v_normal_pars: require$$6,
-    v_normal: require$$7,
-    v_pars: require$$8,
-    v_uv_pars: require$$9,
-    v_uv: require$$10,
-    f_color: require$$11,
-    f_init_pars: require$$12,
-    f_init: require$$13,
-    f_lambert_light_pars: require$$14,
-    f_lambert_light: require$$15,
-    f_lights_pars: require$$16,
-    f_lights: require$$17,
-    f_directional_lights_pars: require$$18,
-    f_directional_lights: require$$19,
-    f_main: require$$20,
-    f_map_pars: require$$21,
-    f_map: require$$22,
-    f_normal_pars: require$$23,
-    f_normal: require$$24,
-    f_pars: require$$25,
-    f_uv_pars: require$$26
+    v_init: require$$1,
+    v_lights_pars: require$$2,
+    v_lights: require$$3,
+    v_directional_lights_pars: require$$4,
+    v_directional_lights: require$$5,
+    v_point_lights_pars: require$$6,
+    v_point_lights: require$$7,
+    v_main: require$$8,
+    v_normal_pars: require$$9,
+    v_normal: require$$10,
+    v_pars: require$$11,
+    v_uv_pars: require$$12,
+    v_uv: require$$13,
+    f_color: require$$14,
+    f_init_pars: require$$15,
+    f_init: require$$16,
+    f_lights_pars: require$$17,
+    f_lights: require$$18,
+    f_directional_lights_pars: require$$19,
+    f_directional_lights: require$$20,
+    f_point_lights_pars: require$$21,
+    f_point_lights: require$$22,
+    f_main: require$$23,
+    f_map_pars: require$$24,
+    f_map: require$$25,
+    f_normal_pars: require$$26,
+    f_normal: require$$27,
+    f_pars: require$$28,
+    f_uv_pars: require$$29
   };
 
   var vertDefault = "#version 300 es\n\nprecision mediump float;\n#define GLSLIFY 1\nin vec4 position;\n\nuniform mat4 projectionMatrix;\nuniform mat4 modelMatrix;\n\nvoid main() {\n  gl_Position = projectionMatrix * modelMatrix * position; // projectionMatrix *\n  // gl_Position = vec4(position, 1.0);\n}\n"; // eslint-disable-line
@@ -287,7 +314,7 @@
     default: flat$2
   });
 
-  var lambert = "#define GLSLIFY 1\n[v init_pars]\n[v normal_pars]\n[v uv_pars]\n[v lights_pars]\n\nvoid main() {\n  [v normal]\n  [v uv]\n  [v lights]\n\n  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);\n}\n"; // eslint-disable-line
+  var lambert = "#define GLSLIFY 1\n[v init_pars]\n[v normal_pars]\n[v uv_pars]\n[v lights_pars]\n\nvoid main() {\n  [v init]\n  [v normal]\n  [v uv]\n  [v lights]\n\n  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);\n}\n"; // eslint-disable-line
 
   var lambert$1 = /*#__PURE__*/Object.freeze({
     default: lambert
@@ -5866,18 +5893,18 @@
 
   function unrollLoops(string) {
     var regex = /#define ([aA-zZ]+) (\d+)/g;
-    var defines = string.match(regex).map(regex.exec.bind(regex)).reduce(function (c, v) {
+    var defines = string.match(regex).map(function (v) {
+      return regex.lastIndex = 0, regex.exec(v);
+    }).reduce(function (c, v) {
       return Object.assign(c, v ? _defineProperty({}, v[1], Number(v[2])) : {});
     }, {});
     var pattern = /#pragma unroll_loop[\s]+?for \(int i \= (\d+)\; i < ([aA-zZ]+)\; i\+\+\) \{([\s\S]+?)(?=\})\}/g;
 
     function replace(match, start, end, snippet) {
-      console.log(end in defines ? defines[end] : end);
       var unroll = '';
 
       for (var i = parseInt(start); i < parseInt(end in defines ? defines[end] : end); i++) {
         unroll += snippet.replace(/\[i\]/g, '[' + i + ']').replace(/([^aA-zZ]+)i([^aA-zZ]+)/g, "$1".concat(i, "$2"));
-        console.log(snippet);
       }
 
       return unroll;
@@ -7899,19 +7926,20 @@
     init: function init(self) {
       if (self.STATE_SHADOWMAP) return;
       self.LIGHTS = [];
-      self.NUM_DIR_LIGHTS = 0;
+      self.NUM_DIRECTIONAL_LIGHTS = 0;
       self.NUM_POINT_LIGHTS = 0;
     },
     object: function object(_object, self) {
       if (!_object.isLight || self.STATE_SHADOWMAP) return;
       self.NUM_LIGHTS_CHANGED = true;
       self.LIGHTS.push(_object);
-      if (_object.type === 'DirectionalLight') self.NUM_DIR_LIGHTS++;else if (_object.type === 'PointLight') self.NUM_POINT_LIGHTS++;
+      if (_object.type === 'DirectionalLight') self.NUM_DIRECTIONAL_LIGHTS++;else if (_object.type === 'PointLight') self.NUM_POINT_LIGHTS++;
     },
     program: function program(gl, _program, self) {
       if (!self.NUM_LIGHTS_CHANGED || self.STATE_SHADOWMAP) return;
       var defines = {
-        NUM_DIRECTIONAL_LIGHTS: self.NUM_DIR_LIGHTS,
+        NUM_DIRECTIONAL_LIGHTS: self.NUM_DIRECTIONAL_LIGHTS,
+        NUM_POINT_LIGHTS: self.NUM_POINT_LIGHTS,
         MESH_RECEIVE_SHADOW: _program.mesh.receiveShadow
       };
       if (_program.mesh.receiveShadow) defines.USE_UV = true;
@@ -7923,9 +7951,11 @@
       var _this = this;
 
       if (self.STATE_SHADOWMAP) return;
-      var dirLights = new Float32Array(self.NUM_DIR_LIGHTS * 16);
+      var dirLights = new Float32Array(self.NUM_DIRECTIONAL_LIGHTS * 16);
       var pointLights = new Float32Array(self.NUM_POINT_LIGHTS * 16);
-      var offs = 0;
+      var lights = new Float32Array(dirLights.length + pointLights.length);
+      var dirOffs = 0,
+          pointOffs = 0;
       self.LIGHTS.forEach(function (light) {
         // TODO: lvl up all matricies
         light.updateMatrix();
@@ -7933,80 +7963,149 @@
 
         switch (light.type) {
           case 'DirectionalLight':
-            light.shadowCamera.matrixWorld.copy(light.matrixWorld);
-            self.STATE_SHADOWMAP = true;
-            if (window.test) window.test.visible = false;
+            {
+              light.shadowCamera.matrixWorld.copy(light.matrixWorld);
+              self.STATE_SHADOWMAP = true;
 
-            _this.render(light.shadowCamera, light.shadowMap, {
-              depthOnly: true
-            });
+              _this.render(light.shadowCamera, light.shadowMap, {
+                depthOnly: true
+              });
 
-            if (window.test) window.test.visible = true;
-            self.STATE_SHADOWMAP = false; // identity(light.shadowCamera.matrixWorld.value);
+              self.STATE_SHADOWMAP = false; // identity(light.shadowCamera.matrixWorld.value);
 
-            var dir = light.quaternion.getDirection().value; // float intensity
+              var dir = light.quaternion.getDirection().value; // float intensity
 
-            dirLights[offs++] = light.intensity; // x
+              dirLights[dirOffs++] = light.intensity; // x
 
-            dirLights[offs++] = 0.0; // y
+              dirLights[dirOffs++] = 0.0; // y
 
-            dirLights[offs++] = 0.0; // z
+              dirLights[dirOffs++] = 0.0; // z
 
-            dirLights[offs++] = 0.0; // w
-            // vec3 color
+              dirLights[dirOffs++] = 0.0; // w
+              // vec3 color
 
-            dirLights[offs++] = light.color[0]; // r
+              dirLights[dirOffs++] = light.color[0]; // r
 
-            dirLights[offs++] = light.color[1]; // g
+              dirLights[dirOffs++] = light.color[1]; // g
 
-            dirLights[offs++] = light.color[2]; // b
+              dirLights[dirOffs++] = light.color[2]; // b
 
-            dirLights[offs++] = 0.0; // b
-            // vec3 direction
+              dirLights[dirOffs++] = 0.0; // b
+              // vec3 direction
 
-            dirLights[offs++] = dir[0]; // x
+              dirLights[dirOffs++] = dir[0]; // x
 
-            dirLights[offs++] = dir[1]; // y
+              dirLights[dirOffs++] = dir[1]; // y
 
-            dirLights[offs++] = dir[2]; // z
+              dirLights[dirOffs++] = dir[2]; // z
 
-            dirLights[offs++] = 0.0; // w
-            // vec2 shadowSize
+              dirLights[dirOffs++] = 0.0; // w
+              // vec2 shadowSize
 
-            dirLights[offs++] = light.shadowMap.width; // x
+              dirLights[dirOffs++] = light.shadowMap.width; // x
 
-            dirLights[offs++] = light.shadowMap.height; // y
+              dirLights[dirOffs++] = light.shadowMap.height; // y
 
-            dirLights[offs++] = 0.0; // z
+              dirLights[dirOffs++] = 0.0; // z
 
-            dirLights[offs++] = 0.0; // w
+              dirLights[dirOffs++] = 0.0; // w
 
-            break;
+              break;
+            }
+
+          case 'PointLight':
+            {
+              light.shadowCamera.matrixWorld.copy(light.matrixWorld);
+              self.STATE_SHADOWMAP = true;
+
+              _this.render(light.shadowCamera, light.shadowMap, {
+                depthOnly: true
+              });
+
+              self.STATE_SHADOWMAP = false; // identity(light.shadowCamera.matrixWorld.value);
+
+              var pos = light.position.value; // console.log(pos);
+              // float intensity
+
+              pointLights[pointOffs++] = light.intensity; // x
+
+              pointLights[pointOffs++] = 0.0; // y
+
+              pointLights[pointOffs++] = 0.0; // z
+
+              pointLights[pointOffs++] = 0.0; // w
+              // vec3 color
+
+              pointLights[pointOffs++] = light.color[0]; // r
+
+              pointLights[pointOffs++] = light.color[1]; // g
+
+              pointLights[pointOffs++] = light.color[2]; // b
+
+              pointLights[pointOffs++] = 0.0; // b
+              // vec3 position
+
+              pointLights[pointOffs++] = pos[0]; // x
+
+              pointLights[pointOffs++] = pos[1]; // y
+
+              pointLights[pointOffs++] = pos[2]; // z
+
+              pointLights[pointOffs++] = 0.0; // w
+              // vec2 shadowSize
+
+              pointLights[pointOffs++] = light.shadowMap.width; // x
+
+              pointLights[pointOffs++] = light.shadowMap.height; // y
+
+              pointLights[pointOffs++] = 0.0; // z
+
+              pointLights[pointOffs++] = 0.0; // w
+
+              break;
+            }
 
           default:
         }
       });
-      self.LIGHTS_BUFFER = dirLights;
+      lights.set(dirLights, 0);
+      lights.set(pointLights, dirLights.length);
+      self.LIGHTS_BUFFER = lights;
     },
     render: function render(gl, program, self) {
       // TODO: Move lights part to "before"
       if (self.STATE_SHADOWMAP) return;
 
       if (self.LIGHTS.length > 0 && program.state.lights && program.mesh.receiveShadow) {
-        var shadowMapIndices = [];
+        var directionalShadowMapIndices = [];
+        var pointShadowMapIndices = [];
         self.LIGHTS.forEach(function (light, i) {
           switch (light.type) {
             case 'DirectionalLight':
-              var texture = light.shadowMap.depthTexture;
-              var projectionViewMatrix = glMat4_9([], light.shadowCamera.projectionMatrix.value, glMat4_6([], light.shadowCamera.matrixWorld.value));
-              gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, "directionalLightShadowMatricies[".concat(i, "]")), false, projectionViewMatrix);
-              shadowMapIndices.push(texture._bind(gl));
-              break;
+              {
+                var texture = light.shadowMap.depthTexture;
+                var projectionViewMatrix = glMat4_9([], light.shadowCamera.projectionMatrix.value, glMat4_6([], light.shadowCamera.matrixWorld.value));
+                gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, "directionalLightShadowMatricies[".concat(i, "]")), false, projectionViewMatrix);
+                directionalShadowMapIndices.push(texture._bind(gl));
+                break;
+              }
+
+            case 'PointLight':
+              {
+                var _texture = light.shadowMap.depthTexture;
+
+                var _projectionViewMatrix = glMat4_9([], light.shadowCamera.projectionMatrix.value, glMat4_6([], light.shadowCamera.matrixWorld.value));
+
+                gl.uniformMatrix4fv(gl.getUniformLocation(program._compiledProgram, "pointLightShadowMatricies[".concat(i, "]")), false, _projectionViewMatrix);
+                pointShadowMapIndices.push(_texture._bind(gl));
+                break;
+              }
 
             default:
           }
         });
-        gl.uniform1iv(gl.getUniformLocation(program._compiledProgram, "directionalLightShadowMaps[0]"), shadowMapIndices);
+        gl.uniform1iv(gl.getUniformLocation(program._compiledProgram, "directionalLightShadowMaps[0]"), directionalShadowMapIndices);
+        gl.uniform1iv(gl.getUniformLocation(program._compiledProgram, "pointLightShadowMaps[0]"), pointShadowMapIndices);
         var location = gl.getUniformBlockIndex(program._compiledProgram, 'Lights');
         gl.uniformBlockBinding(program._compiledProgram, location, 0);
         var lightsBuffer = gl.createBuffer();

@@ -43,8 +43,8 @@ const pointLight = new NEXT.PointLight({
   }
 });
 
-pointLight.intensity = 0.2;
-pointLight.position.set(0, 5, 0);
+pointLight.intensity = 1;
+pointLight.position.set(0, 15, 0);
 pointLight.quaternion.setFromEuler(-Math.PI / 1.5, 0, 0);
 //
 // const dirLight4 = new NEXT.DirectionalLight({
@@ -57,8 +57,8 @@ pointLight.quaternion.setFromEuler(-Math.PI / 1.5, 0, 0);
 // dirLight4.intensity = 0.2;
 // dirLight4.position.set(0, 5, 0);
 // dirLight4.quaternion.setFromEuler(-Math.PI / 1.7, 0, 0);
-scene.add(dirLight);
-scene.add(dirLight2);
+// scene.add(dirLight);
+// scene.add(dirLight2);
 scene.add(pointLight);
 // scene.add(dirLight3);
 // scene.add(dirLight4);

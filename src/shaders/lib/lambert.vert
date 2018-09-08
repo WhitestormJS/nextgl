@@ -4,6 +4,7 @@
 [v lights_pars]
 
 void main() {
+  [v init]
   [v normal]
   [v uv]
   [v lights]

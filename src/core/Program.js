@@ -10,18 +10,16 @@ function unrollLoops(string) {
   const regex = /#define ([aA-zZ]+) (\d+)/g;
 
   const defines = string.match(regex)
-    .map(regex.exec.bind(regex))
+    .map((v) => (regex.lastIndex = 0, regex.exec(v)))
     .reduce((c, v) => Object.assign(c, v ? {[v[1]]: Number(v[2])} : {}), {});
 
 	const pattern = /#pragma unroll_loop[\s]+?for \(int i \= (\d+)\; i < ([aA-zZ]+)\; i\+\+\) \{([\s\S]+?)(?=\})\}/g;
 
 	function replace(match, start, end, snippet) {
-    console.log(end in defines ? defines[end] : end);
 		let unroll = '';
 
 		for (let i = parseInt( start ); i < parseInt( end in defines ? defines[end] : end ); i++) {
 			unroll += snippet.replace(/\[i\]/g, '[' + i + ']').replace(/([^aA-zZ]+)i([^aA-zZ]+)/g, `$1${i}$2`);
-      console.log(snippet);
 		}
 
 		return unroll;
